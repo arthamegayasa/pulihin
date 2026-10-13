@@ -1,17 +1,27 @@
 import type { ComponentType } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router';
+import { createBrowserRouter, Navigate, redirect } from 'react-router';
 import { AppShell } from '@/components/AppShell';
 import { RouteError } from '@/components/RouteError';
 import { berandaUntukPeran } from '@/router-paths';
-import { getPrefs } from '@/lib/prefs';
+import { getPrefs, setPrefs } from '@/lib/prefs';
+import type { Role } from '@/types';
 
 type PageModule = { default: ComponentType };
+// Impor dinamis per rute disengaja (code splitting): landing tetap ringan dan MediaPipe hanya dimuat di layar kamera.
 const page = (load: () => Promise<PageModule>) => async () => ({ Component: (await load()).default });
 
-function AppIndex() {
-  const { role } = getPrefs();
-  if (!role) return null;
-  return <Navigate to={berandaUntukPeran(role)} replace />;
+const PERAN_SAH: readonly Role[] = ['pasien', 'keluarga', 'terapis'];
+
+/**
+ * `/app?peran=keluarga` (tautan cepat dari landing untuk juri): pasang peran itu sebelum render, lalu buka
+ * berandanya. Tanpa parameter, `/app` menampilkan Pilih Peran atau langsung ke beranda peran tersimpan.
+ */
+function pasangPeranDariUrl({ request }: { request: Request }) {
+  const diminta = new URL(request.url).searchParams.get('peran');
+  const peran = PERAN_SAH.find((r) => r === diminta);
+  const tersimpan = peran ?? getPrefs().role;
+  if (peran) setPrefs({ role: peran });
+  return tersimpan ? redirect(berandaUntukPeran(tersimpan)) : null;
 }
 
 /** Tampilan singkat selama layar pertama dimuat (menghindari layar kosong). */
@@ -38,13 +48,7 @@ export const router = createBrowserRouter([
     element: <AppShell />,
     ...umum,
     children: [
-      {
-        index: true,
-        lazy: async () => {
-          const { default: PilihPeran } = await import('@/pages/PilihPeran');
-          return { Component: () => (getPrefs().role ? <AppIndex /> : <PilihPeran />) };
-        },
-      },
+      { index: true, loader: pasangPeranDariUrl, lazy: page(() => import('@/pages/PilihPeran')) },
       { path: 'beranda', lazy: page(() => import('@/pages/Beranda')) },
       { path: 'latihan', lazy: page(() => import('@/pages/DaftarLatihan')) },
       { path: 'latihan/:id', lazy: page(() => import('@/pages/DetailLatihan')) },

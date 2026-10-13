@@ -19,6 +19,23 @@ export function AjakanCoba() {
         <BigLink to={PATHS.app} penuh={false} className="mt-8 px-8">
           Buka Aplikasi
         </BigLink>
+        <p className="mt-6 text-teks-2">Atau langsung buka sebagai:</p>
+        <ul className="mt-3 flex flex-wrap justify-center gap-3">
+          {[
+            { peran: 'pasien', label: 'Pasien' },
+            { peran: 'keluarga', label: 'Keluarga' },
+            { peran: 'terapis', label: 'Terapis' },
+          ].map((p) => (
+            <li key={p.peran}>
+              <Link
+                to={`${PATHS.app}?peran=${p.peran}`}
+                className="inline-flex min-h-[48px] items-center rounded-2xl border-2 border-primer bg-white px-5 font-bold text-primer hover:bg-primer-terang"
+              >
+                {p.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
