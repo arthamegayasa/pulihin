@@ -1,0 +1,249 @@
+1
+00:00:00,500 --> 00:00:02,558
+Saya dokter spesialis saraf.
+
+2
+00:00:02,598 --> 00:00:06,944
+Setiap minggu, saya melepas
+pasien stroke pulang ke rumah.
+
+3
+00:00:12,500 --> 00:00:16,426
+Mereka pulang membawa program
+latihan di atas kertas.
+
+4
+00:00:19,500 --> 00:00:23,500
+Di rumah, mereka sering lupa
+dan ragu apakah gerakannya sudah benar.
+
+5
+00:00:24,500 --> 00:00:27,513
+Padahal pemulihan ditentukan
+oleh latihan harian di rumah,
+
+6
+00:00:27,553 --> 00:00:29,500
+dan di situlah pendampingan terputus.
+
+7
+00:00:30,500 --> 00:00:34,631
+PULIHIN mengubah ponsel biasa
+menjadi pendamping latihan.
+
+8
+00:00:34,671 --> 00:00:39,500
+Begitu dibuka, Latihan Hari Ini
+langsung tampil dalam huruf besar.
+
+9
+00:00:40,500 --> 00:00:43,739
+Kita mulai dari satu
+gerakan kecil: Tekuk Siku.
+
+10
+00:00:43,779 --> 00:00:46,390
+Ada contoh gerakan, pesan keselamatan,
+
+11
+00:00:46,430 --> 00:00:49,500
+lalu satu tombol besar:
+Mulai dengan Kamera.
+
+12
+00:00:50,500 --> 00:00:55,161
+Ponsel cukup diletakkan di meja,
+sekitar satu meter dari kursi.
+
+13
+00:00:55,201 --> 00:01:00,648
+Yang tampil di sini adalah peragaan
+oleh pemeran, bukan pasien sungguhan.
+
+14
+00:01:02,500 --> 00:01:08,459
+Kamera membaca titik-titik tubuh langsung
+di ponsel ini, tanpa mengunggah video.
+
+15
+00:01:08,499 --> 00:01:11,983
+Repetisi dihitung dari
+sudut siku: tekuk penuh,
+
+16
+00:01:12,023 --> 00:01:14,648
+luruskan lagi, baru terhitung satu.
+
+17
+00:01:16,500 --> 00:01:19,017
+Lihat angkanya: lima dari sepuluh.
+
+18
+00:01:19,057 --> 00:01:22,325
+Hitungan hanya naik
+bila gerakannya lengkap,
+
+19
+00:01:22,365 --> 00:01:26,426
+dan aplikasi memberi tahu
+bila gerakannya belum tepat.
+
+20
+00:01:30,500 --> 00:01:32,800
+Sekarang bahunya ikut terangkat.
+
+21
+00:01:33,200 --> 00:01:37,400
+Rilekskan bahu, turunkan bahu Anda.
+
+22
+00:01:38,000 --> 00:01:43,400
+Aplikasi mengoreksi dengan suara
+dan teks besar, dalam Bahasa Indonesia.
+
+23
+00:01:44,500 --> 00:01:49,611
+Pemeran menurunkan bahunya,
+pesan menghilang, dan hitungan berlanjut.
+
+24
+00:01:49,651 --> 00:01:54,204
+Hanya satu pesan pada satu waktu,
+supaya tidak membingungkan.
+
+25
+00:01:58,500 --> 00:02:02,056
+Jadi bukan sekadar menghitung,
+melainkan menjaga
+
+26
+00:02:02,096 --> 00:02:05,167
+cara geraknya, sampai repetisi kesepuluh.
+
+27
+00:02:10,500 --> 00:02:14,000
+Di akhir sesi ada skor
+dan ringkasan sederhana:
+
+28
+00:02:14,040 --> 00:02:17,012
+jumlah repetisi, durasi, dan satu saran.
+
+29
+00:02:17,052 --> 00:02:21,154
+Labelnya mudah dipahami,
+mulai dari Perlu Pendampingan,
+
+30
+00:02:21,194 --> 00:02:23,981
+Berkembang, Baik, sampai Sangat Baik.
+
+31
+00:02:30,500 --> 00:02:32,707
+Ringkasan ini bukan diagnosis.
+
+32
+00:02:32,747 --> 00:02:37,167
+Kalimat batasan itu selalu
+tampil di setiap ringkasan sesi.
+
+33
+00:02:42,500 --> 00:02:47,387
+Kembali ke Beranda, status hari
+ini sudah berubah menjadi selesai.
+
+34
+00:02:47,427 --> 00:02:51,907
+Latihannya tercatat di ponsel,
+dan keluarga bisa melihatnya.
+
+35
+00:03:00,500 --> 00:03:02,571
+Keluarga tidak lagi menebak.
+
+36
+00:03:02,611 --> 00:03:05,662
+Di halaman Untuk Keluarga, mereka melihat
+
+37
+00:03:05,702 --> 00:03:09,019
+kepatuhan tujuh hari
+terakhir dan tren skor.
+
+38
+00:03:15,500 --> 00:03:20,011
+Bila latihan terhenti beberapa
+hari, muncul tanda yang jelas.
+
+39
+00:03:20,051 --> 00:03:25,796
+Ringkasan mingguan bisa disalin dengan
+satu ketukan, siap dikirim ke terapis.
+
+40
+00:03:30,500 --> 00:03:35,460
+Untuk pasien dengan gangguan bicara
+atau afasia, ada Latihan Bicara
+
+41
+00:03:35,500 --> 00:03:40,500
+berbahasa Indonesia, dengan kata
+yang dipakai di rumah setiap hari.
+
+42
+00:03:42,500 --> 00:03:46,500
+Pemeran mendengarkan contoh,
+lalu menyebutkan katanya.
+
+43
+00:03:51,000 --> 00:03:54,281
+Aplikasi mendengarkan dan menilai.
+
+44
+00:03:54,321 --> 00:03:59,400
+Kata yang tepat dinilai Benar,
+dan skornya tercatat.
+
+45
+00:04:00,500 --> 00:04:04,346
+Di dashboard klinisi,
+terapis dapat menyusun program
+
+46
+00:04:04,386 --> 00:04:08,796
+dan mengikuti kemajuan tanpa
+menunggu kunjungan berikutnya.
+
+47
+00:04:12,500 --> 00:04:15,976
+Di prototype ini, program
+yang disimpan terapis
+
+48
+00:04:16,016 --> 00:04:19,981
+menjadi Latihan Hari Ini
+pada profil pasien tersebut.
+
+49
+00:04:25,600 --> 00:04:28,599
+PULIHIN tidak menggantikan terapis.
+
+50
+00:04:28,639 --> 00:04:32,247
+PULIHIN membantu memastikan yang diajarkan
+
+51
+00:04:32,287 --> 00:04:35,500
+terapis benar-benar dilatih di rumah.
+
+52
+00:04:36,800 --> 00:04:40,464
+Ini masih prototype untuk kompetisi,
+
+53
+00:04:40,504 --> 00:04:43,756
+bukan alat kesehatan teregulasi.
+
+54
+00:04:43,796 --> 00:04:47,500
+Silakan mencobanya di pulihinapp.id.
