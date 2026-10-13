@@ -53,7 +53,9 @@ export function PhonePlacement({ def }: { def: Pick<ExerciseDefinition, 'posisi'
         <DeviceMobile size={26} weight="bold" className="text-primer" aria-hidden />
         Letak ponsel
       </h2>
-      <figure>
+      {/* Isi aliran figure = SVG + padding bawah (ruang setengah label jarak), jadi posisi label dihitung dari koordinat SVG. Pojok kiri atas gambar selalu kosong. */}
+      <figure className="relative pb-[0.9rem]">
+        <figcaption className="absolute left-0 top-0 text-[0.95rem] font-bold leading-snug">Dari samping</figcaption>
         <svg viewBox="0 0 240 122" className="h-auto w-full" role="img" aria-label={`Tampak samping: ponsel setinggi ${tinggi}, sekitar ${jarak} dari pasien`}>
           <g strokeLinecap="round" strokeLinejoin="round" fill="none">
             <line x1={8} y1={112} x2={232} y2={112} stroke={TANAH} strokeWidth={3} />
@@ -98,12 +100,19 @@ export function PhonePlacement({ def }: { def: Pick<ExerciseDefinition, 'posisi'
             <line x1={xPonsel + 8} y1={114} x2={xPonsel + 8} y2={120} stroke={PRIMER} strokeWidth={1.5} />
             <line x1={xOrang - 24} y1={114} x2={xOrang - 24} y2={120} stroke={PRIMER} strokeWidth={1.5} />
           </g>
-          <rect x={(xPonsel + xOrang) / 2 - 30} y={94} width={60} height={18} rx={9} fill="#ffffff" stroke={TANAH} />
-          <text x={(xPonsel + xOrang) / 2} y={107.5} textAnchor="middle" fontSize={13} fontWeight={800} fill={PRIMER}>
-            {jarak}
-          </text>
         </svg>
-        <figcaption className="sr-only">Dari samping</figcaption>
+        {/* Label jarak sebagai teks HTML (>= 0,95rem, ikut Huruf Lebih Besar), tepat di tengah garis ukur y=118. */}
+        <span
+          className="tabular absolute whitespace-nowrap rounded-full border border-garis bg-white px-2.5 text-[1rem] font-extrabold leading-snug text-primer"
+          style={{
+            left: `${((xPonsel + 8 + xOrang - 24) / 2 / 240) * 100}%`,
+            top: `calc((100% - 0.9rem) * ${(118 / 122).toFixed(4)})`,
+            transform: 'translate(-50%, -50%)',
+          }}
+          aria-hidden
+        >
+          {jarak}
+        </span>
       </figure>
 
       <figure className="mt-2 flex items-center gap-3 rounded-xl bg-primer-terang p-2">
@@ -118,14 +127,7 @@ export function PhonePlacement({ def }: { def: Pick<ExerciseDefinition, 'posisi'
             <polygon points={`${atas.x},${atas.y} 42,30 78,30`} fill={AKSEN} opacity={0.12} />
             <line x1={atas.x} y1={atas.y} x2={60} y2={30} stroke={AKSEN} strokeWidth={2} strokeDasharray="4 4" />
             <rect x={atas.x - 9} y={atas.y - 3} width={18} height={6} rx={2} fill={PRIMER} transform={`rotate(${atas.putar} ${atas.x} ${atas.y})`} />
-            {serong && (
-              <>
-                <path d={`M60 72 A47 47 0 0 0 ${atas.busurX} ${atas.busurY}`} fill="none" stroke={AKSEN} strokeWidth={1.5} />
-                <text x={74} y={84} fontSize={11} fontWeight={800} fill={AKSEN}>
-                  45°
-                </text>
-              </>
-            )}
+            {serong && <path d={`M60 72 A47 47 0 0 0 ${atas.busurX} ${atas.busurY}`} fill="none" stroke={AKSEN} strokeWidth={1.5} />}
           </g>
         </svg>
         <figcaption className="text-[0.95rem] leading-snug">

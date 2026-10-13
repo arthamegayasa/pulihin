@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { BigLink } from '@/components/BigButton';
 import { Card } from '@/components/Card';
 import { PageHeader } from '@/components/PageHeader';
+import { Toggle } from '@/components/Toggle';
 import { useLiveQuery } from '@/data/useLiveQuery';
 import { usePrefs } from '@/lib/prefs';
 import { PATHS } from '@/router-paths';
@@ -32,7 +33,7 @@ export default function AfasiaKategori() {
           <Hand size={30} weight="fill" className="mt-0.5 shrink-0 text-primer" aria-hidden />
         )}
         <div className="min-w-0">
-          <p className="text-[1.1rem] font-bold">{modeSuara ? 'Mode suara' : 'Mode latihan mandiri'}</p>
+          <p className="text-[1.1rem] font-bold">{modeSuara ? 'Mode Suara' : 'Mode Latihan Mandiri'}</p>
           <p className="text-teks-2">
             {modeSuara
               ? 'Aplikasi mendengarkan ucapan Anda dan langsung menilainya.'
@@ -44,24 +45,14 @@ export default function AfasiaKategori() {
       </Card>
 
       {didukung && (
-        <button
-          type="button"
-          role="switch"
-          aria-checked={mandiriDipilih}
-          onClick={() => setModeMandiriDipilih(!mandiriDipilih)}
-          className="mt-2 flex min-h-[56px] w-full items-center gap-3 rounded-kartu px-2 text-left hover:bg-primer-terang"
-        >
-          <span className="flex-1 font-semibold">Pakai Mode Mandiri (dinilai sendiri)</span>
-          <span
-            aria-hidden
-            className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${mandiriDipilih ? 'bg-primer' : 'bg-garis'}`}
-          >
-            <span
-              className={`absolute top-1 size-6 rounded-full bg-white shadow-tipis transition-transform ${mandiriDipilih ? 'translate-x-7' : 'translate-x-1'}`}
-            />
-          </span>
-          <span className="w-10 text-right font-bold text-teks-2">{mandiriDipilih ? 'Ya' : 'Tidak'}</span>
-        </button>
+        <div className="mt-2">
+          <Toggle
+            label="Pakai Mode Latihan Mandiri"
+            keterangan="Dinilai sendiri, tanpa pengenal suara."
+            aktif={mandiriDipilih}
+            onUbah={setModeMandiriDipilih}
+          />
+        </div>
       )}
 
       <h2 className="mt-5 mb-2 text-[1.15rem] font-bold">Atau pilih kategori</h2>
@@ -113,7 +104,7 @@ export default function AfasiaKategori() {
         </span>
       </p>
 
-      <div className="safe-bottom sticky bottom-0 -mx-4 mt-auto bg-latar/95 px-4 pt-4">
+      <div className="safe-bottom sticky bottom-0 -mx-4 mt-auto border-t border-garis bg-latar px-4 pt-3">
         {jumlahUlang > 0 && (
           <p className="mb-2 text-center text-[0.95rem] text-teks-2">
             Termasuk {Math.min(jumlahUlang, JUMLAH_KATA_SESI)} kata untuk diulang dari latihan terakhir.

@@ -1,5 +1,6 @@
 import {
   ArrowClockwise,
+  ArrowLeft,
   ArrowsLeftRight,
   CameraSlash,
   CheckCircle,
@@ -116,6 +117,8 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
   const selesaiRef = useRef(false);
   const repRef = useRef(0);
   const siapRef = useRef(false);
+  /** Pengingat keselamatan diucapkan sekali per sesi, pada siap pertama (tidak diulang saat ganti sisi). */
+  const pengingatRef = useRef(false);
   const sisiLainTerakhirRef = useRef(Number.NEGATIVE_INFINITY);
   const tawarDiucapkanRef = useRef(false);
   const dasarRef = useRef<Session | null>(null);
@@ -173,10 +176,17 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
     if (barRef.current) barRef.current.style.transform = `scaleX(${clamp(s.progres, 0, 1)})`;
     if (s.siap && !siapRef.current) {
       siapRef.current = true;
+      const pertama = !pengingatRef.current;
+      pengingatRef.current = true;
       setBaruSiap(true);
       window.clearTimeout(timerSiap.current);
       timerSiap.current = window.setTimeout(() => setBaruSiap(false), LAMA_SIAP_MS);
-      speak('Tubuh terdeteksi. Siap. Silakan mulai pelan pelan.');
+      // Pengingat keselamatan diucapkan sebelum "Silakan mulai" agar terdengar utuh sebelum hitungan pertama.
+      speak(
+        pertama
+          ? `Tubuh terdeteksi. ${pengingatKeselamatan(def.wajibBerpegangan)} Silakan mulai pelan pelan.`
+          : 'Tubuh terdeteksi. Siap. Silakan mulai pelan pelan.',
+      );
     }
     if (s.repetisiBaru) {
       repRef.current = s.repetisi;
@@ -276,7 +286,7 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
     }
     const awalSesi = sesiAwalRef.current;
     if (awalSesi) void awalSesi.then(() => deleteSession(sessionId)).catch((e: unknown) => console.error(e));
-    navigate(urlDetail(def.id, target), { replace: true });
+    navigate(urlDetail(def.id, target, pilihSisi ? sisiRef.current : undefined), { replace: true });
   };
 
   /** Ganti sisi sebelum repetisi pertama: tracker baru untuk sisi lain, catatan sesi & URL ikut diperbarui. */
@@ -311,24 +321,29 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
 
   const berjalan = tahap === 'berjalan' && !akhir;
   const sedangMenyiapkan = tahap === 'siaga' || tahap === 'menyiapkan';
+  // Layar kendala: kamera tidak menyala, jadi satu-satunya tindakan utama adalah Coba Lagi (Berhenti disembunyikan).
+  const adaKendala = tahap === 'galat-kamera' || tahap === 'galat-model';
   const namaSisi = pilihSisi ? (sisi === 'kanan' ? 'Kanan' : 'Kiri') : null;
   const modePanduan = !tampilan.siap || tampilan.tawarGanti;
   const statusBingkai = tampilan.siap ? 'siap' : tampilan.tubuhTerlihat ? 'terlihat' : 'cari';
+  const kembaliKeDetail = urlDetail(def.id, target, pilihSisi ? sisi : undefined);
 
   return (
     <main className="fixed inset-0 flex flex-col bg-primer-tua text-white">
-      {/* Bilah atas: nama latihan + Berhenti yang selalu terlihat (AC-F1-7). */}
+      {/* Bilah atas: nama latihan + Berhenti yang selalu terlihat selama kamera dapat menyala (AC-F1-7). */}
       <header
         className="z-30 flex shrink-0 items-center gap-3 bg-primer-tua px-4 py-2"
         style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}
       >
         <div className="min-w-0 flex-1">
-          <h1 className="line-clamp-2 text-[1.15rem] font-extrabold leading-tight">{def.nama}</h1>
-          {namaSisi && <p className="text-[0.95rem] text-white/80">Sisi {namaSisi}</p>}
+          <h1 className="line-clamp-2 text-[1.5rem] font-extrabold leading-[1.15]">{def.nama}</h1>
+          {namaSisi && <p className="text-[1rem] font-semibold text-white/85">Sisi {namaSisi}</p>}
         </div>
-        <BigButton varian="bahaya" penuh={false} onClick={berhenti} ikon={<StopCircle size={26} weight="fill" aria-hidden />} className="shrink-0 gap-2! px-4!">
-          Berhenti
-        </BigButton>
+        {!adaKendala && (
+          <BigButton varian="bahaya" penuh={false} onClick={berhenti} ikon={<StopCircle size={26} weight="fill" aria-hidden />} className="shrink-0 gap-2! px-4!">
+            Berhenti
+          </BigButton>
+        )}
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col landscape:flex-row">
@@ -357,14 +372,14 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
 
           {sedangMenyiapkan && <Memuat />}
           {kamera.status.tahap === 'galat-kamera' && (
-            <LayarKendala {...PENJELASAN_GALAT_KAMERA[kamera.status.jenis]} onUlangi={kamera.ulangi} kembali={urlDetail(def.id, target)} />
+            <LayarKendala {...PENJELASAN_GALAT_KAMERA[kamera.status.jenis]} onUlangi={kamera.ulangi} kembali={kembaliKeDetail} />
           )}
           {tahap === 'galat-model' && (
             <LayarKendala
               judul="Pendeteksi gerak belum siap"
               isi="Bagian aplikasi yang mengenali gerakan belum berhasil dimuat. Pastikan internet menyala untuk pemakaian pertama, lalu ketuk Coba Lagi."
               onUlangi={kamera.ulangi}
-              kembali={urlDetail(def.id, target)}
+              kembali={kembaliKeDetail}
             />
           )}
         </div>
@@ -394,7 +409,11 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
                   ) : pesanLembut ? (
                     <Banner jenis="lembut" judul={pesanLembut.judul} sub={pesanLembut.sub} />
                   ) : (
-                    <Banner jenis="tenang" judul="Lanjutkan pelan pelan." />
+                    <Banner
+                      jenis="tenang"
+                      judul="Lanjutkan pelan pelan."
+                      sub={`Berhenti bila nyeri atau pusing.${def.wajibBerpegangan ? ' Tetap berpegangan.' : ''}`}
+                    />
                   )
                 }
               />
@@ -405,7 +424,7 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
               <ol className="space-y-2">
                 {def.panduanLangkah.map((langkah, i) => (
                   <li key={i} className="flex gap-3 text-[0.95rem] leading-snug">
-                    <span className="tabular grid size-7 shrink-0 place-items-center rounded-full bg-primer-terang text-[0.85rem] font-bold text-primer">
+                    <span className="tabular grid size-7 shrink-0 place-items-center rounded-full bg-primer-terang text-[0.95rem] font-bold text-primer">
                       {i + 1}
                     </span>
                     <span className="pt-0.5">{langkah}</span>
@@ -432,6 +451,11 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
   );
 }
 
+/** Pengingat keselamatan yang diucapkan sekali saat sesi dimulai (Bab 17.2); latihan berdiri ditambah berpegangan. */
+function pengingatKeselamatan(wajibBerpegangan: boolean): string {
+  return `Ingat, berhenti bila terasa nyeri atau pusing.${wajibBerpegangan ? ' Tetap berpegangan.' : ''}`;
+}
+
 function pesanSisi(sisi: Sisi) {
   const lawan = sisiLawan(sisi);
   return {
@@ -447,31 +471,41 @@ type JenisBanner = 'koreksi' | 'lembut' | 'sukses' | 'tenang';
 const GAYA_BANNER: Record<JenisBanner, { kotak: string; ikon: ReactNode }> = {
   koreksi: {
     kotak: 'border-peringatan bg-peringatan-terang',
-    ikon: <WarningCircle size={34} weight="fill" className="mt-0.5 shrink-0 text-peringatan" aria-hidden />,
+    ikon: <WarningCircle size={30} weight="fill" className="mt-0.5 shrink-0 text-peringatan" aria-hidden />,
   },
   lembut: {
     kotak: 'border-primer bg-primer-terang',
-    ikon: <Info size={34} weight="fill" className="mt-0.5 shrink-0 text-primer" aria-hidden />,
+    ikon: <Info size={30} weight="fill" className="mt-0.5 shrink-0 text-primer" aria-hidden />,
   },
   sukses: {
     kotak: 'border-sukses bg-sukses-terang',
-    ikon: <CheckCircle size={34} weight="fill" className="mt-0.5 shrink-0 text-sukses" aria-hidden />,
+    ikon: <CheckCircle size={30} weight="fill" className="mt-0.5 shrink-0 text-sukses" aria-hidden />,
   },
   tenang: {
     kotak: 'border-transparent bg-latar',
-    ikon: <CheckCircle size={30} weight="bold" className="mt-0.5 shrink-0 text-primer" aria-hidden />,
+    ikon: <CheckCircle size={28} weight="bold" className="mt-0.5 shrink-0 text-primer" aria-hidden />,
   },
 };
 
-/** Satu pesan pada satu waktu, maksimal dua baris judul; koreksi ditulis besar (>= 1,5rem). */
+/**
+ * Ukuran judul menurut panjang teks agar pesan koreksi terpanjang (Bab 7.3, mis. "Sedikit lagi, angkat lebih
+ * tinggi bila mampu") tetap muat dua baris di layar 360px; tidak pernah di bawah 1,3rem.
+ */
+function ukuranJudul(judul: string): string {
+  if (judul.length <= 32) return 'text-[1.5rem]';
+  if (judul.length <= 40) return 'text-[1.375rem]';
+  return 'text-[1.3rem]';
+}
+
+/** Satu pesan pada satu waktu, maksimal dua baris judul di layar 360px; koreksi ditulis besar (>= 1,3rem). */
 function Banner({ jenis, judul, sub }: { jenis: JenisBanner; judul: string; sub?: string }) {
   const gaya = GAYA_BANNER[jenis];
   const tenang = jenis === 'tenang';
   return (
-    <div role="status" aria-live="polite" className={`flex items-start gap-3 rounded-kartu border-l-8 px-3.5 py-2.5 ${gaya.kotak}`}>
+    <div role="status" aria-live="polite" className={`flex items-start gap-2 rounded-kartu border-l-[6px] px-3 py-2.5 ${gaya.kotak}`}>
       {gaya.ikon}
       <div className="min-w-0">
-        <p className={`font-extrabold leading-tight text-teks ${tenang ? 'text-[1.15rem] font-bold text-teks-2' : 'text-[1.5rem]'}`}>{judul}</p>
+        <p className={`leading-tight ${tenang ? 'text-[1.15rem] font-bold text-teks-2' : `font-extrabold text-teks ${ukuranJudul(judul)}`}`}>{judul}</p>
         {sub && <p className="mt-0.5 text-[1.05rem] font-semibold leading-snug text-teks-2">{sub}</p>}
       </div>
     </div>
@@ -531,7 +565,7 @@ function PanelHitung({
   pesan: ReactNode;
 }) {
   return (
-    <div className="flex flex-1 flex-col justify-end gap-2 px-4 pt-3 landscape:justify-start landscape:gap-4 landscape:px-5 landscape:pt-5">
+    <div className="flex flex-1 flex-col justify-end gap-2 px-3 pt-3 landscape:justify-start landscape:gap-4 landscape:px-5 landscape:pt-5">
       {/* Potret: pesan tepat di atas hitungan (ruang tetap agar video tidak melompat). Lanskap: hitungan di atas, pesan di bawah. */}
       <div className="flex min-h-[6.4rem] flex-col justify-end landscape:order-2 landscape:min-h-0 landscape:justify-start">{pesan}</div>
       <div className="landscape:order-1">
@@ -581,30 +615,40 @@ function Memuat() {
   );
 }
 
+/**
+ * Kendala kamera/model: satu tindakan utama (Coba Lagi) tetap di bawah layar; jalan keluar sekunder
+ * "Kembali ke Detail Latihan" berupa tautan teks di atas sehingga selalu terlihat tanpa menggulir.
+ */
 function LayarKendala({ judul, isi, langkah, onUlangi, kembali }: { judul: string; isi: string; langkah?: string[]; onUlangi: () => void; kembali: string }) {
   return (
-    <div className="absolute inset-0 z-20 overflow-y-auto bg-latar text-teks">
-      <div className="mx-auto flex min-h-full max-w-md flex-col justify-center gap-4 px-5 py-6">
-        <CameraSlash size={56} weight="bold" className="text-primer" aria-hidden />
-        <h2 className="text-[1.6rem] font-extrabold leading-tight">{judul}</h2>
-        <p>{isi}</p>
-        {langkah && (
-          <ol className="space-y-2 rounded-kartu border border-garis bg-white p-4 shadow-tipis">
-            {langkah.map((l, i) => (
-              <li key={i} className="flex gap-3">
-                <span className="tabular grid size-8 shrink-0 place-items-center rounded-full bg-primer text-[0.95rem] font-bold text-white">{i + 1}</span>
-                <span className="pt-0.5">{l}</span>
-              </li>
-            ))}
-          </ol>
-        )}
-        <div className="mt-2 space-y-3">
+    <div className="absolute inset-0 z-20 flex flex-col bg-latar text-teks">
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="mx-auto flex max-w-md flex-col gap-3 px-5 pb-5 pt-1">
+          <BigLink to={kembali} replace varian="teks" penuh={false} ikon={<ArrowLeft size={22} weight="bold" aria-hidden />} className="-ml-3 self-start justify-start! px-3! text-left!">
+            Kembali ke Detail Latihan
+          </BigLink>
+          <div className="flex items-center gap-3">
+            <CameraSlash size={44} weight="bold" className="shrink-0 text-primer" aria-hidden />
+            <h2 className="text-[1.5rem] font-extrabold leading-tight">{judul}</h2>
+          </div>
+          <p>{isi}</p>
+          {langkah && (
+            <ol className="space-y-2 rounded-kartu border border-garis bg-white p-4 shadow-tipis">
+              {langkah.map((l, i) => (
+                <li key={i} className="flex gap-3">
+                  <span className="tabular grid size-8 shrink-0 place-items-center rounded-full bg-primer text-[0.95rem] font-bold text-white">{i + 1}</span>
+                  <span className="pt-0.5">{l}</span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+      </div>
+      <div className="shrink-0 border-t border-garis bg-latar px-5 pt-3 safe-bottom">
+        <div className="mx-auto max-w-md">
           <BigButton onClick={onUlangi} ikon={<ArrowClockwise size={24} weight="bold" aria-hidden />}>
             Coba Lagi
           </BigButton>
-          <BigLink to={kembali} replace varian="garis">
-            Kembali ke Detail Latihan
-          </BigLink>
         </div>
       </div>
     </div>

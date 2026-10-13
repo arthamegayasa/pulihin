@@ -107,7 +107,7 @@ export class PenjadwalKoreksi {
 
 export class FormChecker {
   private readonly koreksi: Partial<Record<IdKoreksi, KoreksiDefinisi>> = {};
-  private readonly awalKondisi: Partial<Record<IdKontinu, number>> = {};
+  private readonly awalKondisiAktif: Partial<Record<IdKontinu, number>> = {};
   private readonly peristiwaTertunda: Partial<Record<IdKoreksi, number>> = {};
   private deretRentang = 0;
   private deretTempo = 0;
@@ -119,6 +119,11 @@ export class FormChecker {
 
   get terhitung(): Record<string, number> {
     return this.penjadwal.terhitung;
+  }
+
+  /** Awal (ms) kondisi kontinu yang sedang benar, untuk mengukur latensi AC-F1-3 di Mode Uji. */
+  get awalKondisi(): Readonly<Partial<Record<IdKontinu, number>>> {
+    return this.awalKondisiAktif;
   }
 
   /** Ambang koreksi dari definisi latihan, atau bawaan dari exerciseDefinitions.ts. */
@@ -173,10 +178,10 @@ export class FormChecker {
       const def = this.koreksi[id];
       if (!def) continue;
       if (mentah[id] === true) {
-        const awal = (this.awalKondisi[id] ??= m.t);
+        const awal = (this.awalKondisiAktif[id] ??= m.t);
         if (m.t - awal >= this.tahanMs(id)) kandidat.push({ id, pesan: def.pesan, peristiwa: false });
       } else {
-        delete this.awalKondisi[id];
+        delete this.awalKondisiAktif[id];
       }
     }
 

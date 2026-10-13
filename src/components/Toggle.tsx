@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react';
 
-/** Sakelar besar (seluruh baris dapat diketuk) dengan kata "Aktif"/"Mati", tidak bergantung pada warna. */
+/**
+ * Sakelar besar (seluruh baris dapat diketuk) dengan kata "Aktif"/"Mati", tidak bergantung pada warna.
+ * Keadaan mati: trek putih bergaris teks-2 dengan kenop teks-2 (kontras 7:1), bukan abu-abu pucat.
+ */
 export function Toggle({
   label,
   keterangan,
@@ -25,18 +28,18 @@ export function Toggle({
     >
       <span className="min-w-0 flex-1">
         <span className="block font-bold">{label}</span>
-        {keterangan && <span className="block text-[0.9rem] text-teks-2">{keterangan}</span>}
+        {keterangan && <span className="block text-[0.95rem] text-teks-2">{keterangan}</span>}
       </span>
-      <span className="text-[0.85rem] font-bold text-teks-2" aria-hidden>
-        {aktif ? 'Aktif' : 'Mati'}
-      </span>
-      <span
-        aria-hidden
-        className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${aktif ? 'bg-primer' : 'border-2 border-teks-2/40 bg-garis'}`}
-      >
+      {/* Sakelar (ukuran px) dengan kata keadaan di bawahnya: kolom kanan tetap sempit saat Huruf Lebih Besar. */}
+      <span className="flex shrink-0 flex-col items-center gap-0.5" aria-hidden>
         <span
-          className={`absolute top-1/2 size-6 -translate-y-1/2 rounded-full bg-white shadow transition-[left] ${aktif ? 'left-[calc(100%-1.75rem)]' : 'left-0.5'}`}
-        />
+          className={`relative h-[32px] w-[56px] rounded-full border-2 transition-colors ${aktif ? 'border-primer bg-primer' : 'border-teks-2 bg-white'}`}
+        >
+          <span
+            className={`absolute top-1/2 size-[20px] -translate-y-1/2 rounded-full transition-[left] ${aktif ? 'left-[28px] bg-white shadow' : 'left-[4px] bg-teks-2'}`}
+          />
+        </span>
+        <span className="text-[0.95rem] font-bold leading-tight text-teks-2">{aktif ? 'Aktif' : 'Mati'}</span>
       </span>
     </button>
   );

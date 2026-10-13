@@ -114,7 +114,7 @@ export default function AfasiaRingkasan() {
           <ul className="mt-2 flex flex-wrap gap-2">
             {kataUlang.map((k) => (
               <li key={k.id} className="flex items-center gap-2 rounded-xl bg-primer-terang py-1.5 pr-3 pl-1.5">
-                <GambarKata kata={k} ukuranRem={2.2} />
+                <GambarKata kata={k} ukuran="2.2rem" />
                 <span className="text-[1.15rem] font-bold">{k.kata}</span>
               </li>
             ))}

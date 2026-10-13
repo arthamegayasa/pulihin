@@ -1,5 +1,5 @@
 import type { ExportBundle, HasilKata, ISODate, Profile, Program, ProgramItem, RepLog, Schedule, Session, SkenarioDemo, SpeechAttempt } from '@/types';
-import { bulkPut, clearAll, listProfiles } from '@/data/db';
+import { bulkPut, clearAll, getProgram, getSchedule, importAll, listProfiles, listSessions } from '@/data/db';
 import { addDays, todayISO } from '@/lib/date';
 import { resetPrefs, setPrefs, getPrefs } from '@/lib/prefs';
 import { clamp } from '@/lib/score';
@@ -112,6 +112,9 @@ const AMBANG_ATAS_DEMO: Record<string, number> = {
 
 /** Kata bank afasia (id stabil wordBank.ts) yang dipakai riwayat demo. */
 const KATA_DEMO = ['kursi', 'meja', 'gelas', 'piring', 'sendok', 'nasi', 'teh', 'air', 'ibu', 'tangan', 'makan', 'minum'];
+
+/** Jadwal bawaan data demo (Bab 9.1, saran pukul 08.00 dan 16.00). */
+const JADWAL_DEMO: Omit<Schedule, 'patientId'> = { jamGerak: '08:00', jamAfasia: '16:00', notifikasiAktif: false };
 
 /* ---------- pembangkit ---------- */
 
@@ -280,7 +283,7 @@ export function buatDataDemo(skenario: SkenarioDemo, today: ISODate = todayISO()
       dibuatOleh: 'Terapis (demo)',
       tanggalUbah: waktu(mulaiProgram, 9, 0),
     } satisfies Program);
-    data.schedules.push({ patientId: r.profile.id, jamGerak: '08:00', jamAfasia: '16:00', notifikasiAktif: false } satisfies Schedule);
+    data.schedules.push({ patientId: r.profile.id, ...JADWAL_DEMO } satisfies Schedule);
 
     r.pola.forEach((kode, i) => {
       const hariLalu = 14 - i;
@@ -322,22 +325,77 @@ function tulisLocal(key: string, value: string | null): void {
 
 let sedangMenanam: Promise<void> | null = null;
 
-/** Tanam data demo pada pembukaan pertama: hanya bila belum ada profil dan pengguna tidak menghapus data dengan sengaja. */
-export function ensureDemoData(): Promise<void> {
+/** Ganti seluruh isi penyimpanan dengan data demo dalam SATU transaksi (layar tidak sempat melihat keadaan kosong). */
+function tanamDemo(skenario: SkenarioDemo, today: ISODate): Promise<void> {
+  return importAll({ app: 'pulihin', versi: 1, dieksporAt: Date.now(), ...buatDataDemo(skenario, today) } satisfies ExportBundle);
+}
+
+/**
+ * Tanggal penanaman data demo yang belum diubah pengguna, atau null bila ada data/ubahan pengguna.
+ * Riwayat demo dibangkitkan relatif terhadap hari penanaman, jadi tanggal itu terbaca dari profil
+ * (tanggalMulaiProgram = hari tanam - 14). Pemeriksaan tidak bergantung pada isi pembangkit, agar data demo
+ * dari versi aplikasi sebelumnya tetap dikenali:
+ * - semua profil dan semua sesi berlabel demo (sesi yang direkam pengguna selalu `isDemo: false`, termasuk
+ *   sesi yang dihentikan);
+ * - resep belum pernah disimpan ulang (tanggalUbah masih waktu tanam, Dashboard Klinisi menulis waktu simpan);
+ * - jadwal masih jadwal bawaan demo.
+ */
+export function tanggalTanamDemoUtuh(data: Pick<DataDemo, 'profiles' | 'programs' | 'schedules' | 'sessions'>): ISODate | null {
+  const budi = data.profiles.find((p) => p.id === 'budi');
+  if (!budi || !data.profiles.every((p) => p.isDemo) || !data.sessions.every((s) => s.isDemo)) return null;
+  const mulai = new Map(data.profiles.map((p) => [p.id, p.tanggalMulaiProgram]));
+  const resepAsli = data.programs.every((p) => {
+    const tgl = mulai.get(p.patientId);
+    return tgl !== undefined && p.tanggalUbah === waktu(tgl, 9, 0);
+  });
+  const jadwalAsli = data.schedules.every(
+    (s) => s.jamGerak === JADWAL_DEMO.jamGerak && s.jamAfasia === JADWAL_DEMO.jamAfasia && s.notifikasiAktif === JADWAL_DEMO.notifikasiAktif,
+  );
+  return resepAsli && jadwalAsli ? addDays(budi.tanggalMulaiProgram, 14) : null;
+}
+
+/**
+ * Dipanggil setiap aplikasi dibuka (main.tsx).
+ * - Pembukaan pertama (belum ada profil): tanam data demo, kecuali pengguna sengaja menghapus semua data.
+ * - Data demo yang ditanam pada hari sebelumnya dan belum diubah pengguna ditanam ulang untuk hari ini, sehingga
+ *   skenario selalu tampak sama kapan pun dibuka (mis. stagnasi tetap "3 hari belum latihan", bukan 4 atau 5).
+ * - Data yang sudah memuat aktivitas atau ubahan pengguna tidak pernah disentuh.
+ */
+export function ensureDemoData(today: ISODate = todayISO()): Promise<void> {
   sedangMenanam ??= (async () => {
     if (bacaLocal(AUTOSEED_KEY) === 'off') return;
-    if ((await listProfiles()).length > 0) return;
-    await bulkPut(buatDataDemo(getPrefs().skenarioDemo));
+    const skenario = getPrefs().skenarioDemo;
+    const profiles = await listProfiles();
+    if (profiles.length === 0) {
+      await bulkPut(buatDataDemo(skenario, today));
+      return;
+    }
+    const budi = profiles.find((p) => p.id === 'budi');
+    // Pemeriksaan murah dulu: hanya data demo dari hari sebelumnya yang perlu diperiksa lengkap.
+    if (!budi?.isDemo || addDays(budi.tanggalMulaiProgram, 14) >= today) return;
+    const per = await Promise.all(
+      profiles.map(async (p) => ({
+        sessions: await listSessions(p.id, { hanyaSelesai: false }),
+        program: await getProgram(p.id),
+        schedule: await getSchedule(p.id),
+      })),
+    );
+    const tanggal = tanggalTanamDemoUtuh({
+      profiles,
+      sessions: per.flatMap((x) => x.sessions),
+      programs: per.flatMap((x) => (x.program ? [x.program] : [])),
+      schedules: per.flatMap((x) => (x.schedule ? [x.schedule] : [])),
+    });
+    if (tanggal !== null && tanggal < today) await tanamDemo(skenario, today);
   })().finally(() => {
     sedangMenanam = null;
   });
   return sedangMenanam;
 }
 
-/** Hapus semua data lalu tanam ulang skenario yang dipilih (tombol Reset Data Demo). */
-export async function resetDemoData(skenario: SkenarioDemo): Promise<void> {
-  await clearAll();
-  await bulkPut(buatDataDemo(skenario));
+/** Ganti semua data dengan skenario yang dipilih (tombol Reset Data Demo / Muat Data Demo). */
+export async function resetDemoData(skenario: SkenarioDemo, today: ISODate = todayISO()): Promise<void> {
+  await tanamDemo(skenario, today);
   setPrefs({ skenarioDemo: skenario, activePatientId: 'budi' });
   tulisLocal(AUTOSEED_KEY, null);
 }

@@ -1,5 +1,13 @@
 import type { PoseLandmarker } from '@mediapipe/tasks-vision';
+import { MODEL_PATH, WASM_PATH } from './asetPose';
 import { ATURAN_UMUM } from './exerciseDefinitions';
+import {
+  langkahKebijakan,
+  mulaiSesiKebijakan,
+  statusAwalKebijakan,
+  type JumlahOrang,
+  type StatusKebijakanOrang,
+} from './kebijakanOrang';
 import { INDEKS_MEDIAPIPE } from './landmarks';
 import type { Landmark, PoseFrame } from './types';
 
@@ -7,13 +15,15 @@ import type { Landmark, PoseFrame } from './types';
  * Pembungkus tunggal (singleton) MediaPipe PoseLandmarker.
  *
  * - `@mediapipe/tasks-vision` hanya dimuat lewat import dinamis, jadi tidak masuk bundel utama:
- *   pustaka & model baru diunduh saat Detail Latihan, Sesi Kamera, atau Mode Uji dibuka.
+ *   pustaka & model baru diunduh saat Detail Latihan, Sesi Kamera, atau Mode Uji dibuka
+ *   (atau lebih awal oleh `prefetchAsetPose` saat browser senggang, asetPose.ts).
  * - Runtime WASM dan model disajikan dari domain sendiri (`/mediapipe/...`), tidak dari CDN.
  * - Semua inferensi terjadi di perangkat. Modul ini tidak pernah mengirim frame ke mana pun (AC-F1-5).
- * - Hingga 2 orang dideteksi (`JUMLAH_ORANG`) agar anggota keluarga di belakang pasien tidak
- *   "mencuri" kerangka; `pilihPoseUtama` memilih pasien (badan terbesar, dekat tengah, lengket).
- *   Biaya terukur (Chrome desktop, GPU): inferensi 13,6 -> 25,5 ms per frame pada rekaman yang
- *   sama (docs/algoritma.md Bagian 13).
+ * - Mulai dengan 2 orang agar anggota keluarga di belakang pasien tidak "mencuri" kerangka;
+ *   `pilihPoseUtama` memilih pasien (badan terbesar, dekat tengah, lengket). Biaya terukur (Chrome
+ *   desktop, GPU): inferensi 13,6 -> 25,5 ms per frame. Bila perangkat lambat (fps < 15 karena
+ *   inferensi, atau inferensi > 60 ms, selama 3 s) mesin turun ke 1 orang saat berjalan
+ *   (`setOptions`), lihat kebijakanOrang.ts dan docs/algoritma.md Bagian 14.
  */
 
 export type Delegasi = 'GPU' | 'CPU';
@@ -24,12 +34,17 @@ export interface StatistikMesin {
   /** Lama satu inferensi dalam ms (rata-rata eksponensial). */
   inferensiMs: number;
   delegasi: Delegasi | null;
+  /** Jumlah orang maksimum yang sedang dideteksi model. */
+  jumlahOrang: JumlahOrang;
+  /** 'adaptif' = kebijakan otomatis; 'dipaksa' = diatur Mode Uji. */
+  modeOrang: 'adaptif' | 'dipaksa';
+  /** Sebab jumlah orang saat ini (kebijakan adaptif). */
+  alasanOrang: StatusKebijakanOrang['alasan'];
+  /** Adaptif sudah terkunci di 1 orang (turun lagi setelah pernah naik). */
+  terkunci: boolean;
 }
 
-const WASM_PATH = '/mediapipe/wasm';
-const MODEL_PATH = '/mediapipe/models/pose_landmarker_lite.task';
 const EMA = 0.1;
-const JUMLAH_ORANG = 2;
 
 let landmarker: PoseLandmarker | null = null;
 let delegasi: Delegasi | null = null;
@@ -39,21 +54,37 @@ let deteksiTerakhir = 0;
 let fps = 0;
 let inferensiMs = 0;
 let orangUtama: PusatOrang | null = null;
+/** Awal penolakan kandidat tunggal asing (mode 1 orang), ms. */
+let asingSejak: number | null = null;
+/** Delegasi yang dipaksa Mode Uji (null = GPU lalu CPU bila GPU gagal). */
+let delegasiPaksa: Delegasi | null = null;
+/** Jumlah orang yang dipaksa Mode Uji (null = kebijakan adaptif). */
+let orangPaksa: JumlahOrang | null = null;
+let kebijakan: StatusKebijakanOrang = statusAwalKebijakan();
+/** Jumlah orang yang terpasang di model saat ini. */
+let orangTerpasang: JumlahOrang = 2;
+/** setOptions sedang berjalan: frame dilewati agar graph tidak dipakai saat dibangun ulang. */
+let berganti = false;
+
+const jumlahOrangDiinginkan = (): JumlahOrang => orangPaksa ?? kebijakan.jumlahOrang;
 
 async function buat(pilihan: Delegasi): Promise<PoseLandmarker> {
   // Import dinamis disengaja: MediaPipe (~ratusan KB + WASM) harus terpisah dari bundel utama dan
   // hanya diunduh di layar kamera. Impor statis akan menariknya ke chunk halaman awal.
   const { FilesetResolver, PoseLandmarker: PL } = await import('@mediapipe/tasks-vision');
   const fileset = await FilesetResolver.forVisionTasks(WASM_PATH);
-  return PL.createFromOptions(fileset, {
+  const jumlah = jumlahOrangDiinginkan();
+  const lm = await PL.createFromOptions(fileset, {
     baseOptions: { modelAssetPath: MODEL_PATH, delegate: pilihan },
     runningMode: 'VIDEO',
-    numPoses: JUMLAH_ORANG,
+    numPoses: jumlah,
     minPoseDetectionConfidence: 0.5,
     minPosePresenceConfidence: 0.5,
     minTrackingConfidence: 0.5,
     outputSegmentationMasks: false,
   });
+  orangTerpasang = jumlah;
+  return lm;
 }
 
 function stempel(tMs: number): number {
@@ -77,6 +108,12 @@ function pemanasan(lm: PoseLandmarker): void {
 }
 
 async function muat(): Promise<void> {
+  if (delegasiPaksa === 'CPU') {
+    landmarker = await buat('CPU');
+    delegasi = 'CPU';
+    pemanasan(landmarker);
+    return;
+  }
   try {
     landmarker = await buat('GPU');
     delegasi = 'GPU';
@@ -117,10 +154,62 @@ export function resetPoseStats(): void {
   inferensiMs = 0;
   deteksiTerakhir = 0;
   orangUtama = null;
+  asingSejak = null;
+  kebijakan = mulaiSesiKebijakan(kebijakan, typeof performance === 'undefined' ? 0 : performance.now());
 }
 
 export function getPoseStats(): StatistikMesin {
-  return { fps, inferensiMs, delegasi };
+  return {
+    fps,
+    inferensiMs,
+    delegasi,
+    jumlahOrang: orangTerpasang,
+    modeOrang: orangPaksa === null ? 'adaptif' : 'dipaksa',
+    alasanOrang: kebijakan.alasan,
+    terkunci: kebijakan.terkunci,
+  };
+}
+
+/**
+ * Mode Uji: paksa delegasi (mis. 'CPU' untuk mengukur perangkat tanpa GPU) atau kembali ke bawaan (null).
+ * Model dimuat ulang saat kamera dinyalakan berikutnya; panggil hanya saat kamera mati.
+ */
+export function aturDelegasiPaksa(d: Delegasi | null): void {
+  if (d === delegasiPaksa) return;
+  delegasiPaksa = d;
+  landmarker?.close();
+  landmarker = null;
+  delegasi = null;
+  memuat = null;
+}
+
+/** Mode Uji: paksa jumlah orang (1 atau 2) atau kembali ke kebijakan adaptif (null). */
+export function aturJumlahOrangPaksa(n: JumlahOrang | null): void {
+  orangPaksa = n;
+  terapkanJumlahOrang();
+}
+
+/** Samakan numPoses model dengan jumlah yang diinginkan. Frame dilewati selama graph dibangun ulang. */
+function terapkanJumlahOrang(): void {
+  const lm = landmarker;
+  const n = jumlahOrangDiinginkan();
+  if (!lm || berganti || n === orangTerpasang) return;
+  berganti = true;
+  const mulai = performance.now();
+  lm.setOptions({ numPoses: n })
+    .then(() => {
+      if (landmarker !== lm) return;
+      orangTerpasang = n;
+      // Ukur ulang dari nol: rata-rata lama mencerminkan jumlah orang sebelumnya.
+      fps = 0;
+      inferensiMs = 0;
+      deteksiTerakhir = 0;
+      console.info(`PoseLandmarker: deteksi ${n} orang (${orangPaksa === null ? kebijakan.alasan : 'dipaksa'}), ganti ${Math.round(performance.now() - mulai)} ms`);
+    })
+    .catch((e: unknown) => console.warn('Gagal mengubah jumlah orang', e))
+    .finally(() => {
+      berganti = false;
+    });
 }
 
 function salin(daftar: ReadonlyArray<{ x: number; y: number; z: number; visibility?: number }>): Landmark[] {
@@ -186,6 +275,19 @@ export function pilihPoseUtama(
   return terbaik;
 }
 
+/**
+ * Mode 1 orang: MediaPipe memilih deteksi paling yakin, yang bisa saja orang di latar. Kandidat tunggal
+ * yang jauh dari orang utama sebelumnya DAN lebih kecil dianggap bukan pasien
+ * (`ATURAN_UMUM.pilihOrang.asing`). PoseEngine menolaknya paling lama `tahanMaksDetik`.
+ */
+export function kandidatTunggalAsing(lm: readonly TitikGambar[], aspect: number, utama: PusatOrang | null): boolean {
+  if (!utama) return false;
+  const p = pusatOrang(lm, aspect);
+  const { radius, rasioUkuranMaks } = ATURAN_UMUM.pilihOrang.asing;
+  const jarak = Math.hypot((p.x - utama.x) * aspect, p.y - utama.y);
+  return jarak > radius * utama.ukuran && p.ukuran < rasioUkuranMaks * utama.ukuran;
+}
+
 /** GPU kadang gagal saat inferensi pertama di perangkat tertentu: muat ulang di CPU tanpa menghentikan sesi. */
 function turunKeCpu(e: unknown): void {
   if (delegasi !== 'GPU' || memuat === null) return;
@@ -206,11 +308,12 @@ function turunKeCpu(e: unknown): void {
 
 /**
  * Deteksi pose pada frame video saat ini. `tMs` = performance.now().
- * Mengembalikan null bila mesin belum siap, video belum punya gambar, atau tidak ada tubuh.
+ * Mengembalikan null bila mesin belum siap, sedang berganti jumlah orang, video belum punya gambar,
+ * atau tidak ada tubuh.
  */
 export function detectPose(video: HTMLVideoElement, tMs: number): PoseFrame | null {
   const lm = landmarker;
-  if (!lm || video.videoWidth === 0 || video.videoHeight === 0) return null;
+  if (!lm || berganti || video.videoWidth === 0 || video.videoHeight === 0) return null;
   const mulai = performance.now();
   let hasil;
   try {
@@ -227,12 +330,22 @@ export function detectPose(video: HTMLVideoElement, tMs: number): PoseFrame | nu
     fps = fps === 0 ? sesaat : fps + EMA * (sesaat - fps);
   }
   deteksiTerakhir = selesai;
+  if (orangPaksa === null) {
+    kebijakan = langkahKebijakan(kebijakan, { t: selesai, fps, inferensiMs });
+    if (kebijakan.jumlahOrang !== orangTerpasang) terapkanJumlahOrang();
+  }
 
   const kandidat = hasil.landmarks.filter((p) => p.length >= 33);
   if (kandidat.length === 0) return null;
   const aspect = video.videoWidth / video.videoHeight;
   const i = kandidat.length === 1 ? 0 : pilihPoseUtama(kandidat, aspect, orangUtama);
   const pose = kandidat[i];
+  if (orangTerpasang === 1 && kandidatTunggalAsing(pose, aspect, orangUtama)) {
+    // Kerangka tidak melompat ke orang di latar; bila bertahan, pasien dianggap berpindah tempat.
+    asingSejak ??= tMs;
+    if (tMs - asingSejak < ATURAN_UMUM.pilihOrang.asing.tahanMaksDetik * 1000) return null;
+  }
+  asingSejak = null;
   orangUtama = pusatOrang(pose, aspect);
   const dunia = hasil.worldLandmarks[hasil.landmarks.indexOf(pose)];
   return {

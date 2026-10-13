@@ -1,4 +1,4 @@
-import { CheckCircle, Clock, Copy, Fire, ShareNetwork, Warning, WarningOctagon } from '@phosphor-icons/react';
+import { CheckCircle, Clock, Copy, Fire, ShareNetwork } from '@phosphor-icons/react';
 import { BigButton } from '@/components/BigButton';
 import { Card } from '@/components/Card';
 import { DemoBadge } from '@/components/DemoBadge';
@@ -9,13 +9,15 @@ import { StreakCalendar } from '@/components/StreakCalendar';
 import { useToast } from '@/components/Toast';
 import { TrendChart } from '@/components/TrendChart';
 import { WeeklyChart } from '@/components/WeeklyChart';
+import { KartuRedFlag } from '@/components/klinisi/RedFlagKlinisi';
+import { teksTargetHarian } from '@/features/adherence/adherence';
 import { useDataPasien, useLaporan, useSekarang } from '@/features/adherence/hooks';
 import { kataTren, teksRingkasanMingguan, type LaporanKepatuhan } from '@/features/adherence/laporan';
-import type { RedFlag } from '@/features/adherence/redFlags';
+import { statusProgramHariIni } from '@/features/adherence/program';
 import { jamTampil } from '@/features/adherence/reminders';
 import { formatJam, formatTanggalPendek, namaHari } from '@/lib/date';
 import { labelSkor } from '@/lib/score';
-import type { Schedule, Session } from '@/types';
+import type { Program, Schedule, Session } from '@/types';
 
 async function salinTeks(teks: string): Promise<boolean> {
   try {
@@ -54,7 +56,7 @@ export default function Pendamping() {
     );
   }
 
-  const { profile, schedule, sessions } = data;
+  const { profile, program, schedule, sessions } = data;
   const teks = teksRingkasanMingguan(profile, lap);
 
   const salin = async () => {
@@ -90,22 +92,23 @@ export default function Pendamping() {
       />
 
       {lap.redFlags.length > 0 && (
-        <div className="space-y-3" aria-label="Tanda perlu perhatian">
+        <section className="space-y-3" aria-label="Tanda perlu perhatian">
           {lap.redFlags.map((f) => (
             <KartuRedFlag key={f.id} flag={f} />
           ))}
-        </div>
+        </section>
       )}
 
-      <StatusHariIni lap={lap} sessions={sessions} schedule={schedule} />
+      <StatusHariIni lap={lap} sessions={sessions} schedule={schedule} program={program} />
 
       <Card>
         <div className="flex items-baseline justify-between gap-2">
-          <h2 className="text-[1.15rem] font-extrabold">Latihan 7 hari terakhir</h2>
+          <h2 className="text-[1.15rem] font-extrabold">Sesi terjadwal 7 hari terakhir</h2>
           <p className="text-[1.4rem] font-extrabold text-primer tabular">{lap.kepatuhan.persen}%</p>
         </div>
         <p className="mb-2 text-[0.95rem] text-teks-2">
-          {lap.kepatuhan.selesai} dari {lap.kepatuhan.target} latihan terjadwal sudah dikerjakan.
+          {lap.kepatuhan.selesai} dari {lap.kepatuhan.target} sesi terjadwal sudah dikerjakan. Jadwal harian:{' '}
+          {teksTargetHarian(lap.target)}.
         </p>
         <WeeklyChart data={lap.batang} />
       </Card>
@@ -154,7 +157,7 @@ export default function Pendamping() {
         <BigButton varian="garis" onClick={() => void kirim()} ikon={<ShareNetwork size={26} weight="bold" aria-hidden />}>
           Kirim lewat WhatsApp
         </BigButton>
-        <p className="text-[0.85rem] text-teks-2">
+        <p className="text-[0.95rem] text-teks-2">
           Ringkasan berisi nama samaran, jumlah latihan, skor, dan tanda perlu perhatian minggu ini. Tidak ada yang dikirim
           sampai Anda sendiri menempel atau membagikannya.
         </p>
@@ -166,26 +169,24 @@ export default function Pendamping() {
   );
 }
 
-function KartuRedFlag({ flag }: { flag: RedFlag }) {
-  const tinggi = flag.tingkat === 'tinggi';
-  const Ikon = tinggi ? WarningOctagon : Warning;
-  return (
-    <Card nada={tinggi ? 'bahaya' : 'peringatan'} className="flex gap-3" role="alert">
-      <Ikon size={32} weight="fill" className={`mt-0.5 shrink-0 ${tinggi ? 'text-bahaya' : 'text-peringatan'}`} aria-hidden />
-      <div>
-        <p className={`text-[0.8rem] font-extrabold uppercase tracking-wide ${tinggi ? 'text-bahaya' : 'text-peringatan'}`}>
-          {tinggi ? 'Penting' : 'Perlu perhatian'}
-        </p>
-        <p className="text-[1.1rem] font-extrabold leading-snug text-teks">{flag.judul}</p>
-        <p className="mt-1 text-teks">{flag.pesan}</p>
-      </div>
-    </Card>
-  );
-}
-
-function StatusHariIni({ lap, sessions, schedule }: { lap: LaporanKepatuhan; sessions: Session[]; schedule: Schedule | undefined }) {
+function StatusHariIni({
+  lap,
+  sessions,
+  schedule,
+  program,
+}: {
+  lap: LaporanKepatuhan;
+  sessions: Session[];
+  schedule: Schedule | undefined;
+  program: Program | undefined;
+}) {
   const h = lap.hariIni;
   const terakhir = sessions.at(-1);
+  // Hitungan butir sama persis dengan "Latihan Hari Ini" di Beranda pasien.
+  const daftar = statusProgramHariIni(program?.items ?? [], sessions, lap.today);
+  const tuntas = daftar.filter((d) => d.selesai).length;
+  const gerakSudah =
+    daftar.length === 0 ? `Sudah, ${h.jumlahGerak} sesi` : `${tuntas > 0 ? 'Sudah' : 'Sudah dicoba'}, ${tuntas} dari ${daftar.length} latihan selesai`;
   return (
     <Card nada={h.adaSesi ? 'sukses' : 'putih'}>
       <div className="flex items-start gap-3">
@@ -213,9 +214,7 @@ function StatusHariIni({ lap, sessions, schedule }: { lap: LaporanKepatuhan; ses
       <dl className="mt-3 grid grid-cols-2 gap-2 text-[0.95rem]">
         <div className="rounded-xl bg-white/70 p-2">
           <dt className="text-teks-2">Latihan gerak</dt>
-          <dd className="font-bold">
-            {h.gerakSelesai ? `Sudah, ${h.jumlahGerak} latihan` : `Belum${schedule ? ` (jadwal ${jamTampil(schedule.jamGerak)})` : ''}`}
-          </dd>
+          <dd className="font-bold">{h.gerakSelesai ? gerakSudah : `Belum${schedule ? ` (jadwal ${jamTampil(schedule.jamGerak)})` : ''}`}</dd>
         </div>
         <div className="rounded-xl bg-white/70 p-2">
           <dt className="text-teks-2">Latihan bicara</dt>

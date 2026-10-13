@@ -61,7 +61,7 @@ export function hitungRedFlag(sessions: readonly Session[], today: ISODate, opsi
         id: 'sempat-3-hari-kosong',
         tingkat: 'perhatian',
         judul: `Minggu ini sempat ${HARI_KOSONG_MINIMAL} hari berturut-turut tanpa latihan`,
-        pesan: `Latihan sudah berjalan lagi, bagus. Ceritakan jeda ini saat ${SARAN_HUBUNGI} pada kesempatan berikutnya.`,
+        pesan: `Latihan sudah berjalan lagi, bagus. Ceritakan jeda ini kepada terapis atau dokter yang merawat pada kesempatan berikutnya.`,
       });
     }
   }
@@ -87,7 +87,7 @@ export function hitungRedFlag(sessions: readonly Session[], today: ISODate, opsi
       id: 'kepatuhan-rendah',
       tingkat: 'perhatian',
       judul: 'Latihan minggu ini masih sedikit',
-      pesan: `Baru ${k.selesai} dari ${k.target} latihan terjadwal dalam 7 hari terakhir (${k.persen}%). Coba atur jam latihan bersama pasien. Bila latihan terasa sulit dijalankan, ${SARAN_HUBUNGI}.`,
+      pesan: `Baru ${k.selesai} dari ${k.target} sesi terjadwal dikerjakan dalam 7 hari terakhir (${k.persen}%). Coba atur jam latihan bersama pasien. Bila latihan terasa sulit dijalankan, ${SARAN_HUBUNGI}.`,
     });
   }
 

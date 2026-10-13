@@ -3,7 +3,7 @@
  *
  * Catatan privasi (Bab 17.3): di Chrome, audio dikirim ke layanan pengenalan suara cloud milik
  * penyedia browser. PULIHIN sendiri tidak merekam atau menyimpan audio; hanya teks hasil yang disimpan
- * di perangkat. Bila layanan tidak tersedia, halaman menawarkan Mode Mandiri.
+ * di perangkat. Bila layanan tidak tersedia, halaman menawarkan Mode Latihan Mandiri.
  *
  * AC-F3-3 (hasil < 1,5 detik setelah pasien berhenti bicara): hasil akhir diteruskan seketika. Bila
  * mesin lambat mengirim hasil akhir, transkrip sementara terakhir dipakai setelah jeda hening singkat.
@@ -75,7 +75,7 @@ export type KodeGalat = 'izin' | 'tidak-terdengar' | 'jaringan' | 'mikrofon' | '
 export interface GalatPengenalan {
   kode: KodeGalat;
   pesan: string;
-  /** true bila Mode Mandiri layak ditawarkan sebagai jalan keluar. */
+  /** true bila Mode Latihan Mandiri layak ditawarkan sebagai jalan keluar. */
   sarankanMandiri: boolean;
 }
 
@@ -88,16 +88,22 @@ const GALAT: Record<KodeGalat, Omit<GalatPengenalan, 'kode'>> = {
   'tidak-terdengar': { pesan: 'Belum terdengar. Coba dekatkan ponsel dan ucapkan lagi.', sarankanMandiri: false },
   jaringan: {
     pesan:
-      'Pengenalan suara perlu internet, karena browser ini memakai layanan cloud penyedianya. Coba lagi saat tersambung, atau pakai Mode Mandiri.',
+      'Pengenalan suara perlu internet, karena browser ini memakai layanan cloud penyedianya. Coba lagi saat tersambung, atau pakai Mode Latihan Mandiri.',
     sarankanMandiri: true,
   },
   mikrofon: {
     pesan: 'Mikrofon tidak terdeteksi atau sedang dipakai aplikasi lain. Tutup aplikasi lain, lalu coba lagi.',
     sarankanMandiri: true,
   },
-  bahasa: { pesan: 'Browser ini belum bisa mengenali Bahasa Indonesia. Silakan pakai Mode Mandiri.', sarankanMandiri: true },
-  'tidak-didukung': { pesan: 'Browser ini belum mendukung pengenalan suara. Silakan pakai Mode Mandiri.', sarankanMandiri: true },
-  lainnya: { pesan: 'Pengenalan suara sedang terganggu. Coba lagi, atau pakai Mode Mandiri.', sarankanMandiri: true },
+  bahasa: {
+    pesan: 'Browser ini belum bisa mengenali Bahasa Indonesia. Silakan pakai Mode Latihan Mandiri.',
+    sarankanMandiri: true,
+  },
+  'tidak-didukung': {
+    pesan: 'Browser ini belum mendukung pengenalan suara. Silakan pakai Mode Latihan Mandiri.',
+    sarankanMandiri: true,
+  },
+  lainnya: { pesan: 'Pengenalan suara sedang terganggu. Coba lagi, atau pakai Mode Latihan Mandiri.', sarankanMandiri: true },
 };
 
 const KODE_BROWSER: Record<string, KodeGalat> = {
@@ -216,7 +222,10 @@ export function mulaiDengar(p: PendengarPengenalan, k: KonfigPengenal = KONFIG_P
         }
         // Transkrip sementara terakhir ikut dinilai: kadang lebih dekat dengan kata target.
         if (teksSementara && !alternatif.includes(teksSementara)) alternatif.push(teksSementara);
-        kirimHasil(alternatif, 'akhir');
+        // Hasil akhir kosong (pernah teramati di Edge) berarti tidak ada kata yang terdengar, bukan jawaban salah:
+        // jangan dihitung sebagai percobaan.
+        if (alternatif.length === 0) kirimGalat(terjemahkanGalat('no-speech'));
+        else kirimHasil(alternatif, 'akhir');
         return;
       }
       sementara += r[0]?.transcript ?? '';

@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
 /**
- * Pilihan manual "Mode Mandiri" (penilaian oleh pasien/pendamping, tanpa pengenal suara).
+ * Pilihan manual "Mode Latihan Mandiri" (penilaian oleh pasien/pendamping, tanpa pengenal suara).
  * Disimpan terpisah dari prefs bersama agar kontrak prefs tidak berubah.
  */
 const KUNCI = 'pulihin.afasia.modeMandiri.v1';

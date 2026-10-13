@@ -10,11 +10,13 @@ import {
   geserLatihan,
   hapusLatihan,
   latihanBerikutnya,
+  repetisiCukup,
   MAKS_LATIHAN,
   programSama,
   statusProgramHariIni,
   tambahLatihan,
   teksProgresSet,
+  teksSudahDicoba,
   teksTarget,
   ubahFrekuensi,
   ubahLatihan,
@@ -72,6 +74,39 @@ describe('status set Latihan Hari Ini', () => {
     expect(latihanBerikutnya(siku)?.latihanId).toBe('fleksi-bahu');
     const semua = statusProgramHariIni(ITEMS, [gerak('fleksi-siku', TODAY, 9), gerak('fleksi-siku', TODAY, 10), gerak('fleksi-bahu')], TODAY);
     expect(latihanBerikutnya(semua)).toBeUndefined();
+  });
+
+  it('sesi yang dihentikan sebelum separuh target hanya "Sudah dicoba" dan tetap menjadi latihan berikutnya', () => {
+    const coba = (rep: number, jam = 9) => ({ ...gerak('fleksi-bahu', TODAY, jam), repetisiTercapai: rep });
+    const satu = statusProgramHariIni(ITEMS, [coba(1)], TODAY)[1];
+    expect(satu).toMatchObject({ jumlahSesi: 1, setSelesai: 0, selesai: false, skorTerakhir: null, repetisiDicoba: 1 });
+    expect(teksSudahDicoba(satu)).toBe('Sudah dicoba: 1 dari 10');
+    // Percobaan terbanyak yang ditampilkan; 4 dari 10 masih di bawah separuh.
+    const dua = statusProgramHariIni(ITEMS, [coba(3, 9), coba(4, 10)], TODAY)[1];
+    expect(teksSudahDicoba(dua)).toBe('Sudah dicoba: 4 dari 10');
+    const sesiSelesai = [gerak('fleksi-siku', TODAY, 7), gerak('fleksi-siku', TODAY, 8), coba(4, 10)];
+    expect(latihanBerikutnya(statusProgramHariIni(ITEMS, sesiSelesai, TODAY))?.latihanId).toBe('fleksi-bahu');
+    expect(teksSudahDicoba(statusProgramHariIni(ITEMS, [coba(0)], TODAY)[1])).toBe('Sudah dicoba');
+  });
+
+  it('separuh target (dibulatkan ke atas) atau lebih sudah dihitung selesai', () => {
+    expect(repetisiCukup(10)).toBe(5);
+    expect(repetisiCukup(7)).toBe(4);
+    expect(repetisiCukup(1)).toBe(1);
+    const lima = statusProgramHariIni(ITEMS, [{ ...gerak('fleksi-bahu'), repetisiTercapai: 5, skor: 48 }], TODAY)[1];
+    expect(lima).toMatchObject({ selesai: true, setSelesai: 1, skorTerakhir: 48, repetisiDicoba: null });
+    expect(teksSudahDicoba(lima)).toBeNull();
+    // Percobaan pendek setelah sesi tuntas tidak membatalkan "Selesai" dan tidak mengganti skornya.
+    const lalu = statusProgramHariIni(ITEMS, [{ ...gerak('fleksi-bahu', TODAY, 9), skor: 80 }, { ...gerak('fleksi-bahu', TODAY, 10), repetisiTercapai: 1, skor: 10 }], TODAY)[1];
+    expect(lalu).toMatchObject({ selesai: true, skorTerakhir: 80 });
+    expect(teksSudahDicoba(lalu)).toBeNull();
+  });
+
+  it('dua set: satu set tuntas + satu percobaan pendek tetap "1 dari 2 set"', () => {
+    const s = statusProgramHariIni(ITEMS, [gerak('fleksi-siku', TODAY, 9), { ...gerak('fleksi-siku', TODAY, 10), repetisiTercapai: 2 }], TODAY)[0];
+    expect(s).toMatchObject({ jumlahSesi: 2, setSelesai: 1, selesai: false });
+    expect(teksProgresSet(s)).toBe('1 dari 2 set');
+    expect(teksSudahDicoba(s)).toBeNull();
   });
 
   it('teks target menyebut set hanya bila lebih dari satu', () => {

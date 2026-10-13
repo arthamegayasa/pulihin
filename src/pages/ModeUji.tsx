@@ -1,10 +1,18 @@
 import { ArrowLeft, DownloadSimple, PlusCircle, Record as IkonRekam, VideoCamera } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { BigButton } from '@/components/BigButton';
 import { hitungAkurasi, JENDELA_COCOK_MS } from '@/features/pose/accuracy';
-import { EXERCISES, getExercise } from '@/features/pose/exerciseDefinitions';
-import { getPoseStats, type StatistikMesin } from '@/features/pose/PoseEngine';
+import { ATURAN_UMUM, EXERCISES, getExercise, KOREKSI_BAWAAN } from '@/features/pose/exerciseDefinitions';
+import type { JumlahOrang } from '@/features/pose/kebijakanOrang';
+import {
+  aturDelegasiPaksa,
+  aturJumlahOrangPaksa,
+  getPoseStats,
+  preloadPoseEngine,
+  type Delegasi,
+  type StatistikMesin,
+} from '@/features/pose/PoseEngine';
 import { createTracker } from '@/features/pose/tracker';
 import type { ExerciseTracker, Landmark, PoseFrame, TrackerOptions, TrackerSnapshot } from '@/features/pose/types';
 import { usePoseCamera } from '@/features/pose/usePoseCamera';
@@ -97,7 +105,38 @@ const fmt = (v: number | string | boolean | undefined, digit = 1) =>
 /** Rentang (min..maks) sudut mentah 2D/3D yang pernah terlihat untuk satu kunci debug. */
 type Rentang = Record<string, { min: number; maks: number }>;
 
+type PilihanDelegasi = 'bawaan' | Delegasi;
+const LABEL_ALASAN: Record<StatistikMesin['alasanOrang'], string> = { awal: 'bawaan', lambat: 'turun, lambat', lapang: 'naik, lapang' };
+type PilihanOrang = 'adaptif' | `${JumlahOrang}`;
+
+/**
+ * AC-F1-1: kerangka pertama. `sejakVideo` = dari event `playing` (frame kamera pertama tampil; dengan
+ * tubuh sudah di depan kamera = frame pertama yang memuat tubuh) sampai rAF sesudah kerangka digambar.
+ * `sejakFrame` = dari callback frame yang pertama berisi tubuh sampai rAF yang sama (biaya pipa per frame).
+ */
+interface LatensiKerangka {
+  sejakVideo: number | null;
+  sejakFrame: number;
+}
+
+/** AC-F1-3: satu pesan koreksi kontinu, latensi dari (awal kondisi menurut detektor + tahan) sampai rAF sesudah pesan dirender. */
+interface LatensiKoreksi {
+  id: string;
+  pesan: string;
+  /** frame tempat pesan mulai tampil - (awal kondisi + tahan) */
+  keputusanMs: number;
+  /** pesan tampil di layar - (awal kondisi + tahan) */
+  layarMs: number;
+}
+
 export default function ModeUji() {
+  const [cari] = useSearchParams();
+  // `?cpu=1` paksa delegasi CPU; `?orang=1|2` paksa jumlah orang; `?dingin=1` tanpa memuat model lebih dulu.
+  const [pilihDelegasi, setPilihDelegasi] = useState<PilihanDelegasi>(cari.get('cpu') === '1' ? 'CPU' : 'bawaan');
+  const [pilihOrang, setPilihOrang] = useState<PilihanOrang>(
+    cari.get('orang') === '1' ? '1' : cari.get('orang') === '2' ? '2' : 'adaptif',
+  );
+  const dingin = cari.get('dingin') === '1';
   const [latihanId, setLatihanId] = useState(EXERCISES.find((e) => e.id === 'fleksi-siku')?.id ?? EXERCISES[0]?.id ?? '');
   const [sisi, setSisi] = useState<Sisi>('kanan');
   const [modeSudut, setModeSudut] = useState<ModeSudut>('otomatis');
@@ -116,6 +155,45 @@ export default function ModeUji() {
   const [sendiPilih, setSendiPilih] = useState<Sendi>('siku');
   const rentangRef = useRef<Rentang>({});
   const [rentang, setRentang] = useState<Rentang>({});
+  const tVideoRef = useRef<number | null>(null);
+  const kerangkaPertamaRef = useRef(false);
+  const [latensiKerangka, setLatensiKerangka] = useState<LatensiKerangka | null>(null);
+  const [koreksiLive, setKoreksiLive] = useState<{ id: string; pesan: string; target: number; tFrame: number } | null>(null);
+  const [latensiKoreksi, setLatensiKoreksi] = useState<LatensiKoreksi[]>([]);
+
+  // Delegasi & jumlah orang diterapkan sebelum model dimuat; model dihangatkan seperti Detail Latihan.
+  useEffect(() => {
+    aturDelegasiPaksa(pilihDelegasi === 'bawaan' ? null : pilihDelegasi);
+    setStat(getPoseStats());
+    if (!dingin) {
+      preloadPoseEngine()
+        .then(() => setStat(getPoseStats()))
+        .catch((e: unknown) => console.warn('Model pose belum termuat', e));
+    }
+  }, [pilihDelegasi, dingin]);
+  useEffect(() => {
+    aturJumlahOrangPaksa(pilihOrang === 'adaptif' ? null : (Number(pilihOrang) as JumlahOrang));
+    setStat(getPoseStats());
+  }, [pilihOrang]);
+  useEffect(() => () => aturJumlahOrangPaksa(null), []);
+
+  // Pesan koreksi live dirender seketika (bukan tiap 200 ms) agar latensi layar AC-F1-3 terukur jujur.
+  useEffect(() => {
+    if (!koreksiLive) return;
+    const id = requestAnimationFrame(() => {
+      const sekarang = performance.now();
+      setLatensiKoreksi((l) => [
+        ...l,
+        {
+          id: koreksiLive.id,
+          pesan: koreksiLive.pesan,
+          keputusanMs: koreksiLive.tFrame - koreksiLive.target,
+          layarMs: sekarang - koreksiLive.target,
+        },
+      ]);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [koreksiLive]);
 
   const kunci = `${latihanId}|${sisi}|${modeSudut}`;
 
@@ -145,6 +223,26 @@ export default function ModeUji() {
     }
     const s = trackerRef.current.tracker.update(frame, t);
     snapRef.current = s;
+    if (frame && !kerangkaPertamaRef.current) {
+      // Kerangka digambar sinkron sesudah onFrame; rAF berikutnya = frame layar yang memuatnya.
+      kerangkaPertamaRef.current = true;
+      const tVideo = tVideoRef.current;
+      requestAnimationFrame(() => {
+        const sekarang = performance.now();
+        setLatensiKerangka({ sejakVideo: tVideo === null ? null : sekarang - tVideo, sejakFrame: sekarang - t });
+      });
+    }
+    const awal = s.koreksiBaru ? s.debug[`awal.${s.koreksiBaru.id}`] : undefined;
+    if (s.koreksiBaru && typeof awal === 'number') {
+      const id = s.koreksiBaru.id;
+      // Rantai cadangan sama dengan FormChecker.tahanMs.
+      const tahanDetik =
+        def.koreksiUmum.find((k) => k.id === id)?.tahanDetik ??
+        (id in KOREKSI_BAWAAN ? KOREKSI_BAWAAN[id as keyof typeof KOREKSI_BAWAAN].tahanDetik : undefined) ??
+        ATURAN_UMUM.koreksi.tahanBawaanDetik;
+      const tahan = tahanDetik * 1000;
+      setKoreksiLive({ id: s.koreksiBaru.id, pesan: s.koreksiBaru.pesan, target: awal + tahan, tFrame: t });
+    }
     // Rentang sudut mentah 2D vs 3D yang pernah terlihat (membandingkan pemampatan sudut antar basis).
     for (const [k, v] of Object.entries(s.debug)) {
       if (typeof v !== 'number' || !(k.endsWith('.2d') || k.endsWith('.3d'))) continue;
@@ -203,6 +301,10 @@ export default function ModeUji() {
       jendelaCocokMs: JENDELA_COCOK_MS,
       perangkat: navigator.userAgent,
       delegasi: stat.delegasi,
+      jumlahOrang: stat.jumlahOrang,
+      modeOrang: stat.modeOrang,
+      latensiKerangka,
+      latensiKoreksi,
       fpsRata: Math.round(stat.fps * 10) / 10,
       inferensiMsRata: Math.round(stat.inferensiMs * 10) / 10,
       percobaanTracker: snap?.percobaan ?? 0,
@@ -217,7 +319,7 @@ export default function ModeUji() {
   return (
     <main className="min-h-[100dvh] bg-latar pb-10">
       <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-garis bg-white px-3 py-2">
-        <Link to={PATHS.pengaturan} className="grid size-12 place-items-center rounded-xl text-primer hover:bg-primer-terang" aria-label="Kembali ke Pengaturan">
+        <Link to={`${PATHS.pengaturan}?uji=1`} className="grid size-12 place-items-center rounded-xl text-primer hover:bg-primer-terang" aria-label="Kembali ke Pengaturan">
           <ArrowLeft size={28} weight="bold" />
         </Link>
         <div className="min-w-0 flex-1">
@@ -278,10 +380,43 @@ export default function ModeUji() {
                 }}
               />
             </div>
+            <div>
+              <span className="text-[0.9rem] font-semibold text-teks-2">Delegasi{aktif ? ' (matikan kamera untuk mengganti)' : ''}</span>
+              <Segmen
+                pilihan={[
+                  ['bawaan', 'Bawaan (GPU)'],
+                  ['CPU', 'CPU paksa'],
+                ]}
+                nilai={pilihDelegasi}
+                onPilih={setPilihDelegasi}
+                nonaktif={aktif}
+              />
+            </div>
+            <div>
+              <span className="text-[0.9rem] font-semibold text-teks-2">Jumlah orang</span>
+              <Segmen
+                pilihan={[
+                  ['adaptif', 'Adaptif'],
+                  ['2', '2'],
+                  ['1', '1'],
+                ]}
+                nilai={pilihOrang}
+                onPilih={setPilihOrang}
+              />
+            </div>
           </div>
 
           <div className="relative overflow-hidden rounded-kartu bg-black" style={{ aspectRatio: String(kamera.rasio ?? 4 / 3) }}>
-            <video ref={kamera.videoRef} className="absolute inset-0 size-full -scale-x-100 object-contain" playsInline muted aria-hidden />
+            <video
+              ref={kamera.videoRef}
+              className="absolute inset-0 size-full -scale-x-100 object-contain"
+              playsInline
+              muted
+              aria-hidden
+              onPlaying={() => {
+                if (tVideoRef.current === null) tVideoRef.current = performance.now();
+              }}
+            />
             <canvas ref={kamera.canvasRef} className="pointer-events-none absolute inset-0 size-full" aria-hidden />
             {status.tahap !== 'berjalan' && (
               <div className="absolute inset-0 grid place-items-center p-4 text-center text-white">
@@ -303,6 +438,13 @@ export default function ModeUji() {
               varian={aktif ? 'garis' : 'primer'}
               onClick={() => {
                 if (aktif) kamera.hentikan();
+                else {
+                  tVideoRef.current = null;
+                  kerangkaPertamaRef.current = false;
+                  setLatensiKerangka(null);
+                  setLatensiKoreksi([]);
+                  setKoreksiLive(null);
+                }
                 setAktif((a) => !a);
               }}
               ikon={<VideoCamera size={24} weight="bold" aria-hidden />}
@@ -322,11 +464,40 @@ export default function ModeUji() {
             </BigButton>
           </div>
 
-          <dl className="grid grid-cols-3 gap-2 text-center">
+          <dl className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
             <Kotak label="FPS" nilai={fmt(stat.fps)} />
             <Kotak label="Inferensi" nilai={`${fmt(stat.inferensiMs)} ms`} />
             <Kotak label="Delegasi" nilai={stat.delegasi ?? '–'} />
+            <Kotak
+              label="Orang dideteksi"
+              nilai={`${stat.jumlahOrang} · ${stat.modeOrang === 'dipaksa' ? 'dipaksa' : stat.terkunci ? 'terkunci' : LABEL_ALASAN[stat.alasanOrang]}`}
+            />
           </dl>
+
+          <section className="space-y-2 rounded-kartu border border-garis bg-white p-4 shadow-tipis" aria-live="polite">
+            <h2 className="text-[1.1rem] font-bold">Latensi</h2>
+            <dl className="grid grid-cols-2 gap-2 text-center">
+              <Kotak
+                label="AC-F1-1 kerangka pertama (sejak video)"
+                nilai={latensiKerangka?.sejakVideo == null ? '–' : `${latensiKerangka.sejakVideo.toFixed(0)} ms`}
+              />
+              <Kotak label="Pipa frame pertama" nilai={latensiKerangka ? `${latensiKerangka.sejakFrame.toFixed(0)} ms` : '–'} />
+              <Kotak
+                label={`AC-F1-3 koreksi tampil, maks (n=${latensiKoreksi.length})`}
+                nilai={latensiKoreksi.length ? `${Math.max(...latensiKoreksi.map((l) => l.layarMs)).toFixed(0)} ms` : '–'}
+              />
+              <Kotak
+                label="Koreksi terakhir"
+                nilai={latensiKoreksi.length ? `${latensiKoreksi[latensiKoreksi.length - 1].layarMs.toFixed(0)} ms` : '–'}
+              />
+            </dl>
+            <p className="text-[0.95rem] font-semibold">Pesan koreksi terakhir: {koreksiLive?.pesan ?? '–'}</p>
+            <p className="text-[0.8rem] text-teks-2">
+              AC-F1-1 diukur dari frame kamera pertama tampil (tubuh sudah di depan kamera) sampai frame layar sesudah kerangka
+              digambar. AC-F1-3 diukur dari awal kondisi salah menurut detektor + masa tahan (0,5 s) sampai frame layar sesudah
+              pesan dirender.
+            </p>
+          </section>
         </div>
 
         <div className="space-y-3">
@@ -466,7 +637,17 @@ function Kotak({ label, nilai, besar }: { label: string; nilai: string; besar?: 
   );
 }
 
-function Segmen<T extends string>({ pilihan, nilai, onPilih }: { pilihan: [T, string][]; nilai: T; onPilih: (v: T) => void }) {
+function Segmen<T extends string>({
+  pilihan,
+  nilai,
+  onPilih,
+  nonaktif = false,
+}: {
+  pilihan: [T, string][];
+  nilai: T;
+  onPilih: (v: T) => void;
+  nonaktif?: boolean;
+}) {
   return (
     <div className="mt-1 grid auto-cols-fr grid-flow-col gap-1 rounded-xl bg-primer-terang p-1" role="radiogroup">
       {pilihan.map(([v, label]) => (
@@ -475,8 +656,9 @@ function Segmen<T extends string>({ pilihan, nilai, onPilih }: { pilihan: [T, st
           type="button"
           role="radio"
           aria-checked={nilai === v}
+          disabled={nonaktif}
           onClick={() => onPilih(v)}
-          className={`min-h-[48px] rounded-lg px-2 text-[0.95rem] font-bold ${nilai === v ? 'bg-primer text-white' : 'text-primer hover:bg-white/70'}`}
+          className={`min-h-[48px] rounded-lg px-2 text-[0.95rem] font-bold disabled:opacity-60 ${nilai === v ? 'bg-primer text-white' : 'text-primer hover:bg-white/70'}`}
         >
           {label}
         </button>

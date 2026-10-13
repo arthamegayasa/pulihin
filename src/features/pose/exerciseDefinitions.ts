@@ -38,7 +38,39 @@ export const ATURAN_UMUM = {
    * faktorLengket bila pusat orang berada dalam radiusLengket x ukuran dari pusat orang utama
    * frame sebelumnya (agar tidak berpindah-pindah antar orang).
    */
-  pilihOrang: { bobotPusat: 0.5, faktorLengket: 2, radiusLengket: 0.5 },
+  pilihOrang: {
+    bobotPusat: 0.5,
+    faktorLengket: 2,
+    radiusLengket: 0.5,
+    /**
+     * Mode 1 orang (perangkat lambat): satu-satunya kandidat ditolak bila pusatnya > radius x ukuran
+     * orang utama dari pusat orang utama DAN badannya < rasioUkuranMaks x ukuran orang utama (orang
+     * di latar). Penolakan paling lama tahanMaksDetik, lalu kandidat diterima (pasien berpindah tempat).
+     */
+    asing: { radius: 1, rasioUkuranMaks: 0.8, tahanMaksDetik: 1 },
+  },
+  /**
+   * Jumlah orang adaptif (PoseEngine + kebijakanOrang.ts). Mulai dengan 2 orang (tahan orang di latar);
+   * bila perangkat lambat, turun ke 1 orang: kecepatan didahulukan di HP kelas bawah (Bab 1.2).
+   * - Sampel LAMBAT: inferensi > inferensiMaksMs, ATAU fps < fpsMin sementara inferensi memakan
+   *   >= porsiInferensiMin waktu (fps rendah karena kamera/cahaya tidak diatasi dengan turun ke 1 orang).
+   * - Turun ke 1 orang bila semua sampel lambat selama turunSetelahDetik.
+   * - Naik lagi ke 2 orang bila fps >= fpsLapang DAN inferensi x faktorBiayaDuaOrang <= inferensiLapangMs
+   *   selama naikSetelahDetik. Turun lagi setelah pernah naik = terkunci di 1 orang (tanpa bolak-balik).
+   * - Sampel dalam tenangDetik setelah sesi mulai / jumlah orang berubah diabaikan (pemanasan, EMA).
+   * Faktor biaya 2 orang = 1,9: terukur 13,6 -> 25,5 ms (docs/algoritma.md Bagian 13).
+   */
+  adaptifOrang: {
+    fpsMin: 15,
+    inferensiMaksMs: 60,
+    porsiInferensiMin: 0.35,
+    turunSetelahDetik: 3,
+    fpsLapang: 20,
+    inferensiLapangMs: 35,
+    faktorBiayaDuaOrang: 1.9,
+    naikSetelahDetik: 10,
+    tenangDetik: 1.5,
+  },
   koreksi: {
     /**
      * Badan-miring tidak dinilai bila lebar bahu pada gambar < rasio ini x panjang batang tubuh pada

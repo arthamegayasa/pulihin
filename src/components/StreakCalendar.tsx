@@ -15,7 +15,8 @@ function Tanda({ status, kecil = false }: { status: StatusKalender; kecil?: bool
       aria-hidden
       className={[
         'grid shrink-0 place-items-center rounded-full',
-        kecil ? 'size-6' : 'size-9',
+        // Ukuran px: tujuh tanda harus muat satu baris pada 360px walau Huruf Lebih Besar aktif.
+        kecil ? 'size-[22px]' : 'size-[32px]',
         status === 'selesai' ? 'bg-sukses text-white' : '',
         status === 'terlewat' ? 'border-2 border-garis bg-white text-teks-2' : '',
         status === 'hari-ini-belum' ? 'border-2 border-dashed border-primer bg-white text-primer' : '',
@@ -35,21 +36,21 @@ export function StreakCalendar({ hari, className = '' }: { hari: HariKalender[];
   if (hari.some((h) => h.status === 'hari-ini-belum')) keterangan.push('hari-ini-belum');
   return (
     <div className={className}>
-      <ol className="grid grid-cols-7 gap-1" aria-label="Kalender latihan 7 hari terakhir">
+      <ol className="grid grid-cols-7 gap-0.5" aria-label="Kalender latihan 7 hari terakhir">
         {hari.map((h) => (
           <li
             key={h.tanggal}
             className={`flex flex-col items-center gap-1 rounded-xl py-1.5 ${h.hariIni ? 'bg-primer-terang' : ''}`}
             aria-label={`${h.hariIni ? 'Hari ini, ' : ''}${namaHari(h.tanggal)} ${formatTanggalPendek(h.tanggal)}: ${KATA[h.status]}`}
           >
-            <span className={`text-[0.8rem] ${h.hariIni ? 'font-extrabold text-primer' : 'font-semibold text-teks-2'}`} aria-hidden>
+            <span className={`text-[0.9rem] leading-tight ${h.hariIni ? 'font-extrabold text-primer' : 'font-semibold text-teks-2'}`} aria-hidden>
               {h.label}
             </span>
             <Tanda status={h.status} />
           </li>
         ))}
       </ol>
-      <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[0.85rem] text-teks-2" aria-hidden>
+      <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[0.95rem] text-teks-2" aria-hidden>
         {keterangan.map((s) => (
           <li key={s} className="flex items-center gap-1.5">
             <Tanda status={s} kecil />

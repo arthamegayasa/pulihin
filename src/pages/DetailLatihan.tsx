@@ -1,7 +1,7 @@
-import { ShieldCheck, VideoCamera } from '@phosphor-icons/react';
-import { useEffect } from 'react';
+import { CheckSquare, ShieldCheck, Square, VideoCamera, WarningCircle } from '@phosphor-icons/react';
+import { useEffect, useId, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
-import { BigLink } from '@/components/BigButton';
+import { BigButton, BigLink } from '@/components/BigButton';
 import { PageHeader } from '@/components/PageHeader';
 import { SafetyNotice } from '@/components/SafetyNotice';
 import { ExerciseDemo } from '@/features/pose/ExerciseDemo';
@@ -9,8 +9,8 @@ import { getExercise } from '@/features/pose/exerciseDefinitions';
 import { LABEL_POSISI, labelSendi } from '@/features/pose/labels';
 import { PhonePlacement } from '@/features/pose/PhonePlacement';
 import { preloadPoseEngine } from '@/features/pose/PoseEngine';
-import { bacaTarget, urlSesi } from '@/features/pose/sesiParams';
-import { setPrefs, usePrefs } from '@/lib/prefs';
+import { bacaSisi, bacaTarget, urlSesi } from '@/features/pose/sesiParams';
+import { getPrefs, setPrefs, usePrefs } from '@/lib/prefs';
 import { PATHS } from '@/router-paths';
 import type { Sisi } from '@/types';
 
@@ -20,11 +20,22 @@ export default function DetailLatihan() {
   const [cari] = useSearchParams();
   const def = getExercise(id);
   const { sisiLatihan } = usePrefs();
+  // Konfirmasi berpegangan wajib setiap kali halaman dibuka (tidak disimpan).
+  const [sudahBerpegangan, setSudahBerpegangan] = useState(false);
+  const idKonfirmasi = useId();
 
   // Muat MediaPipe sejak layar ini dibuka agar skeleton langsung tampil saat kamera menyala (AC-F1-1).
   useEffect(() => {
     preloadPoseEngine().catch((e: unknown) => console.warn('Model pose belum termuat, dicoba lagi saat sesi dimulai', e));
   }, []);
+
+  // `?sisi=` (dari Ulangi Latihan / kembali dari sesi) menjadi sisi terpilih.
+  const sisiDariUrl = cari.get('sisi');
+  useEffect(() => {
+    if (sisiDariUrl === null) return;
+    const sisi = bacaSisi(sisiDariUrl, getPrefs().sisiLatihan);
+    if (sisi !== getPrefs().sisiLatihan) setPrefs({ sisiLatihan: sisi });
+  }, [sisiDariUrl]);
 
   if (!def) {
     return (
@@ -38,6 +49,8 @@ export default function DetailLatihan() {
 
   const target = bacaTarget(cari.get('target'), def.targetRepetisiDefault);
   const pilihSisi = def.sisi === 'pilih';
+  const wajibPegangan = def.wajibBerpegangan;
+  const bolehMulai = !wajibPegangan || sudahBerpegangan;
 
   return (
     <section className="space-y-5">
@@ -45,16 +58,19 @@ export default function DetailLatihan() {
 
       <ExerciseDemo exerciseId={def.id} nama={def.nama} sisi={pilihSisi ? sisiLatihan : undefined} tempoDetik={def.tempoTargetDetik} />
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-kartu border border-garis bg-white p-4 shadow-tipis">
-          <p className="text-[0.95rem] text-teks-2">Posisi</p>
-          <p className="text-[1.2rem] font-bold leading-snug">{LABEL_POSISI[def.posisi]}</p>
-        </div>
-        <div className="rounded-kartu border border-garis bg-white p-4 shadow-tipis">
-          <p className="text-[0.95rem] text-teks-2">Target</p>
-          <p className="text-[1.2rem] font-bold leading-snug">
-            <span className="tabular">{target}</span> kali
-          </p>
+      {/* Dua kolom bila muat (lebar >= 17rem: huruf normal di layar 360px); Huruf Lebih Besar: bertumpuk agar kata tidak terpotong. */}
+      <div className="@container">
+        <div className="grid gap-3 @min-[17rem]:grid-cols-[1fr_auto]">
+          <div className="min-w-0 rounded-kartu border border-garis bg-white p-4 shadow-tipis">
+            <p className="text-[0.95rem] text-teks-2">Posisi</p>
+            <p className="text-[1.15rem] font-bold leading-snug">{LABEL_POSISI[def.posisi]}</p>
+          </div>
+          <div className="rounded-kartu border border-garis bg-white p-4 shadow-tipis">
+            <p className="text-[0.95rem] text-teks-2">Target</p>
+            <p className="whitespace-nowrap text-[1.15rem] font-bold leading-snug">
+              <span className="tabular">{target}</span> kali
+            </p>
+          </div>
         </div>
       </div>
 
@@ -83,14 +99,40 @@ export default function DetailLatihan() {
         <span>Gambar kamera hanya diproses di ponsel ini dan tidak dikirim ke mana pun.</span>
       </p>
 
-      <div className="sticky bottom-0 -mx-4 border-t border-garis bg-latar/95 px-4 pt-3 safe-bottom">
-        <BigLink
-          to={urlSesi(def.id, target, sisiLatihan)}
-          ukuran="besar"
-          ikon={<VideoCamera size={30} weight="fill" aria-hidden />}
-        >
-          Mulai dengan Kamera
-        </BigLink>
+      {/* Titik keputusan: pengingat keselamatan (dan konfirmasi berpegangan untuk latihan berdiri) tepat di atas tombol Mulai. */}
+      <div className="sticky bottom-0 -mx-4 space-y-2 border-t border-garis bg-latar px-4 pt-2.5 safe-bottom">
+        <p className="flex items-start gap-2 text-[0.95rem] font-semibold leading-snug text-teks">
+          <WarningCircle size={22} weight="fill" className="shrink-0 text-peringatan" aria-hidden />
+          Berhenti bila nyeri, pusing, atau sesak.
+        </p>
+        {wajibPegangan && (
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={sudahBerpegangan}
+            id={idKonfirmasi}
+            onClick={() => setSudahBerpegangan((v) => !v)}
+            className={`flex min-h-[56px] w-full items-center gap-2.5 rounded-2xl border-2 px-3 py-1.5 text-left text-[1rem] font-bold leading-tight transition-colors ${
+              sudahBerpegangan ? 'border-sukses bg-sukses-terang text-teks' : 'border-primer bg-white text-teks hover:bg-primer-terang'
+            }`}
+          >
+            {sudahBerpegangan ? (
+              <CheckSquare size={32} weight="fill" className="shrink-0 text-sukses" aria-hidden />
+            ) : (
+              <Square size={32} weight="bold" className="shrink-0 text-primer" aria-hidden />
+            )}
+            Saya sudah berpegangan pada kursi atau meja yang stabil
+          </button>
+        )}
+        {bolehMulai ? (
+          <BigLink to={urlSesi(def.id, target, sisiLatihan)} ukuran="besar" ikon={<VideoCamera size={30} weight="fill" aria-hidden />}>
+            Mulai dengan Kamera
+          </BigLink>
+        ) : (
+          <BigButton disabled aria-describedby={idKonfirmasi} ukuran="besar" ikon={<VideoCamera size={30} weight="fill" aria-hidden />}>
+            Mulai dengan Kamera
+          </BigButton>
+        )}
       </div>
     </section>
   );

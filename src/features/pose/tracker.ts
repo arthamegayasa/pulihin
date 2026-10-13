@@ -250,6 +250,8 @@ export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): Ex
       'miring.bahu': miring === null ? '-' : bulat(miring, 1),
       'susut.bahuTelinga': susut === null ? '-' : bulat(susut, 1),
     };
+    // Awal kondisi koreksi kontinu (ms, waktu frame): Mode Uji mengukur latensi AC-F1-3 darinya.
+    for (const [id, awal] of Object.entries(form.awalKondisi)) debug[`awal.${id}`] = awal;
     if (bergantian) {
       for (const k of kanal) {
         debug[`fase.${k.kunci}`] = k.counter.fase;

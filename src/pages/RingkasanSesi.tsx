@@ -1,4 +1,4 @@
-import { ArrowCounterClockwise, CheckCircle, House, Lightbulb } from '@phosphor-icons/react';
+import { ArrowCounterClockwise, CheckCircle, House, Lightbulb, XCircle } from '@phosphor-icons/react';
 import { Navigate, useParams } from 'react-router';
 import { BigLink } from '@/components/BigButton';
 import { NonDiagnosisNote } from '@/components/NonDiagnosisNote';
@@ -7,17 +7,18 @@ import { ScoreRing } from '@/components/ScoreRing';
 import { getSession, listRepLogs } from '@/data/db';
 import { useLiveQuery } from '@/data/useLiveQuery';
 import { getExercise } from '@/features/pose/exerciseDefinitions';
-import { urlSesi } from '@/features/pose/sesiParams';
+import { urlDetail } from '@/features/pose/sesiParams';
 import { formatDurasi } from '@/lib/date';
 import { usePrefs } from '@/lib/prefs';
 import { clamp, labelSkor } from '@/lib/score';
 import { berandaUntukPeran, PATHS } from '@/router-paths';
 import type { Session, SkorKomponen } from '@/types';
 
-const KOMPONEN: { kunci: keyof SkorKomponen; label: string; bobot: string }[] = [
-  { kunci: 'repetisi', label: 'Repetisi', bobot: '50%' },
-  { kunci: 'rentang', label: 'Rentang gerak', bobot: '30%' },
-  { kunci: 'tempo', label: 'Tempo', bobot: '20%' },
+/** Label sederhana untuk pasien; bobot perhitungan (Bab 5.3) tidak ditampilkan di layar pasien. */
+const KOMPONEN: { kunci: keyof SkorKomponen; label: string }[] = [
+  { kunci: 'repetisi', label: 'Jumlah gerakan' },
+  { kunci: 'rentang', label: 'Rentang gerak' },
+  { kunci: 'tempo', label: 'Irama gerakan' },
 ];
 
 function judulHangat(s: Session): string {
@@ -87,15 +88,13 @@ export default function RingkasanSesi() {
         <section className="rounded-kartu border border-garis bg-white p-5 shadow-tipis">
           <h2 className="mb-3 text-[1.15rem] font-bold">Rincian skor</h2>
           <ul className="space-y-4">
-            {KOMPONEN.map(({ kunci, label, bobot }) => {
+            {KOMPONEN.map(({ kunci, label }) => {
               const nilai = Math.round(clamp(sesi.skorKomponen![kunci], 0, 100));
               return (
                 <li key={kunci}>
-                  <div className="flex items-baseline justify-between gap-3">
-                    <span className="font-semibold">
-                      {label} <span className="text-[0.85rem] font-normal text-teks-2">(bobot {bobot})</span>
-                    </span>
-                    <span className="font-bold text-primer">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                    <span className="whitespace-nowrap font-semibold">{label}</span>
+                    <span className="ml-auto font-bold text-primer">
                       {labelSkor(nilai)} <span className="tabular text-teks-2">· {nilai}</span>
                     </span>
                   </div>
@@ -128,8 +127,9 @@ export default function RingkasanSesi() {
           Kembali ke Beranda
         </BigLink>
         {def && (
+          // Ulangi lewat Detail Latihan: peringatan keselamatan & konfirmasi berpegangan selalu dilewati dulu.
           <BigLink
-            to={urlSesi(def.id, sesi.repetisiTarget, sesi.sisi ?? 'kanan')}
+            to={urlDetail(def.id, sesi.repetisiTarget, sesi.sisi ?? undefined)}
             varian="garis"
             ikon={<ArrowCounterClockwise size={24} weight="bold" aria-hidden />}
           >
@@ -160,10 +160,11 @@ function StripRepetisi({ sessionId, ambangAtas, satuan }: { sessionId: string; a
         {satuan}.
       </p>
       <div className="overflow-x-auto pb-1">
-        <ol className="relative flex min-w-max items-end gap-1.5 pt-5" aria-label={label}>
+        <ol className="relative flex min-w-max items-end gap-1.5 pt-6" aria-label={label}>
+          {/* Di bawah batang: baris nomor (mt-1 + h-6) dan baris ikon (h-6) = 3,25rem. */}
           <li
             className="pointer-events-none absolute inset-x-0 border-t-2 border-dashed border-aksen/70"
-            style={{ bottom: `calc(2.6rem + ${tinggiAmbang / 100} * 8rem)` }}
+            style={{ bottom: `calc(3.25rem + ${tinggiAmbang / 100} * 8rem)` }}
             aria-hidden
           />
           {logs.map((l) => {
@@ -171,10 +172,10 @@ function StripRepetisi({ sessionId, ambangAtas, satuan }: { sessionId: string; a
             return (
               <li
                 key={l.nomor}
-                className="flex w-9 flex-col items-center"
+                className="flex w-10 flex-col items-center"
                 aria-label={`Gerakan ${l.nomor}: puncak ${nilai}${satuan === '°' ? ' derajat' : ' persen'}, ${l.dihitung ? 'terhitung' : 'belum terhitung'}`}
               >
-                <span className="tabular text-[0.75rem] font-bold text-teks-2" aria-hidden>
+                <span className="tabular whitespace-nowrap text-[0.95rem] font-bold leading-tight text-teks-2" aria-hidden>
                   {nilai}
                   {satuan}
                 </span>
@@ -184,25 +185,30 @@ function StripRepetisi({ sessionId, ambangAtas, satuan }: { sessionId: string; a
                     style={{ height: `${Math.max(4, (clamp(l.sudutPuncak, 0, skalaMaks) / skalaMaks) * 100)}%` }}
                   />
                 </div>
-                <span className="tabular mt-1 text-[0.85rem] font-bold" aria-hidden>
+                <span className="tabular mt-1 h-6 text-[1rem] font-bold leading-6" aria-hidden>
                   {l.nomor}
                 </span>
-                <span className="h-[1.1rem] text-[0.7rem] font-semibold leading-none text-teks-2" aria-hidden>
-                  {l.dihitung ? '' : 'belum'}
+                <span className="grid h-6 place-items-center" aria-hidden>
+                  {l.dihitung ? (
+                    <CheckCircle size="1.25rem" weight="fill" className="text-primer" />
+                  ) : (
+                    <XCircle size="1.25rem" weight="bold" className="text-teks-2" />
+                  )}
                 </span>
               </li>
             );
           })}
         </ol>
       </div>
-      <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[0.9rem]" aria-hidden>
+      <ul className="mt-2 flex flex-col gap-1 text-[0.95rem]" aria-hidden>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3.5 rounded-sm bg-primer" />
-          <CheckCircle size={18} weight="fill" className="text-primer" />
+          <span className="inline-block size-3.5 shrink-0 rounded-sm bg-primer" />
+          <CheckCircle size="1.25rem" weight="fill" className="shrink-0 text-primer" />
           Terhitung
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3.5 rounded-sm border-2 border-dashed border-teks-2/60 bg-primer-terang" />
+          <span className="inline-block size-3.5 shrink-0 rounded-sm border-2 border-dashed border-teks-2/60 bg-primer-terang" />
+          <XCircle size="1.25rem" weight="bold" className="shrink-0 text-teks-2" />
           Belum terhitung (terlalu cepat atau kurang jauh)
         </li>
       </ul>

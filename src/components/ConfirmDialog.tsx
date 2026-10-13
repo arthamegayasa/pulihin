@@ -1,7 +1,11 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { BigButton } from '@/components/BigButton';
 
-/** Dialog konfirmasi modal (elemen <dialog> bawaan: fokus terkunci, tombol Kembali/Esc menutup). */
+/**
+ * Dialog konfirmasi modal (elemen <dialog> bawaan: fokus terkunci, tombol Kembali/Esc menutup).
+ * Semua konfirmasi di aplikasi mengganti atau membuang data, jadi fokus awal selalu di tombol Batal:
+ * tekan Enter/Spasi tanpa sengaja tidak pernah menjalankan tindakan yang tidak bisa dibatalkan.
+ */
 export function ConfirmDialog({
   buka,
   judul,
@@ -22,10 +26,15 @@ export function ConfirmDialog({
   onBatal: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const idJudul = useId();
+  const idIsi = useId();
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
-    if (buka && !d.open) d.showModal();
+    if (buka && !d.open) {
+      d.showModal();
+      d.querySelector<HTMLButtonElement>('[data-batal]')?.focus();
+    }
     if (!buka && d.open) d.close();
   }, [buka]);
 
@@ -36,18 +45,21 @@ export function ConfirmDialog({
         e.preventDefault();
         if (!sibuk) onBatal();
       }}
-      aria-labelledby="judul-konfirmasi"
+      aria-labelledby={idJudul}
+      aria-describedby={idIsi}
       className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-kartu bg-white p-5 text-teks shadow-angkat backdrop:bg-teks/50"
     >
-      <h2 id="judul-konfirmasi" className="text-[1.3rem] font-extrabold leading-tight">
+      <h2 id={idJudul} className="text-[1.3rem] font-extrabold leading-tight">
         {judul}
       </h2>
-      <div className="mt-2 space-y-2 text-teks-2">{children}</div>
+      <div id={idIsi} className="mt-2 space-y-2 text-teks-2">
+        {children}
+      </div>
       <div className="mt-5 flex flex-col gap-3">
         <BigButton onClick={onYa} disabled={sibuk}>
           {sibuk ? 'Sedang diproses...' : labelYa}
         </BigButton>
-        <BigButton varian="garis" onClick={onBatal} disabled={sibuk}>
+        <BigButton varian="garis" onClick={onBatal} disabled={sibuk} data-batal="">
           {labelBatal}
         </BigButton>
       </div>

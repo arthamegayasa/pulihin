@@ -11,7 +11,7 @@ describe('ringkasan mingguan untuk WhatsApp', () => {
     const teks = teksRingkasanMingguan({ namaSamaran: 'Pak Budi', isDemo: true }, lap);
     expect(teks).toContain('Pak Budi (data contoh Demo)');
     expect(teks).toContain('Periode: 7 Okt sampai 13 Okt 2026');
-    expect(teks).toContain('Latihan selesai: 6 dari 14 latihan terjadwal (43%)');
+    expect(teks).toContain('Sesi terjadwal dikerjakan: 6 dari 14 (43%; target harian 1 sesi gerak + 1 sesi bicara)');
     expect(teks).toContain('Hari berturut-turut berlatih: 0 hari (terpanjang 7 hari)');
     expect(teks).toContain('Skor latihan gerak: rata-rata 70 (naik dari 60 minggu lalu)');
     expect(teks).toContain('Skor latihan bicara: rata-rata 70 (naik dari 60 minggu lalu)');
@@ -23,8 +23,17 @@ describe('ringkasan mingguan untuk WhatsApp', () => {
     const lap = buatLaporan(hariLengkap(TODAY, [0, 1, 2, 3, 4, 5, 6]), TODAY);
     const teks = teksRingkasanMingguan({ namaSamaran: 'Bu Sari', isDemo: false }, lap);
     expect(teks).toContain('Tanda perlu perhatian: tidak ada.');
-    expect(teks).toContain('14 dari 14 latihan terjadwal (100%)');
+    expect(teks).toContain('14 dari 14 (100%');
     expect(teks).not.toContain('Demo');
+  });
+
+  it('penanda "sempat kosong" ditulis dengan kalimat utuh', () => {
+    const lap = buatLaporan(hariLengkap(TODAY, [0, 4, 5, 6, 7, 8, 9]), TODAY);
+    const teks = teksRingkasanMingguan({ namaSamaran: 'Pak Budi', isDemo: true }, lap);
+    expect(teks).toContain(
+      '- Minggu ini sempat 3 hari berturut-turut tanpa latihan. Latihan sudah berjalan lagi, bagus. Ceritakan jeda ini kepada terapis atau dokter yang merawat pada kesempatan berikutnya.',
+    );
+    expect(teks).not.toMatch(/saat hubungi/);
   });
 });
 

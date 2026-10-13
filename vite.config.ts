@@ -59,6 +59,9 @@ export default defineConfig({
               cacheName: 'pulihin-mediapipe',
               expiration: { maxEntries: 16 },
               cacheableResponse: { statuses: [200] },
+              // MediaPipe memuat loader lewat <script crossorigin> (mengirim Origin) sedangkan prefetch memakai
+              // fetch biasa; abaikan Vary agar keduanya cocok saat luring meski host menambah `Vary: Origin`.
+              matchOptions: { ignoreVary: true },
             },
           },
         ],

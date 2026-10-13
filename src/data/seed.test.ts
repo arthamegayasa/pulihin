@@ -4,8 +4,8 @@ import type { SkenarioDemo } from '@/types';
 import { buatLaporan } from '@/features/adherence/laporan';
 import { addDays, todayISO } from '@/lib/date';
 import { getPrefs, resetPrefs } from '@/lib/prefs';
-import { clearAll, getProgram, getSchedule, listProfiles, listRepLogs, listSessions, listSpeechAttempts } from './db';
-import { AUTOSEED_KEY, buatDataDemo, ensureDemoData, hapusSemuaDataLokal, resetDemoData } from './seed';
+import { clearAll, getProgram, getSchedule, getSession, listProfiles, listRepLogs, listSessions, listSpeechAttempts, putProgram, putSchedule, putSession } from './db';
+import { AUTOSEED_KEY, buatDataDemo, ensureDemoData, hapusSemuaDataLokal, resetDemoData, tanggalTanamDemoUtuh } from './seed';
 
 // localStorage sederhana untuk lingkungan node (prefs & penanda autoseed dibaca saat dipanggil, bukan saat impor).
 const store = new Map<string, string>();
@@ -174,5 +174,54 @@ describe('penyimpanan demo', () => {
     await resetDemoData('stagnasi');
     expect(localStorage.getItem(AUTOSEED_KEY)).toBeNull();
     expect((await listProfiles()).length).toBe(3);
+  });
+
+  it('data demo dari hari sebelumnya yang belum diubah ditanam ulang untuk hari ini (skenario selalu sama)', async () => {
+    await ensureDemoData('2026-10-10');
+    expect(tanggalTanamDemoUtuh(buatDataDemo('stagnasi', '2026-10-10'))).toBe('2026-10-10');
+    // Dibuka lagi 3 hari kemudian: tanpa penanaman ulang Pak Budi akan "6 hari belum latihan".
+    await ensureDemoData(TODAY);
+    const budi = (await listProfiles()).find((p) => p.id === 'budi')!;
+    expect(budi.tanggalMulaiProgram).toBe(addDays(TODAY, -14));
+    const sesi = await listSessions('budi', { hanyaSelesai: false });
+    expect(sesi.every((s) => s.tanggal >= addDays(TODAY, -14) && s.tanggal < TODAY)).toBe(true);
+    const lap = buatLaporan(sesi, TODAY, { profile: budi, schedule: await getSchedule('budi') });
+    expect(lap.redFlags.map((f) => f.judul)).toEqual(['Sudah 3 hari belum latihan']);
+    // Tidak ada sisa rekaman repetisi dari penanaman lama.
+    expect(await listRepLogs(`demo-budi-${addDays('2026-10-10', -14)}-fleksi-siku`)).toEqual([]);
+  });
+
+  it('skenario rajin yang dibuka hari berikutnya tetap tanpa penanda', async () => {
+    await resetDemoData('rajin', '2026-10-11');
+    await ensureDemoData(TODAY);
+    const budi = (await listProfiles()).find((p) => p.id === 'budi')!;
+    expect(budi.tanggalMulaiProgram).toBe(addDays(TODAY, -14));
+    expect(buatLaporan(await listSessions('budi'), TODAY, { profile: budi }).redFlags).toEqual([]);
+  });
+
+  it('data yang sudah memuat sesi pengguna, resep, atau jadwal yang diubah tidak ditanam ulang', async () => {
+    const LALU = '2026-10-10';
+    const cek = async (ubah: () => Promise<void>) => {
+      await clearAll();
+      await ensureDemoData(LALU);
+      await ubah();
+      await ensureDemoData(TODAY);
+      return (await listProfiles()).find((p) => p.id === 'budi')!.tanggalMulaiProgram;
+    };
+    const mulaiLama = addDays(LALU, -14);
+    // Sesi pengguna (juga yang dihentikan sebelum selesai) selalu berlabel bukan demo.
+    const sesiPengguna = { ...buatDataDemo('stagnasi', LALU).sessions[0], id: 'pengguna-1', tanggal: LALU, selesai: false, isDemo: false };
+    expect(await cek(() => putSession(sesiPengguna))).toBe(mulaiLama);
+    expect((await getSession('pengguna-1'))?.isDemo).toBe(false);
+    expect(await cek(async () => putProgram({ ...(await getProgram('budi'))!, tanggalUbah: Date.now() }))).toBe(mulaiLama);
+    expect(await cek(async () => putSchedule({ ...(await getSchedule('budi'))!, jamGerak: '07:30' }))).toBe(mulaiLama);
+    expect(await cek(async () => undefined)).toBe(addDays(TODAY, -14));
+  });
+
+  it('dibuka lagi pada hari yang sama tidak mengubah apa pun', async () => {
+    await ensureDemoData(TODAY);
+    const sebelum = await listSessions('budi', { hanyaSelesai: false });
+    await ensureDemoData(TODAY);
+    expect(await listSessions('budi', { hanyaSelesai: false })).toEqual(sebelum);
   });
 });

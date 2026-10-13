@@ -77,7 +77,8 @@ const SVG: Record<string, ReactNode> = {
   gula: <>{[kubusGula(21, 36), kubusGula(43, 36), kubusGula(32, 20)]}</>,
 };
 
-export function GambarKata({ kata, ukuranRem, className = '' }: { kata: Kata; ukuranRem: number; className?: string }) {
+/** `ukuran`: panjang CSS (mis. '2.2rem' atau 'min(7rem, 17dvh)') untuk lebar dan tinggi gambar. */
+export function GambarKata({ kata, ukuran, className = '' }: { kata: Kata; ukuran: string; className?: string }) {
   const svg = SVG[kata.id];
   if (svg) {
     return (
@@ -86,7 +87,7 @@ export function GambarKata({ kata, ukuranRem, className = '' }: { kata: Kata; uk
         role="img"
         aria-label={`Gambar ${kata.kata}`}
         className={`inline-block shrink-0 ${className}`}
-        style={{ width: `${ukuranRem}rem`, height: `${ukuranRem}rem` }}
+        style={{ width: ukuran, height: ukuran }}
       >
         {svg}
       </svg>
@@ -97,7 +98,7 @@ export function GambarKata({ kata, ukuranRem, className = '' }: { kata: Kata; uk
       role="img"
       aria-label={`Gambar ${kata.kata}`}
       className={`inline-block shrink-0 select-none text-center leading-none ${className}`}
-      style={{ fontSize: `${ukuranRem}rem`, minWidth: `${ukuranRem}rem` }}
+      style={{ fontSize: ukuran, minWidth: ukuran }}
     >
       {kata.emoji}
     </span>

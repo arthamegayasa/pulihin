@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { BigLink } from '@/components/BigButton';
 import { Logo } from '@/components/Logo';
+import { IDENTITAS } from '@/config/identitas';
 import { PATHS } from '@/router-paths';
 
 /** Ajakan penutup: juri dapat langsung mencoba tanpa akun karena data contoh sudah tersedia. */
@@ -30,16 +31,16 @@ export function KakiLanding() {
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-10 text-[0.95rem] text-teks-2 md:grid-cols-12 md:px-8">
         <div className="space-y-3 md:col-span-8">
           <Logo className="h-7 w-auto" />
-          <p className="max-w-[60ch]">
-            Prototype lomba .id Developer Day Indonesia 2026, kategori Health and Wellbeing. Bukan alat kesehatan teregulasi.
-          </p>
+          <p className="max-w-[60ch]">Prototype lomba {IDENTITAS.kategoriLomba}. Bukan alat kesehatan teregulasi.</p>
           <p className="max-w-[60ch]">
             Semua tangkapan layar diambil dari aplikasi ini dengan data contoh. Pak Budi adalah nama samaran.
           </p>
-          <p>Tim: [DIISI]</p>
+          {IDENTITAS.namaTim && <p>Tim: {IDENTITAS.namaTim}</p>}
+          {IDENTITAS.narasumberKlinis && <p>Narasumber klinis: {IDENTITAS.narasumberKlinis}</p>}
         </div>
         <div className="space-y-2 md:col-span-4 md:text-right">
-          <p className="font-bold text-teks">pulihinapp.id</p>
+          <p className="font-bold text-teks">{IDENTITAS.domain}</p>
+          {IDENTITAS.kontakPublik && <p>Kontak: {IDENTITAS.kontakPublik}</p>}
           <p>
             <Link to={PATHS.tentang} className="font-bold text-primer underline decoration-2 underline-offset-4 hover:text-primer-tua">
               Tentang dan privasi

@@ -1,9 +1,12 @@
 /** Kalimat penyemangat modul afasia. Nada hangat, tidak menyalahkan (Bab 12.4). */
 
-/** Satu saran sederhana untuk sesi berikutnya (disimpan di Session.saran). */
+/**
+ * Satu saran sederhana untuk sesi berikutnya (disimpan di Session.saran). Tampil di bawah pesan hangat,
+ * jadi saran tidak memuat pujian sendiri agar kata pujian tidak terulang di kartu yang sama.
+ */
 export function saranSesiAfasia({ benar, kataUlang }: { benar: number; kataUlang: readonly string[] }): string {
   if (kataUlang.length === 0) return 'Semua kata lancar. Besok coba kategori lain agar kosakata makin luas.';
-  if (benar >= 7) return `Bagus! Besok ulangi ${kataUlang.length} kata yang belum lancar, pelan-pelan per suku kata.`;
+  if (benar >= 7) return `Besok ulangi ${kataUlang.length} kata yang belum lancar, pelan-pelan per suku kata.`;
   return `Besok ulangi ${kataUlang.length} kata yang belum lancar. Dengarkan contohnya dulu, lalu ucapkan per suku kata.`;
 }
 

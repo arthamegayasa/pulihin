@@ -127,6 +127,17 @@ describe('recognizer', () => {
     expect(KONFIG_PENGENAL.batasSetelahAkhirBicaraMs).toBeLessThan(1500);
   });
 
+  it('hasil akhir kosong dianggap belum terdengar, bukan jawaban salah', () => {
+    pasangWindow();
+    const r = rekam();
+    r.rec.onspeechend?.();
+    r.rec.kirim(['', '  '], true);
+    r.rec.onend?.();
+    expect(r.hasil).toHaveLength(0);
+    expect(r.galat.map((g) => g.kode)).toEqual(['tidak-terdengar']);
+    expect(r.selesai()).toBe(1);
+  });
+
   it('memetakan galat ke pesan Bahasa Indonesia', () => {
     expect(terjemahkanGalat('not-allowed')?.kode).toBe('izin');
     expect(terjemahkanGalat('service-not-allowed')?.kode).toBe('izin');

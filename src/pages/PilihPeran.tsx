@@ -45,7 +45,7 @@ export default function PilihPeran() {
             </li>
           ))}
         </ul>
-        <p className="mt-5 text-center text-[0.85rem] text-teks-2">Prototype lomba - data contoh (Demo). Bisa diganti kapan saja di Pengaturan.</p>
+        <p className="mt-5 text-center text-[0.95rem] text-teks-2">Prototype lomba - data contoh (Demo). Bisa diganti kapan saja di Pengaturan.</p>
       </div>
     </section>
   );

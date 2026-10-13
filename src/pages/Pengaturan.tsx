@@ -1,6 +1,6 @@
 import { ArrowCounterClockwise, DownloadSimple, Info, Trash, UploadSimple, Wrench } from '@phosphor-icons/react';
 import { useRef, useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { BigButton } from '@/components/BigButton';
 import { Card } from '@/components/Card';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -25,7 +25,7 @@ const PERAN: { role: Role; label: string }[] = [
 ];
 
 const SKENARIO: { id: SkenarioDemo; label: string; sub: string }[] = [
-  { id: 'stagnasi', label: 'Ada tanda perlu perhatian (stagnasi)', sub: 'Pak Budi tidak berlatih 3 hari terakhir.' },
+  { id: 'stagnasi', label: 'Ada tanda perlu perhatian', sub: 'Pak Budi tidak berlatih 3 hari terakhir.' },
   { id: 'rajin', label: 'Pasien rajin', sub: 'Pak Budi berlatih hampir setiap hari, tanpa tanda perhatian.' },
 ];
 
@@ -35,6 +35,9 @@ type Konfirmasi = { jenis: 'reset' } | { jenis: 'hapus' } | { jenis: 'impor'; bu
 export default function Pengaturan() {
   const prefs = usePrefs();
   const { data } = useDataPasien();
+  // Mode Uji hanya untuk penguji teknis: tautannya muncul bila halaman dibuka dengan ?uji=1.
+  const [params] = useSearchParams();
+  const tampilUji = params.get('uji') === '1';
   const [toast, tampilkanToast] = useToast();
   const [skenario, setSkenario] = useState<SkenarioDemo>(prefs.skenarioDemo);
   const [konfirmasi, setKonfirmasi] = useState<Konfirmasi>(null);
@@ -94,7 +97,7 @@ export default function Pengaturan() {
         <FormJadwal key={`${data.profile.id}-${data.schedule.jamGerak}-${data.schedule.jamAfasia}-${data.schedule.notifikasiAktif}`} awal={data.schedule} namaPasien={data.profile.namaSamaran} onTersimpan={() => tampilkanToast('Jadwal tersimpan.')} />
       ) : (
         <Bagian judul="Jadwal Latihan">
-          <p className="text-teks-2">Jadwal tersedia setelah ada data pasien.</p>
+          <p className="text-teks-2">{data ? 'Jadwal tersedia setelah ada data pasien.' : 'Memuat jadwal...'}</p>
         </Bagian>
       )}
 
@@ -129,7 +132,7 @@ export default function Pengaturan() {
             {profiles.map((p) => (
               <PilihanTombol key={p.id} terpilih={data?.profile?.id === p.id} onPilih={() => setPrefs({ activePatientId: p.id })}>
                 <span className="block">{p.namaSamaran}</span>
-                <span className="block text-[0.85rem] font-normal text-teks-2">
+                <span className="block text-[0.95rem] font-normal text-teks-2">
                   {p.usia} tahun, {p.keterangan.toLowerCase()}
                 </span>
               </PilihanTombol>
@@ -145,7 +148,7 @@ export default function Pengaturan() {
           {SKENARIO.map((s) => (
             <PilihanTombol key={s.id} terpilih={skenario === s.id} onPilih={() => setSkenario(s.id)}>
               <span className="block">{s.label}</span>
-              <span className="block text-[0.85rem] font-normal text-teks-2">{s.sub}</span>
+              <span className="block text-[0.95rem] font-normal text-teks-2">{s.sub}</span>
             </PilihanTombol>
           ))}
         </div>
@@ -182,16 +185,22 @@ export default function Pengaturan() {
         </BigButton>
       </Bagian>
 
-      <nav className="flex flex-col gap-1 pt-1" aria-label="Tautan lain">
+      <nav className="flex flex-col gap-2 pt-1" aria-label="Tautan lain">
         <Link to={PATHS.tentang} className="flex min-h-[48px] items-center gap-2 font-bold text-primer underline underline-offset-4">
           <Info size={22} weight="bold" aria-hidden />
           Tentang PULIHIN
         </Link>
-        <Link to={PATHS.uji} className="flex min-h-[48px] items-center gap-2 text-[0.95rem] font-semibold text-teks-2 underline underline-offset-4">
-          <Wrench size={22} weight="bold" aria-hidden />
-          Mode Uji (untuk pengujian)
-        </Link>
       </nav>
+
+      {tampilUji && (
+        <Bagian judul="Untuk penguji">
+          <p className="text-[0.95rem] text-teks-2">Alat teknis untuk memeriksa kamera dan penghitungan gerak. Tidak diperlukan untuk latihan.</p>
+          <Link to={PATHS.uji} className="flex min-h-[48px] items-center gap-2 font-bold text-primer underline underline-offset-4">
+            <Wrench size={22} weight="bold" aria-hidden />
+            Buka Mode Uji
+          </Link>
+        </Bagian>
+      )}
 
       <ConfirmDialog
         buka={konfirmasi?.jenis === 'reset'}
@@ -320,23 +329,25 @@ function FormJadwal({ awal, namaPasien, onTersimpan }: { awal: Schedule; namaPas
     }
   };
 
-  const kelasInput = 'min-h-[56px] w-[10.5rem] shrink-0 rounded-2xl border-2 border-garis bg-white px-3 text-[1.15rem] font-bold text-teks focus:border-primer';
+  const kelasInput = 'min-h-[56px] w-[10.5rem] max-w-full shrink-0 rounded-2xl border-2 border-garis bg-white px-3 text-[1.15rem] font-bold text-teks focus:border-primer';
 
   return (
     <Bagian judul="Jadwal Latihan">
-      <p className="text-[0.95rem] text-teks-2">Jadwal harian untuk {namaPasien}: satu latihan gerak dan satu latihan bicara.</p>
+      <p className="text-[0.95rem] text-teks-2">
+        Jadwal harian untuk {namaPasien}: satu sesi gerak (latihan apa saja dari daftar hari ini) dan satu sesi bicara.
+      </p>
       <div className="space-y-3">
-        <label className="flex items-center justify-between gap-3 font-bold">
+        <label className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 font-bold">
           Latihan gerak
           <input type="time" value={jamGerak} onChange={(e) => setJamGerak(e.target.value)} className={kelasInput} required />
         </label>
-        <label className="flex items-center justify-between gap-3 font-bold">
+        <label className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 font-bold">
           Latihan bicara
           <input type="time" value={jamAfasia} onChange={(e) => setJamAfasia(e.target.value)} className={kelasInput} required />
         </label>
       </div>
       <Toggle label="Notifikasi pengingat" keterangan="Muncul saat jam latihan tiba." aktif={notif} onUbah={(v) => void ubahNotif(v)} />
-      <p className="text-[0.85rem] text-teks-2">
+      <p className="text-[0.95rem] text-teks-2">
         Notifikasi hanya muncul selama PULIHIN terbuka di ponsel. Pengingat saat aplikasi tertutup belum tersedia di prototype ini.
         Tanpa izin notifikasi, pengingat tetap tampil di Beranda.
       </p>

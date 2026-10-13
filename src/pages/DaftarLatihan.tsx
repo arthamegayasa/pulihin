@@ -10,6 +10,12 @@ export default function DaftarLatihan() {
   return (
     <section>
       <PageHeader judul="Pustaka Latihan" sub="Pilih satu latihan untuk melihat contoh dan memulai." />
+      <p className="mb-4 flex items-start gap-2 text-[0.95rem] leading-snug text-teks-2">
+        <Star size={20} weight="fill" className="mt-0.5 shrink-0 text-aksen" aria-hidden />
+        <span>
+          <span className="font-bold text-teks">Inti</span> = latihan utama yang hitungan kameranya paling teliti diuji.
+        </span>
+      </p>
       <ul className="space-y-3">
         {EXERCISES.map((def, i) => (
           <li key={def.id}>
@@ -24,8 +30,8 @@ export default function DaftarLatihan() {
                 <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span className="text-[1.15rem] font-bold leading-snug text-teks">{def.nama}</span>
                   {def.inti && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-aksen-terang px-2 py-0.5 text-[0.8rem] font-bold text-teks">
-                      <Star size={14} weight="fill" className="text-aksen" aria-hidden />
+                    <span className="inline-flex items-center gap-1 rounded-full bg-aksen-terang px-2.5 py-0.5 text-[0.95rem] font-bold text-teks">
+                      <Star size={16} weight="fill" className="text-aksen" aria-hidden />
                       Inti
                     </span>
                   )}

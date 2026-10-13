@@ -1,31 +1,38 @@
-import { CheckCircle, Info } from '@phosphor-icons/react';
+import { CheckCircle, Info, X } from '@phosphor-icons/react';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 
 export type NadaToast = 'sukses' | 'info';
+
+/** Cukup lama untuk dibaca pelan oleh lansia (>= 7 detik); tombol Tutup tersedia untuk menutup lebih awal. */
+const DURASI_MS = 8000;
 
 /** Pesan singkat di bagian bawah layar; dibacakan pembaca layar lewat role="status". */
 export function Toast({ pesan, nada = 'sukses', onTutup }: { pesan: string | null; nada?: NadaToast; onTutup: () => void }) {
   useEffect(() => {
     if (!pesan) return;
-    const id = window.setTimeout(onTutup, 4500);
+    const id = window.setTimeout(onTutup, DURASI_MS);
     return () => window.clearTimeout(id);
   }, [pesan, onTutup]);
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 safe-bottom" role="status" aria-live="polite">
       {pesan && (
-        <button
-          type="button"
-          onClick={onTutup}
-          className="pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl bg-teks px-4 py-3 text-left text-white shadow-angkat"
-        >
+        <div className="pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl bg-teks py-2 pl-4 pr-2 text-white shadow-angkat">
           {nada === 'sukses' ? (
-            <CheckCircle size={26} weight="fill" className="mt-0.5 shrink-0 text-[#7fd49b]" aria-hidden />
+            <CheckCircle size={26} weight="fill" className="mt-2.5 shrink-0 text-[#7fd49b]" aria-hidden />
           ) : (
-            <Info size={26} weight="fill" className="mt-0.5 shrink-0" aria-hidden />
+            <Info size={26} weight="fill" className="mt-2.5 shrink-0" aria-hidden />
           )}
-          <span className="font-semibold">{pesan}</span>
-        </button>
+          <p className="min-w-0 flex-1 py-2 font-semibold">{pesan}</p>
+          <button
+            type="button"
+            onClick={onTutup}
+            className="grid size-12 shrink-0 place-items-center rounded-xl text-white hover:bg-white/10"
+            aria-label="Tutup pesan"
+          >
+            <X size={24} weight="bold" aria-hidden />
+          </button>
+        </div>
       )}
     </div>
   );

@@ -3,7 +3,10 @@ import { clamp } from '@/lib/score';
 
 /**
  * Resep program latihan gerak (Bab 10.2) dan statusnya di "Latihan Hari Ini" (Bab 13).
- * Satu sesi gerak = satu set; sebuah latihan selesai hari ini bila jumlah sesi selesai >= set.
+ * Satu sesi gerak = satu set. Satu set dianggap tuntas bila sesi selesai itu mencapai minimal separuh target
+ * repetisi (dibulatkan ke atas, `repetisiCukup`); sebuah latihan selesai hari ini bila set tuntas >= jumlah set.
+ * Sesi yang dihentikan lebih awal tetap tercatat dan tetap dihitung kepatuhan/streak (adherence.ts), tetapi di
+ * daftar hari ini hanya tampil sebagai "Sudah dicoba" dan tetap menjadi latihan berikutnya untuk dimulai.
  * Semua fungsi murni.
  */
 
@@ -20,13 +23,20 @@ export const MAKS_LATIHAN = 5;
 export const DIBUAT_OLEH_DEMO = 'Terapis (demo)';
 
 export interface StatusItemHariIni extends ProgramItem {
-  /** Sesi gerak selesai untuk latihan ini hari ini (boleh melebihi `set`). */
+  /** Sesi gerak selesai untuk latihan ini hari ini, termasuk yang dihentikan lebih awal. */
   jumlahSesi: number;
-  /** min(jumlahSesi, set) */
+  /** Set tuntas (sesi dengan repetisi >= repetisiCukup), dibatasi `set`. */
   setSelesai: number;
   selesai: boolean;
-  /** Skor sesi terakhir latihan ini hari ini. */
+  /** Skor sesi tuntas terakhir latihan ini hari ini. */
   skorTerakhir: number | null;
+  /** Repetisi terbanyak dari sesi yang belum tuntas hari ini; null bila tidak ada. */
+  repetisiDicoba: number | null;
+}
+
+/** Repetisi minimal agar satu sesi dihitung sebagai satu set tuntas: separuh target, dibulatkan ke atas. */
+export function repetisiCukup(targetRepetisi: number): number {
+  return Math.max(1, Math.ceil(targetRepetisi / 2));
 }
 
 /** Status setiap butir program untuk satu tanggal. Hanya sesi gerak `selesai` yang dihitung. */
@@ -36,13 +46,17 @@ export function statusProgramHariIni(items: readonly ProgramItem[], sessions: re
     .sort((a, b) => (a.selesaiAt ?? a.mulaiAt) - (b.selesaiAt ?? b.mulaiAt));
   return items.map((item) => {
     const milik = hariIni.filter((s) => s.latihanId === item.latihanId);
+    const cukup = repetisiCukup(item.targetRepetisi);
+    const tuntas = milik.filter((s) => s.repetisiTercapai >= cukup);
+    const dicoba = milik.filter((s) => s.repetisiTercapai < cukup);
     const set = Math.max(1, item.set);
     return {
       ...item,
       jumlahSesi: milik.length,
-      setSelesai: Math.min(milik.length, set),
-      selesai: milik.length >= set,
-      skorTerakhir: milik.at(-1)?.skor ?? null,
+      setSelesai: Math.min(tuntas.length, set),
+      selesai: tuntas.length >= set,
+      skorTerakhir: tuntas.at(-1)?.skor ?? null,
+      repetisiDicoba: dicoba.length > 0 ? Math.max(...dicoba.map((s) => s.repetisiTercapai)) : null,
     };
   });
 }
@@ -61,6 +75,15 @@ export function teksTarget(item: Pick<ProgramItem, 'targetRepetisi' | 'set'>): s
 export function teksProgresSet(s: Pick<StatusItemHariIni, 'set' | 'setSelesai' | 'selesai'>): string | null {
   if (s.set <= 1 || s.selesai || s.setSelesai === 0) return null;
   return `${s.setSelesai} dari ${s.set} set`;
+}
+
+/**
+ * Kalimat hangat untuk latihan yang sudah dicoba tetapi belum tuntas: "Sudah dicoba: 3 dari 10".
+ * Null bila latihan selesai, belum dicoba, atau sudah ada set tuntas (pakai teksProgresSet).
+ */
+export function teksSudahDicoba(s: Pick<StatusItemHariIni, 'selesai' | 'setSelesai' | 'repetisiDicoba' | 'targetRepetisi'>): string | null {
+  if (s.selesai || s.setSelesai > 0 || s.repetisiDicoba === null) return null;
+  return s.repetisiDicoba > 0 ? `Sudah dicoba: ${s.repetisiDicoba} dari ${s.targetRepetisi}` : 'Sudah dicoba';
 }
 
 /* ---------- penyunting resep (dashboard klinisi) ---------- */

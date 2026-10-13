@@ -15,6 +15,7 @@ export function urlSesi(latihanId: string, target: number, sisi: Sisi): string {
   return `${PATHS.sesi(latihanId)}?target=${target}&sisi=${sisi}`;
 }
 
-export function urlDetail(latihanId: string, target: number): string {
-  return `${PATHS.detailLatihan(latihanId)}?target=${target}`;
+/** Detail Latihan (peringatan keselamatan + tombol Mulai). `sisi` opsional: halaman detail memakainya sebagai sisi terpilih. */
+export function urlDetail(latihanId: string, target: number, sisi?: Sisi): string {
+  return `${PATHS.detailLatihan(latihanId)}?target=${target}${sisi ? `&sisi=${sisi}` : ''}`;
 }

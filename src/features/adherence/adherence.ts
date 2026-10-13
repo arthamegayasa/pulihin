@@ -13,11 +13,26 @@ export interface TargetHarian {
   total: number;
 }
 
-/** Jadwal bawaan: satu sesi gerak + satu sesi bicara per hari (Bab 9.1). */
+/**
+ * Jadwal bawaan: satu sesi gerak + satu sesi bicara per hari (Bab 9.1).
+ *
+ * Definisi target harian (dipakai SEMUA angka kepatuhan: Untuk Keluarga, Dashboard Klinisi, red flag, ringkasan
+ * WhatsApp) = "sesi terjadwal": jadwal gerak terpenuhi oleh minimal satu sesi gerak selesai (latihan apa pun),
+ * jadwal bicara oleh satu sesi bicara selesai. Sesi yang dihentikan lebih awal tetap dihitung.
+ * Ini sengaja BERBEDA dari hitungan "Latihan Hari Ini" di Beranda (program.ts), yang menghitung butir daftar
+ * resep ("1 dari 4 latihan selesai"). Agar tidak tertukar, tampilan kepatuhan selalu memakai kata "sesi terjadwal",
+ * sedangkan Beranda memakai kata "latihan".
+ */
 export function targetHarian(schedule?: Schedule | null): TargetHarian {
   const gerak = !schedule || schedule.jamGerak ? 1 : 0;
   const afasia = !schedule || schedule.jamAfasia ? 1 : 0;
   return { gerak, afasia, total: gerak + afasia };
+}
+
+/** "1 sesi gerak + 1 sesi bicara" (bagian bertarget 0 tidak disebut). */
+export function teksTargetHarian(t: TargetHarian): string {
+  const bagian = [t.gerak > 0 && `${t.gerak} sesi gerak`, t.afasia > 0 && `${t.afasia} sesi bicara`].filter(Boolean);
+  return bagian.length > 0 ? bagian.join(' + ') : 'tidak ada sesi terjadwal';
 }
 
 export function hanyaSelesai(sessions: readonly Session[]): Session[] {

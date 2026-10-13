@@ -25,6 +25,9 @@ describe('red flag (a): 3 hari berturut-turut tanpa sesi', () => {
     expect(ids(flags)).toEqual(['sempat-3-hari-kosong']);
     expect(flags[0].tingkat).toBe('perhatian');
     expect(flags[0].judul).toBe('Minggu ini sempat 3 hari berturut-turut tanpa latihan');
+    expect(flags[0].pesan).toBe(
+      'Latihan sudah berjalan lagi, bagus. Ceritakan jeda ini kepada terapis atau dokter yang merawat pada kesempatan berikutnya.',
+    );
   });
 
   it('jeda di luar 7 hari terakhir tidak lagi ditandai', () => {

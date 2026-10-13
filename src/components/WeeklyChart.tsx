@@ -2,98 +2,71 @@ import type { BatangHari } from '@/features/adherence/adherence';
 import { namaHari } from '@/lib/date';
 
 /**
- * Grafik kepatuhan 7 hari (Bab 9.2): batang = latihan selesai, latar batang = target harian.
- * Angka tertulis di atas setiap batang sehingga tidak bergantung pada warna. SVG murni, ringan.
+ * Grafik kepatuhan 7 hari (Bab 9.2): batang = sesi terjadwal yang dikerjakan, kotak garis putus = target harian.
+ * Batang dan label dibuat dengan HTML/CSS (bukan teks SVG) agar angka & nama hari minimal 0.9rem dan ikut
+ * pengaturan Huruf Lebih Besar. Angka tertulis di atas setiap batang sehingga tidak bergantung pada warna.
+ * Tinggi area batang memakai px agar grafik tidak memanjang saat huruf diperbesar.
  */
 export function WeeklyChart({ data, className = '' }: { data: BatangHari[]; className?: string }) {
-  const W = 320;
-  const H = 168;
-  const atas = 26;
-  const bawah = 30;
-  const tinggi = H - atas - bawah;
-  const kolom = W / data.length;
-  const lebar = 26;
   const maks = Math.max(1, ...data.map((b) => b.target), ...data.map((b) => b.selesai));
+  const persen = (n: number) => `${(Math.min(n, maks) / maks) * 100}%`;
 
   return (
     <figure className={className}>
-      <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" aria-hidden focusable="false">
-        <line x1={0} x2={W} y1={atas + tinggi} y2={atas + tinggi} stroke="var(--color-garis)" strokeWidth={1.5} />
-        {data.map((b, i) => {
-          const cx = kolom * i + kolom / 2;
-          const x = cx - lebar / 2;
-          const hTarget = (b.target / maks) * tinggi;
-          const hSelesai = (Math.min(b.selesai, maks) / maks) * tinggi;
+      {/* -mx-2: grafik memakai sebagian padding kartu agar 7 kolom tetap lega saat Huruf Lebih Besar. */}
+      <ol className="-mx-2 grid grid-cols-7 gap-0.5" aria-hidden>
+        {data.map((b) => {
           const penuh = b.target > 0 && b.selesai >= b.target;
           return (
-            <g key={b.tanggal}>
-              {b.hariIni && (
-                <rect x={cx - kolom / 2 + 2} y={2} width={kolom - 4} height={H - 4} rx={10} fill="var(--color-primer-terang)" />
-              )}
-              {b.target > 0 && (
-                <rect
-                  x={x}
-                  y={atas + tinggi - hTarget}
-                  width={lebar}
-                  height={hTarget}
-                  rx={6}
-                  fill="white"
-                  stroke="var(--color-primer-garis)"
-                  strokeWidth={1.5}
-                  strokeDasharray="4 3"
-                />
-              )}
-              {hSelesai > 0 && (
-                <rect
-                  x={x}
-                  y={atas + tinggi - hSelesai}
-                  width={lebar}
-                  height={hSelesai}
-                  rx={6}
-                  fill={penuh ? 'var(--color-sukses)' : 'var(--color-primer)'}
-                />
-              )}
-              <text x={cx} y={atas - 8} textAnchor="middle" fontSize={14} fontWeight={700} fill="var(--color-teks)">
-                {b.target > 0 ? `${b.selesai}/${b.target}` : '–'}
-              </text>
-              <text
-                x={cx}
-                y={H - 10}
-                textAnchor="middle"
-                fontSize={14}
-                fontWeight={b.hariIni ? 800 : 500}
-                fill={b.hariIni ? 'var(--color-primer)' : 'var(--color-teks-2)'}
+            <li key={b.tanggal} className={`flex min-w-0 flex-col items-center gap-1 rounded-xl py-1.5 ${b.hariIni ? 'bg-primer-terang' : ''}`}>
+              <span className="text-[0.9rem] font-bold leading-none tracking-tight text-teks tabular">{b.target > 0 ? `${b.selesai}/${b.target}` : '–'}</span>
+              <span className="relative h-[96px] w-[60%] max-w-[28px]">
+                {b.target > 0 && (
+                  <span
+                    className="absolute inset-x-0 bottom-0 rounded-md border-[1.5px] border-dashed border-primer bg-white"
+                    style={{ height: persen(b.target) }}
+                  />
+                )}
+                {b.selesai > 0 && (
+                  <span
+                    className={`absolute inset-x-0 bottom-0 rounded-md ${penuh ? 'bg-sukses' : 'bg-primer'}`}
+                    style={{ height: persen(b.selesai) }}
+                  />
+                )}
+              </span>
+              <span
+                className={`border-b-[3px] text-[0.9rem] leading-tight tracking-tight ${b.hariIni ? 'border-primer font-extrabold text-primer' : 'border-transparent font-semibold text-teks-2'}`}
               >
                 {b.label}
-              </text>
-              {b.hariIni && <rect x={cx - 12} y={H - 6} width={24} height={3} rx={1.5} fill="var(--color-primer)" />}
-            </g>
+              </span>
+            </li>
           );
         })}
-      </svg>
-      <figcaption className="mt-1 text-[0.85rem] text-teks-2">
-        Angka = latihan selesai dari target harian (1 latihan gerak + 1 latihan bicara). Garis bawah = hari ini.
+      </ol>
+      <figcaption className="mt-2 text-[0.95rem] leading-snug text-teks-2">
+        Angka = sesi terjadwal yang dikerjakan / target hari itu. Kotak garis putus-putus = target, batang hijau = target
+        tercapai. Hari ini diberi latar dan garis bawah.
       </figcaption>
       <div className="sr-only">
-      <table>
-        <caption>Latihan selesai dibanding target, 7 hari terakhir</caption>
-        <thead>
-          <tr>
-            <th scope="col">Hari</th>
-            <th scope="col">Selesai</th>
-            <th scope="col">Target</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((b) => (
-            <tr key={b.tanggal}>
-              <th scope="row">{b.hariIni ? `Hari ini (${namaHari(b.tanggal)})` : namaHari(b.tanggal)}</th>
-              <td>{b.selesai}</td>
-              <td>{b.target}</td>
+        <table>
+          <caption>Sesi terjadwal yang dikerjakan dibanding target, 7 hari terakhir</caption>
+          <thead>
+            <tr>
+              <th scope="col">Hari</th>
+              <th scope="col">Dikerjakan</th>
+              <th scope="col">Target</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.map((b) => (
+              <tr key={b.tanggal}>
+                <th scope="row">{b.hariIni ? `Hari ini (${namaHari(b.tanggal)})` : namaHari(b.tanggal)}</th>
+                <td>{b.selesai}</td>
+                <td>{b.target}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </figure>
   );

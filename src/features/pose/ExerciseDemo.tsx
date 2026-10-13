@@ -46,7 +46,7 @@ interface PoseSamping {
   /** Sudut telapak di bawah garis datar; negatif = ujung kaki naik. */
   telapak: number;
   telapakJauh: number;
-  /** Bila ada, kedua tangan berpegangan pada titik ini (kinematika balik). */
+  /** Bila ada, kedua tangan berpegangan pada titik ini (kinematika balik); bulatan tangan tepat di titik ini. */
   tangan?: V;
 }
 
@@ -59,7 +59,7 @@ interface PoseDepan {
   lenganLain: V;
   tungkaiAktif: number;
   tungkaiLain: number;
-  /** Tangan sisi lain berpegangan di titik ini. */
+  /** Tangan sisi lain berpegangan di titik ini (bulatan tangan tepat di titik ini). */
   tanganLain?: V;
 }
 
@@ -70,6 +70,8 @@ type Jejak = 'tangan' | 'kaki' | 'pinggul';
 
 interface KonfigUmum {
   kursi: 'duduk' | 'pegangan' | null;
+  /** Meja di depan figur, tempat kedua tangan bertumpu (pose memakai `tangan`). */
+  meja?: boolean;
   /** Indeks pose puncak di kf. */
   puncak: number;
   /** Banyak repetisi dalam satu putaran kf (2 untuk latihan kiri-kanan bergantian). */
@@ -92,16 +94,23 @@ const DUDUK_SAMPING: PoseSamping = {
   telapakJauh: 0,
 };
 const sampingDuduk = (ubah: Partial<PoseSamping> = {}): PoseSamping => ({ ...DUDUK_SAMPING, ...ubah });
+/**
+ * Berdiri sambil memegang puncak sandaran kursi di depan badan. Titik pegangan harus terjangkau
+ * (<= lengan atas + bawah = 49) dari bahu saat berdiri (y 42) maupun saat jinjit (y 34).
+ */
 const BERDIRI_SAMPING: PoseSamping = {
   ...DUDUK_SAMPING,
   akar: [98, 159],
   tungkai: [0, 0],
   tungkaiJauh: [0, 0],
-  tangan: [124, 92],
+  tangan: [116, 77],
 };
+/** Duduk ke berdiri: kedua tangan bertumpu di meja depan, terjangkau dari pose duduk, condong, dan berdiri. */
+const TANGAN_MEJA: V = [136, 86];
 
 const DUDUK_DEPAN: PoseDepan = { pinggulY: 120, rotasi: 0, lenganAktif: [5, 4], lenganLain: [5, 4], tungkaiAktif: 0, tungkaiLain: 0 };
-const BERDIRI_DEPAN: PoseDepan = { ...DUDUK_DEPAN, pinggulY: 88, tanganLain: [62, 96] };
+/** Tangan sisi lain memegang sandaran kursi di samping badan (terjangkau dari bahu [82, 42]). */
+const BERDIRI_DEPAN: PoseDepan = { ...DUDUK_DEPAN, pinggulY: 88, tanganLain: [64, 84] };
 /** Lengan bersilang di dada untuk putaran badan. */
 const SILANG: V = [18, -118];
 
@@ -161,12 +170,13 @@ const DEMO: Record<string, KonfigDemo> = {
     tampak: 'samping',
     akarDi: 'kaki',
     kursi: 'duduk',
+    meja: true,
     aktif: ['tungkai', 'tungkaiJauh'],
     kf: [
-      sampingDuduk({ akar: [122, 159], badan: 6, lengan: [24, 50], lenganJauh: [24, 50] }),
-      sampingDuduk({ akar: [122, 159], badan: 36, lengan: [40, 70], lenganJauh: [40, 70] }),
-      sampingDuduk({ akar: [122, 159], badan: 0, tungkai: [0, 0], tungkaiJauh: [0, 0], lengan: [10, 20], lenganJauh: [10, 20] }),
-      sampingDuduk({ akar: [122, 159], badan: 36, lengan: [40, 70], lenganJauh: [40, 70] }),
+      sampingDuduk({ akar: [122, 159], badan: 6, tangan: TANGAN_MEJA }),
+      sampingDuduk({ akar: [122, 159], badan: 36, tangan: TANGAN_MEJA }),
+      sampingDuduk({ akar: [122, 159], badan: 0, tungkai: [0, 0], tungkaiJauh: [0, 0], tangan: TANGAN_MEJA }),
+      sampingDuduk({ akar: [122, 159], badan: 36, tangan: TANGAN_MEJA }),
     ],
     puncak: 2,
     repPerSiklus: 1,
@@ -304,6 +314,8 @@ interface Bentuk {
   jejak: Record<Jejak, V>;
   /** Putaran batang tubuh (tampak depan), untuk panah petunjuk. */
   putar?: { rotasi: number; y: number };
+  /** Titik tangan yang berpegangan (kursi/meja digambar tepat di bawahnya). */
+  pegangan?: V;
 }
 
 function bentukSamping(p: PoseSamping, akarDi: 'pinggul' | 'kaki', aktif: readonly BagianSamping[]): Bentuk {
@@ -332,6 +344,8 @@ function bentukSamping(p: PoseSamping, akarDi: 'pinggul' | 'kaki', aktif: readon
     return [siku, tambah(siku, arahBawah(s[1]), P.lenganBawah)];
   };
   const ujungTelapak = (k: V, sudut: number): V => tambah(k, [Math.cos(rad(sudut)), Math.sin(rad(sudut))], P.telapak);
+  // Tangan yang berpegangan digambar tepat di titik pegangan agar tampak menggenggam sandaran/meja.
+  const bulatanTangan = (s: V, pg: V): V => (p.tangan ? pg : posisiTangan(s, pg));
   const [sikuJ, tanganJ] = lengan(p.lenganJauh);
   const [siku, tangan] = lengan(p.lengan);
   const peran = (b: BagianSamping, jauh: boolean): Peran => (aktif.includes(b) ? (jauh ? 'aktifJauh' : 'aktif') : jauh ? 'jauh' : 'dekat');
@@ -341,7 +355,7 @@ function bentukSamping(p: PoseSamping, akarDi: 'pinggul' | 'kaki', aktif: readon
     belakang: [
       { titik: [pinggul, lututJauh, kakiJauh], tebal: 10, peran: peran('tungkaiJauh', true), sendi: false },
       { titik: [kakiJauh, ujungTelapak(kakiJauh, p.telapakJauh)], tebal: 7, peran: peran('telapak', true), sendi: false },
-      { titik: [bahu, sikuJ, tanganJ], tebal: 8, peran: 'jauh', tangan: posisiTangan(sikuJ, tanganJ), sendi: false },
+      { titik: [bahu, sikuJ, tanganJ], tebal: 8, peran: 'jauh', tangan: bulatanTangan(sikuJ, tanganJ), sendi: false },
     ],
     depan: [
       // 'betis' / 'lenganBawah': hanya ruas bawah yang bergerak (sendi lutut / siku), ruas atas tetap diam.
@@ -355,15 +369,16 @@ function bentukSamping(p: PoseSamping, akarDi: 'pinggul' | 'kaki', aktif: readon
       ...(aktif.includes('lenganBawah')
         ? [
             { titik: [bahu, siku], tebal: 9, peran: 'dekat', sendi: true } satisfies Anggota,
-            { titik: [siku, tangan], tebal: 8.5, peran: 'aktif', tangan: posisiTangan(siku, tangan), sendi: true } satisfies Anggota,
+            { titik: [siku, tangan], tebal: 8.5, peran: 'aktif', tangan: bulatanTangan(siku, tangan), sendi: true } satisfies Anggota,
           ]
-        : [{ titik: [bahu, siku, tangan], tebal: 9, peran: peran('lengan', false), tangan: posisiTangan(siku, tangan), sendi: true } satisfies Anggota]),
+        : [{ titik: [bahu, siku, tangan], tebal: 9, peran: peran('lengan', false), tangan: bulatanTangan(siku, tangan), sendi: true } satisfies Anggota]),
     ],
     badan: { titik: [pinggul, bahu], poligon: false },
     leher: [pangkalLeher, tambah(bahu, atas, P.leher + 2)],
     kepala,
     mata: tambah(kepala, [Math.cos(rad(p.badan)) * 5, -2 + Math.sin(rad(p.badan)) * 5]),
-    jejak: { tangan: posisiTangan(siku, tangan), kaki: pkaki, pinggul },
+    jejak: { tangan: bulatanTangan(siku, tangan), kaki: pkaki, pinggul },
+    pegangan: p.tangan,
   };
 }
 
@@ -404,7 +419,13 @@ function bentukDepan(p: PoseDepan, duduk: boolean, aktif: readonly BagianDepan[]
   const telapak = (k: V, arah: 1 | -1): V[] => [k, tambah(k, [arah * 6, 1])];
   const lenganDiDepanBadan = p.lenganAktif[1] < -60;
 
-  const lenganL: Anggota = { titik: [bahuL, sikuL, tanganL], tebal: 9, peran: 'dekat', tangan: posisiTangan(sikuL, tanganL), sendi: true };
+  const lenganL: Anggota = {
+    titik: [bahuL, sikuL, tanganL],
+    tebal: 9,
+    peran: 'dekat',
+    tangan: p.tanganLain ?? posisiTangan(sikuL, tanganL),
+    sendi: true,
+  };
   const lenganA: Anggota = {
     titik: [bahuA, sikuA, tanganA],
     tebal: 9,
@@ -428,6 +449,7 @@ function bentukDepan(p: PoseDepan, duduk: boolean, aktif: readonly BagianDepan[]
     jejak: { tangan: posisiTangan(sikuA, tanganA), kaki: tungkaiA.kaki, pinggul: [cx, hy] },
     // Panah putar di depan perut, di bawah lengan yang bersilang.
     putar: putarAktif ? { rotasi: p.rotasi, y: hy - 8 } : undefined,
+    pegangan: p.tanganLain,
   };
 }
 
@@ -454,8 +476,23 @@ function lintasan(konfig: KonfigDemo): V[] | null {
 
 const poin = (t: readonly V[]) => t.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
 
+/** Meja tempat kedua tangan bertumpu (tampak samping), daun meja tepat di bawah titik pegangan. */
+function Meja({ pegangan }: { pegangan: V }) {
+  const [tx, ty] = pegangan;
+  const atas = ty + 4;
+  const kaki = { stroke: W_KURSI_TUA, strokeWidth: 4, strokeLinecap: 'round' as const };
+  return (
+    <g>
+      <line x1={tx + 16} y1={atas} x2={tx + 16} y2={TANAH} {...kaki} />
+      <line x1={188} y1={atas} x2={188} y2={TANAH} {...kaki} />
+      <rect x={tx - 9} y={atas} width={200 - tx + 3} height={7} rx={3} fill={W_KURSI} />
+    </g>
+  );
+}
+
 function Kursi({ konfig }: { konfig: KonfigDemo }) {
   const kaki = { stroke: W_KURSI_TUA, strokeWidth: 4, strokeLinecap: 'round' as const };
+  const pegangan = bentuk(konfig, konfig.kf[0]).pegangan;
   if (konfig.tampak === 'samping') {
     if (konfig.kursi === 'duduk') {
       // Pinggul pose Mulai (pangkal poros badan), apa pun akar kinematikanya.
@@ -472,15 +509,16 @@ function Kursi({ konfig }: { konfig: KonfigDemo }) {
         </g>
       );
     }
-    if (konfig.kursi === 'pegangan') {
-      const [tx, ty] = konfig.kf[0].tangan ?? [124, 92];
-      const x = tx + 3;
+    if (konfig.kursi === 'pegangan' && pegangan) {
+      // Kursi di depan figur; tangan menggenggam puncak sandarannya (bulatan tangan menutupi ujung sandaran).
+      const [tx, ty] = pegangan;
+      const dudukY = ty + 44;
       return (
         <g>
-          <rect x={x - 3.5} y={ty - 3} width={7} height={44} rx={3.5} fill={W_KURSI} />
-          <rect x={x - 3.5} y={ty + 36} width={34} height={7} rx={3.5} fill={W_KURSI} />
-          <line x1={x} y1={ty + 40} x2={x} y2={TANAH} {...kaki} />
-          <line x1={x + 27} y1={ty + 40} x2={x + 27} y2={TANAH} {...kaki} />
+          <rect x={tx - 4} y={ty - 6} width={8} height={dudukY - ty + 10} rx={4} fill={W_KURSI} />
+          <rect x={tx - 4} y={dudukY} width={36} height={7} rx={3.5} fill={W_KURSI} />
+          <line x1={tx} y1={dudukY + 4} x2={tx} y2={TANAH} {...kaki} />
+          <line x1={tx + 28} y1={dudukY + 4} x2={tx + 28} y2={TANAH} {...kaki} />
         </g>
       );
     }
@@ -498,14 +536,15 @@ function Kursi({ konfig }: { konfig: KonfigDemo }) {
       </g>
     );
   }
-  if (konfig.kursi === 'pegangan') {
-    const [tx, ty] = konfig.kf[0].tanganLain ?? [62, 96];
+  if (konfig.kursi === 'pegangan' && pegangan) {
+    // Sandaran kursi di samping badan; tangan sisi lain menggenggam palang atasnya.
+    const [tx, ty] = pegangan;
     return (
       <g>
-        <rect x={tx - 26} y={ty - 3} width={32} height={7} rx={3.5} fill={W_KURSI} />
         <line x1={tx - 22} y1={ty} x2={tx - 22} y2={TANAH} {...kaki} />
         <line x1={tx + 2} y1={ty} x2={tx + 2} y2={TANAH} {...kaki} />
-        <rect x={tx - 28} y={ty + 34} width={36} height={7} rx={3.5} fill={W_KURSI} />
+        <rect x={tx - 28} y={ty + 40} width={36} height={7} rx={3.5} fill={W_KURSI} />
+        <rect x={tx - 28} y={ty - 3.5} width={38} height={8} rx={4} fill={W_KURSI} />
       </g>
     );
   }
@@ -603,31 +642,33 @@ function Panggung({
   label,
   pose,
   hantu,
-  tampakLabel,
 }: {
   konfig: KonfigDemo;
   cermin: boolean;
   label: string;
   pose: PoseSamping | PoseDepan;
   hantu?: PoseSamping | PoseDepan;
-  tampakLabel: boolean;
 }) {
   const jalur = lintasan(konfig);
+  const b = bentuk(konfig, pose);
   return (
     <svg viewBox="0 0 200 172" role="img" aria-label={label} className="h-auto w-full">
       <g transform={cermin ? 'translate(200 0) scale(-1 1)' : undefined}>
         <ellipse cx={100} cy={TANAH + 1} rx={70} ry={4} fill={W_TANAH} />
         <Kursi konfig={konfig} />
+        {konfig.meja && b.pegangan && <Meja pegangan={b.pegangan} />}
         {hantu && <Hantu b={bentuk(konfig, hantu)} />}
         {jalur && <Lintasan titik={jalur} />}
-        <Figur b={bentuk(konfig, pose)} />
+        <Figur b={b} />
       </g>
-      {tampakLabel && (
-        <text x={8} y={14} fontSize={8.5} fontWeight={700} fill={W_PRIMER} opacity={0.7}>
-          {konfig.tampak === 'samping' ? 'Tampak samping' : 'Tampak depan'}
-        </text>
-      )}
     </svg>
+  );
+}
+
+/** Label tampak sebagai teks HTML (ikut Huruf Lebih Besar), bukan teks SVG yang ikut mengecil. */
+function LabelTampak({ konfig }: { konfig: KonfigDemo }) {
+  return (
+    <p className="px-1 text-[0.95rem] font-bold leading-tight text-primer">{konfig.tampak === 'samping' ? 'Tampak samping' : 'Tampak depan'}</p>
   );
 }
 
@@ -690,7 +731,8 @@ export function ExerciseDemo({ exerciseId, nama, sisi, tempoDetik }: ExerciseDem
   if (dikurangi && kf.length > 1) {
     return (
       <figure className="rounded-kartu bg-primer-terang p-2">
-        <div className="grid grid-cols-2 gap-2">
+        <LabelTampak konfig={konfig} />
+        <div className="mt-1.5 grid grid-cols-2 gap-2">
           {(
             [
               ['1. Mulai', kf[0]],
@@ -698,7 +740,7 @@ export function ExerciseDemo({ exerciseId, nama, sisi, tempoDetik }: ExerciseDem
             ] as const
           ).map(([label, pose]) => (
             <div key={label} className="rounded-xl bg-white/60 p-1">
-              <Panggung konfig={konfig} cermin={cermin} label={`${nama}: posisi ${label.slice(3).toLowerCase()}`} pose={pose} tampakLabel={false} />
+              <Panggung konfig={konfig} cermin={cermin} label={`${nama}: posisi ${label.slice(3).toLowerCase()}`} pose={pose} />
               <p className="pb-1 text-center font-bold text-primer">{label}</p>
             </div>
           ))}
@@ -712,13 +754,13 @@ export function ExerciseDemo({ exerciseId, nama, sisi, tempoDetik }: ExerciseDem
 
   return (
     <figure className="rounded-kartu bg-primer-terang p-3">
+      <LabelTampak konfig={konfig} />
       <Panggung
         konfig={konfig}
         cermin={cermin}
         label={`Contoh gerakan ${nama}`}
         pose={poseSaat(kf, t, detikRuas)}
         hantu={konfig.aktif.length > 0 ? puncak : undefined}
-        tampakLabel
       />
       <figcaption className="mt-1 text-center text-[0.95rem] text-teks-2">
         Ikuti irama pelan ini: sekitar <span className="tabular font-semibold text-teks">{tempoTeks} detik</span> tiap gerakan.

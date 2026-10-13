@@ -1,8 +1,10 @@
 import { GearSix } from '@phosphor-icons/react';
+import { useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { DemoBadge } from '@/components/DemoBadge';
 import { Logo } from '@/components/Logo';
 import { useDataPasien, useNotifikasiPengingat, useSekarang } from '@/features/adherence/hooks';
+import { prefetchAsetPose } from '@/features/pose/asetPose';
 import { berandaUntukPeran, PATHS } from '@/router-paths';
 import { usePrefs } from '@/lib/prefs';
 
@@ -20,21 +22,23 @@ function PengingatJadwal() {
  */
 export function AppShell() {
   const { role } = usePrefs();
+  useEffect(prefetchAsetPose, []); // aset MediaPipe ke cache SW saat senggang: sesi kamera bisa luring
   const { pathname } = useLocation();
   const lebar = pathname.startsWith(PATHS.klinisi) ? 'max-w-6xl' : 'max-w-md';
   return (
     <div className="min-h-[100dvh]">
       <PengingatJadwal />
       <div className="sticky top-0 z-20 border-b border-garis/70 bg-white">
-        <div className={`mx-auto flex h-14 items-center gap-3 px-4 ${lebar}`}>
-          <Link to={berandaUntukPeran(role)} className="flex min-h-12 shrink-0 items-center gap-2" aria-label="PULIHIN, ke Beranda">
-            <Logo className="h-7 w-auto" />
+        {/* Ukuran header dalam px: tidak ikut membesar pada Huruf Lebih Besar agar muat di 360px. */}
+        <div className={`mx-auto flex h-[56px] items-center gap-[12px] px-[16px] ${lebar}`}>
+          <Link to={berandaUntukPeran(role)} className="flex min-h-[48px] shrink-0 items-center gap-2" aria-label="PULIHIN, ke Beranda">
+            <Logo className="h-[28px] w-auto" />
           </Link>
           <DemoBadge />
           <div className="flex-1" />
           <Link
             to={PATHS.pengaturan}
-            className="grid size-12 shrink-0 place-items-center rounded-xl text-primer hover:bg-primer-terang"
+            className="grid size-[48px] shrink-0 place-items-center rounded-xl text-primer hover:bg-primer-terang"
             aria-label="Pengaturan"
           >
             <GearSix size={26} weight="bold" />

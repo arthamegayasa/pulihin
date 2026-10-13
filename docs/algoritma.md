@@ -14,7 +14,9 @@ Kode: `src/features/pose/`
 | `FormChecker.ts` | Deteksi 5 koreksi form + penjadwal tayang pesan |
 | `scoring.ts` | Skor sesi 0–100 dan satu saran |
 | `tracker.ts` | `createTracker(def, opsi)`: merangkai semuanya per frame, termasuk `sisiTerlihat` / `sisiLainTerlihat` |
-| `PoseEngine.ts` | MediaPipe Pose Landmarker (hingga 2 orang) + `pilihPoseUtama` (pasien = badan terbesar, dekat tengah, lengket) |
+| `PoseEngine.ts` | MediaPipe Pose Landmarker (2 orang, otomatis 1 orang di perangkat lambat) + `pilihPoseUtama` (pasien = badan terbesar, dekat tengah, lengket) |
+| `kebijakanOrang.ts` | Kebijakan jumlah orang adaptif (fungsi murni, Bagian 14) |
+| `asetPose.ts` | Lokasi aset MediaPipe + `prefetchAsetPose()` untuk sesi kamera luring (Bagian 14) |
 | `exerciseDefinitions.ts` | 10 latihan + **semua** ambang dan aturan angka (satu-satunya tempat angka ambang), termasuk `sumberSudut` per latihan |
 | `synthetic.ts` | Generator pose sintetis ber-seed untuk uji tanpa kamera |
 | `__fixtures__/`, `realVideo.test.ts` | Landmark dari rekaman manusia nyata (Pexels) + uji regresinya (Bagian 13) |
@@ -292,7 +294,8 @@ perataan, frame diabaikan) benar; angka yang dilaporkan untuk AC-F1-2 harus dari
 
 ## 10. Protokol uji 50 repetisi di perangkat (AC-F1-2) — diisi manual
 
-Dilakukan di HP uji Bab 11.1 memakai **Mode Uji** (`/app/uji`, dari Pengaturan).
+Dilakukan di HP uji Bab 11.1 memakai **Mode Uji** (`/app/uji`; tautannya tampil di Pengaturan hanya
+bila dibuka sebagai `/app/pengaturan?uji=1`).
 
 1. Ponsel tegak di tripod/tumpukan buku, setinggi dada, 1 meter di depan kursi (latihan duduk),
    cahaya ruangan biasa dari depan. Catat model HP, versi Chrome, dan FPS yang tampil di Mode Uji.
@@ -315,7 +318,9 @@ Dilakukan di HP uji Bab 11.1 memakai **Mode Uji** (`/app/uji`, dari Pengaturan).
 | abduksi-bahu | [DIISI] | [DIISI] | Otomatis | depan, 1,2 m | [DIISI] | [DIISI] | [DIISI] | [DIISI] | [DIISI] |
 
 Untuk AC-F1-3, di Mode Uji lakukan gerakan salah (miringkan badan, angkat bahu saat menekuk siku)
-selama ±2 detik dan pastikan pesan muncul kurang dari 1,2 detik setelah gerakan salah dimulai.
+selama ±2 detik. Panel **Latensi** menampilkan latensi tiap pesan koreksi kontinu (dari awal kondisi
+menurut detektor + 0,5 s sampai pesan tampil di layar) dan latensi kerangka pertama (AC-F1-1); keduanya
+ikut tersimpan di **Simpan hasil**. Catat juga baris "Orang dideteksi" (2 atau 1, Bagian 14).
 
 ## 11. Mengubah ambang (AC-F2)
 
@@ -333,8 +338,10 @@ Menjalankan semua tes modul ini: `npx vitest run src/features/pose`.
   (Bagian 13); hibrida hanya memakai 3D di tengah gerak. Kualitas pada HP kelas bawah belum diuji.
 - Dari depan, nilai sudut puncak hibrida cenderung tinggi (tekuk siku terbaca 175–178°), sehingga
   sudut puncak di log dan skor rentang dari depan lebih murah hati daripada dari samping.
-- Deteksi 2 orang (`numPoses: 2`) menambah biaya inferensi (Bagian 13); pada HP sangat lemah ini dapat
-  menurunkan FPS. Belum ada penurunan otomatis ke 1 orang.
+- Deteksi 2 orang (`numPoses: 2`) menambah biaya inferensi (Bagian 13). Di perangkat lambat mesin turun
+  otomatis ke 1 orang (Bagian 14); sejak saat itu orang di latar hanya ditahan oleh pelacakan MediaPipe
+  dan penolakan kandidat asing selama paling lama 1 s, jadi kerangka bisa pindah ke orang lain bila
+  pasien hilang dari bingkai lebih lama.
 - Bahu terangkat diukur dari jarak bahu–telinga: menunduk dapat terbaca sebagai bahu terangkat. Karena
   itu hanya dievaluasi saat fase NAIK/ATAS.
 - Jinjit memerlukan tumit terlihat (ponsel rendah, 2 m). Kenaikan dinormalkan dengan lebar bahu saat
@@ -434,10 +441,151 @@ dapat dipakai. `pilihPoseUtama` memilih pria (pusat bahu x 0,5–0,95) pada 325/
 | curl (gym), frame demi frame | 18,9 ms | 23,3 ms |
 | curl (gym), kamera palsu live | 8,7 ms (92 deteksi/s) | 15,9 ms (49 deteksi/s) |
 
-Kenaikan +4 s.d. +14 ms (×1,2–2) di desktop; pada HP kelas bawah dampaknya belum diukur (Bagian 12).
+Kenaikan +4 s.d. +14 ms (×1,2–2) di desktop. Pada HP kelas bawah dampaknya belum diukur; perangkat yang
+terlalu lambat turun otomatis ke 1 orang (Bagian 14, termasuk emulasi desktop dengan CPU diperlambat).
 
 **Sisi yang terlihat.** `TrackerSnapshot.sisiTerlihat` (titik kunci kiri / kanan terlihat) dan
 `sisiLainTerlihat` (latihan satu sisi, sisi pilihan tidak terlihat tetapi sisi lawan terlihat, bertahan
 ≥ 1 s, `ATURAN_UMUM.sisiLainTahanDetik`). Pada `curl2` sisi kanan, `sisiLainTerlihat` benar pada > 80%
 frame setelah 2 s dan tidak ada pesan "Mundur sedikit": keluar-frame tidak dimunculkan selama sisi
 lawan terlihat, karena saran yang tepat adalah hadap kamera atau ganti sisi (ditampilkan UI sesi).
+
+## 14. Kinerja, jumlah orang adaptif, latensi, dan sesi luring
+
+### 14.1 Jumlah orang adaptif (`kebijakanOrang.ts`, `PoseEngine.ts`)
+
+Prinsip spesifikasi: bila kecanggihan bertentangan dengan kecepatan di HP kelas bawah, pilih kecepatan.
+Mesin mulai dengan `numPoses: 2` (orang di latar tidak mencuri kerangka, Bagian 13). Tiap frame,
+rata-rata eksponensial fps dan lama inferensi diberikan ke fungsi murni `langkahKebijakan`
+(angka di `ATURAN_UMUM.adaptifOrang`):
+
+| Aturan | Nilai |
+|---|---|
+| Sampel **lambat** | inferensi > 60 ms, ATAU fps < 15 sementara inferensi memakan ≥ 35% waktu (fps rendah karena kamera/cahaya tidak dihitung: turun ke 1 orang tidak menolongnya) |
+| Turun ke 1 orang | semua sampel lambat tanpa putus selama 3 s → `setOptions({ numPoses: 1 })` saat sesi berjalan |
+| Naik lagi ke 2 orang | fps ≥ 20 dan inferensi × 1,9 (biaya 2 orang, Bagian 13) ≤ 35 ms selama 10 s |
+| Anti bolak-balik | turun lagi setelah pernah naik → terkunci 1 orang selama aplikasi terbuka; sampel 1,5 s pertama setelah sesi mulai / mode berganti diabaikan |
+| Antar sesi | mode dan kunci dipertahankan (kemampuan perangkat tidak berubah), sesi berikutnya langsung 1 orang |
+
+Di mode 1 orang, kelengketan orang utama dipertahankan: MediaPipe melacak orang yang sama dari frame
+sebelumnya, dan kandidat tunggal yang jauh dari pasien sebelumnya (> 1 × ukuran badan) **dan** lebih
+kecil (< 0,8 ×) ditolak paling lama 1 s (`kandidatTunggalAsing`). Mode Uji menampilkan "Orang
+dideteksi" dan dapat memaksa 1/2 orang (`/app/uji?orang=1`). Tes: `kebijakanOrang.test.ts` (perangkat
+cepat tetap 2; turun tepat setelah 3 s; inferensi > 60 ms; deret terputus tidak memicu; fps rendah
+karena kamera tidak memicu; masa tenang; naik hanya setelah 10 s lapang; 1 orang yang masih berat tidak
+naik; terkunci setelah turun kedua; osilasi 1 s tidak pernah mengubah mode; kandidat asing).
+
+Teramati (emulasi di bawah): CPU 4x/6x dengan delegasi CPU turun ke 1 orang 5–6 s setelah kamera menyala;
+GPU 6x turun setelah 8–23 s karena fps berayun di sekitar 15 (deret lambat sering terputus, sesuai
+aturan). `setOptions` selesai dalam 213 ms, tetapi inferensi pertama sesudahnya membekukan halaman
+±2 s sekali pada pelambatan 6x (graph dan shader dibangun ulang). Frame selama `setOptions` dilaporkan tanpa
+tubuh; celah ±0,2 s itu di bawah toleransi celah 0,25 s dan jauh di bawah 1 s keluar-frame, jadi tidak
+memunculkan pesan. Sesudahnya fps naik dari 11–13 ke 21 (tabel 14.2, GPU 6x).
+
+### 14.2 Frame rate dan inferensi — **emulasi desktop, bukan HP target**
+
+Laptop Ryzen 7 5800H + GPU laptop, Chrome for Testing 147 headless, build produksi (`vite preview`),
+Mode Uji, kamera palsu (`--use-file-for-fake-video-capture`, klip 24 fps, jadi fps maksimum ±25),
+CPU diperlambat dengan CDP `Emulation.setCPUThrottlingRate`. Pelambatan CPU **tidak memperlambat GPU**,
+jadi baris GPU terlalu optimistis dibanding GPU ponsel murah; baris CPU paksa (`/app/uji?cpu=1`) mewakili
+ponsel yang delegasi GPU-nya gagal. Median 11 detik (detik 5–16), `fleksi-siku`, sisi kiri. Skrip:
+`D:/Temp/pulihin-test/pl2-perf.mjs`, `pl2-batch.mjs` (di luar repo).
+
+| Klip | CPU | Delegasi | 2 orang: fps / inferensi | 1 orang: fps / inferensi |
+|---|---|---|---|---|
+| curl2 (berdiri, serong) | 1x | GPU | 24,8 / 18,0 ms | 25,5 / 10,3 ms |
+| curl2 | 1x | CPU | 19,7 / 50,2 ms | 24,6 / 35,0 ms |
+| curl2 | 4x | GPU | 22,6 / 36,3 ms | 24,1 / 27,2 ms |
+| curl2 | 4x | CPU | 2,9 / 329 ms | 7,2 / 129 ms |
+| curl2 | 6x | GPU | 10,9 / 75,2 ms | 21,0 / 39,7 ms |
+| curl2 | 6x | CPU | 2,1 / 465 ms | 3,2 / 303 ms |
+| seated (duduk, depan) | 1x | GPU | 25,0 / 18,1 ms | 24,8 / 15,3 ms |
+| seated | 1x | CPU | 17,1 / 56,5 ms | 24,8 / 29,5 ms |
+| seated | 4x | GPU | 22,7 / 36,7 ms | 25,2 / 24,9 ms |
+| seated | 4x | CPU | 3,6 / 264 ms | 6,2 / 149 ms |
+| seated | 6x | GPU | 13,4 / 61,6 ms | 21,1 / 36,9 ms |
+| seated | 6x | CPU | 2,1 / 459 ms | 3,7 / 254 ms |
+
+Bacaan jujur: dengan delegasi GPU, 1 orang mempertahankan ≥ 21 fps sampai CPU 6x, sedangkan 2 orang
+jatuh ke 11–13 fps; inilah alasan penurunan otomatis. Dengan delegasi CPU, pada pelambatan 4x ke atas
+bahkan 1 orang hanya 3–7 fps: ponsel tanpa delegasi GPU yang berfungsi kemungkinan **tidak** memenuhi
+AC-F1-4 (≥ 15 fps). Angka AC-F1-4 untuk laporan tetap harus dari HP uji (Bagian 10).
+
+### 14.3 Latensi AC-F1-1 dan AC-F1-3
+
+**AC-F1-1** (kerangka < 500 ms setelah frame kamera pertama yang memuat tubuh). Mode Uji mengukur dari
+event `playing` video (tubuh sudah di depan kamera, jadi frame pertama = frame bertubuh) sampai
+`requestAnimationFrame` sesudah kerangka pertama digambar. Model dihangatkan lebih dulu seperti
+alur aplikasi (Detail Latihan memanggil `preloadPoseEngine`). Rentang dari semua putaran 14.2 dan 14.3
+(4–5 putaran per baris, emulasi desktop):
+
+| CPU | GPU | CPU paksa |
+|---|---|---|
+| 1x | 171–298 ms | 207–265 ms |
+| 4x | 159–378 ms | 446–592 ms |
+| 6x | 290–399 ms | 564–982 ms |
+
+Tanpa pemanasan (`/app/uji?dingin=1`, model mulai dimuat bersamaan dengan kamera): 4 222 ms (1x) dan
+5 759 ms (4x, GPU), dari cache lokal. Jadi AC-F1-1 bergantung pada pemanasan model di Detail Latihan;
+bila pasien menekan Mulai sebelum model selesai dimuat, kerangka pertama tertunda sampai model siap.
+
+**AC-F1-3** (koreksi < 700 ms setelah kondisi salah bertahan 0,5 s).
+
+1. *Putar ulang tracker* (`latensi.test.ts`, 12 percobaan per baris, fase awal digeser terhadap jam
+   frame). Diukur dari awal **fisik** kondisi + 0,5 s, jadi jeda perataan 4 frame ikut terhitung;
+   sejak awal kondisi menurut detektor, pesan tampil pada frame pertama yang melewati 0,5 s:
+
+   | Koreksi | fps | min | median | maks |
+   |---|---|---|---|---|
+   | badan-miring | 12 | 241 ms | 278 ms | 315 ms |
+   | badan-miring | 15 | 241 ms | 278 ms | 300 ms |
+   | badan-miring | 24 | 135 ms | 167 ms | 181 ms |
+   | badan-miring | 30 | 126 ms | 141 ms | 159 ms |
+   | bahu-terangkat | 12 | 250 ms | 296 ms | 334 ms |
+   | bahu-terangkat | 15 | 237 ms | 267 ms | 297 ms |
+   | bahu-terangkat | 24 | 144 ms | 167 ms | 181 ms |
+   | bahu-terangkat | 30 | 126 ms | 141 ms | 163 ms |
+
+2. *Live di Mode Uji* (emulasi desktop): klip `seated-miring` = rekaman `seated` yang diputar 32° selama
+   1,9 s tiap loop (6,9 s), sehingga "Tegakkan badan" muncul sekali per loop. Diukur dari awal kondisi
+   menurut detektor + 0,5 s sampai `requestAnimationFrame` sesudah pesan dirender; jumlah orang adaptif;
+   6 pesan per putaran:
+
+   | CPU | Delegasi | fps (median) | Latensi maks |
+   |---|---|---|---|
+   | 1x | GPU | 24,8 | 72 ms |
+   | 4x | GPU | 24,1 | 164 ms |
+   | 6x | GPU | 19,7 (turun ke 1 orang) | 257 ms |
+   | 4x | CPU | 6,3 (turun ke 1 orang) | 633 ms |
+   | 6x | CPU | 3,9 (turun ke 1 orang) | **1 135 ms (gagal)** |
+
+   Pada ±4 fps satu frame saja sudah 250 ms, ditambah inferensi ±230 ms: AC-F1-3 hanya terpenuhi bila
+   AC-F1-4 terpenuhi. Catatan: rotasi gambar 20° terbaca hanya ±11° elevasi bahu 3D (di bawah ambang
+   12°), sehingga klip uji memakai 32°.
+
+### 14.4 Sesi kamera luring setelah aplikasi dibuka sekali
+
+Service worker hanya mem-precache kerangka aplikasi (termasuk chunk JS `@mediapipe/tasks-vision`).
+`prefetchAsetPose()` (`asetPose.ts`, dipanggil sekali dari `AppShell`) menunggu browser senggang
+(`requestIdleCallback`, cadangan `setTimeout` 3 s), dilewati bila Penghemat Data aktif atau jaringan
+2G/slow-2G, menunggu SW mengendalikan halaman, lalu mengunduh **varian WASM yang sama dengan yang akan
+dipilih `FilesetResolver`** (cek SIMD milik pustaka itu sendiri) + model, berurutan. Unduhan melewati
+runtime cache CacheFirst `pulihin-mediapipe` (`vite.config.ts`). Bila ketiganya sudah ada di cache,
+pustaka tidak diimpor sama sekali.
+
+Uji (`D:/Temp/pulihin-test/pl2-offline.mjs`, build produksi + `vite preview` 127.0.0.1, profil Chrome
+baru, kamera palsu `curl2`):
+
+1. Buka `/app` sekali (tanpa membuka latihan). Dalam 2,8 s cache berisi
+   `vision_wasm_internal.js` (0,34 MB), `vision_wasm_internal.wasm` (13,0 MB, varian SIMD) dan
+   `pose_landmarker_lite.task` (5,78 MB).
+2. Server dimatikan dan CDP `Network.emulateNetworkConditions` offline untuk halaman dan service worker
+   (`navigator.onLine = false`).
+3. Buka `/app/sesi/fleksi-siku`: "Tubuh terdeteksi" pada 2 s, Siap pada 3 s, 6/10 repetisi pada 20 s,
+   tidak ada request gagal (tangkapan `review/pl2-offline-sesi.png`).
+
+Temuan selama uji: MediaPipe memuat skrip loader dengan `<script crossorigin="anonymous">` yang
+mengirim header `Origin`, sedangkan `fetch()` prefetch tidak. Server yang menjawab `Vary: Origin`
+(`vite preview`; Vercel saat ini tidak) membuat `cache.match` gagal saat luring
+(`net::ERR_FAILED`, "Pendeteksi gerak belum siap"). Perbaikan: `matchOptions: { ignoreVary: true }`
+pada runtime cache `/mediapipe/`; uji di atas lulus sesudahnya.

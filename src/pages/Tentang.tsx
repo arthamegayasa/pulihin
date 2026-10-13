@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { Card } from '@/components/Card';
 import { PageHeader } from '@/components/PageHeader';
+import { IDENTITAS } from '@/config/identitas';
 import { PATHS } from '@/router-paths';
 
 function Poin({ Ikon, children }: { Ikon: Icon; children: ReactNode }) {
@@ -12,6 +13,15 @@ function Poin({ Ikon, children }: { Ikon: Icon; children: ReactNode }) {
       <Ikon size={26} weight="bold" className="mt-0.5 shrink-0 text-primer" aria-hidden />
       <span>{children}</span>
     </li>
+  );
+}
+
+function BarisIdentitas({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <dt className="inline font-bold text-teks">{label}: </dt>
+      <dd className="inline">{children}</dd>
+    </div>
   );
 }
 
@@ -67,10 +77,19 @@ export default function Tentang() {
           <li>Huruf Plus Jakarta Sans - lisensi SIL Open Font License (OFL)</li>
           <li>Ikon Phosphor Icons - lisensi MIT</li>
         </ul>
-        <p className="mt-3 text-teks-2">Tim: [DIISI: nama tim]</p>
+        {/* Baris identitas hanya tampil bila sudah diisi di src/config/identitas.ts. */}
+        {(IDENTITAS.namaTim || IDENTITAS.anggotaTim.length > 0 || IDENTITAS.narasumberKlinis || IDENTITAS.kontakPublik) && (
+          <dl className="mt-3 space-y-1 text-teks-2">
+            {IDENTITAS.namaTim && <BarisIdentitas label="Tim">{IDENTITAS.namaTim}</BarisIdentitas>}
+            {IDENTITAS.anggotaTim.length > 0 && <BarisIdentitas label="Anggota">{IDENTITAS.anggotaTim.join(', ')}</BarisIdentitas>}
+            {IDENTITAS.narasumberKlinis && <BarisIdentitas label="Narasumber klinis">{IDENTITAS.narasumberKlinis}</BarisIdentitas>}
+            {IDENTITAS.kontakPublik && <BarisIdentitas label="Kontak">{IDENTITAS.kontakPublik}</BarisIdentitas>}
+          </dl>
+        )}
+        <p className="mt-3 text-teks-2">Dibuat untuk {IDENTITAS.kategoriLomba}.</p>
       </Card>
 
-      <p className="text-[0.9rem] text-teks-2">Semua nama pasien di aplikasi ini adalah nama samaran untuk data contoh.</p>
+      <p className="text-[0.95rem] text-teks-2">Semua nama pasien di aplikasi ini adalah nama samaran untuk data contoh.</p>
     </section>
   );
 }
