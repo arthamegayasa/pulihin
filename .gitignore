@@ -1,0 +1,13 @@
+node_modules
+dist
+dev-dist
+*.local
+.vercel
+.DS_Store
+# Aset MediaPipe disalin/diunduh otomatis oleh scripts/fetch-mediapipe-assets.mjs (hash dikunci di scripts/mediapipe-models.lock.json)
+public/mediapipe/
+coverage
+test-results
+playwright-report
+video/out
+video/node_modules

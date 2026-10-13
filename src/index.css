@@ -1,0 +1,70 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/plus-jakarta-sans';
+
+/* Design system PULIHIN (Bab 12). Token warna dari spesifikasi; jangan menambah aksen baru. */
+@theme {
+  --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  --color-primer: #0b4f4a;
+  --color-primer-tua: #083b37;
+  --color-primer-terang: #eaf2f0;
+  --color-primer-garis: #c9dcd8;
+  --color-aksen: #c46a1b;
+  --color-aksen-terang: #fbefe3;
+  --color-sukses: #1f7a3d;
+  --color-sukses-terang: #e6f4ea;
+  --color-peringatan: #9a6b00;
+  --color-peringatan-terang: #fff4cc;
+  --color-bahaya: #b42318;
+  --color-bahaya-terang: #fdecea;
+  --color-teks: #1a2b2e;
+  /* teks sekunder: kontras 7.3:1 di atas putih */
+  --color-teks-2: #3d5357;
+  --color-garis: #d7e1df;
+  --color-latar: #f6f9f8;
+
+  --radius-kartu: 16px;
+  --shadow-tipis: 0 1px 2px rgb(11 79 74 / 0.06), 0 1px 1px rgb(11 79 74 / 0.04);
+  --shadow-angkat: 0 6px 20px -8px rgb(11 79 74 / 0.25);
+}
+
+/* Ukuran dasar 18px; "Huruf Lebih Besar" memperbesar 20% (Bab 12.2, 12.3). */
+html {
+  font-size: 112.5%;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+html[data-huruf='besar'] {
+  font-size: 135%;
+}
+
+body {
+  @apply bg-latar text-teks font-sans antialiased;
+  line-height: 1.5;
+  overscroll-behavior-y: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-aksen);
+  outline-offset: 2px;
+}
+
+/* Hormati pengaturan gerak dikurangi (Bab 12.3). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
