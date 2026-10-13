@@ -15,12 +15,12 @@ const UKURAN = { lebar: 824, tinggi: 1830 } as const;
 export const LAYAR = {
   beranda: {
     src: '/landing/beranda.webp',
-    alt: 'Tangkapan layar Beranda pasien: sapaan untuk Pak Budi, pengingat latihan, daftar Latihan Hari Ini, dan tombol Mulai yang besar.',
+    alt: 'Tangkapan layar Beranda pasien: sapaan untuk Pak Budi, pengingat latihan gerak, daftar Latihan Hari Ini dengan status tiap latihan, dan tombol besar Mulai: Tekuk Siku.',
     ...UKURAN,
   },
   ringkasan: {
     src: '/landing/ringkasan.webp',
-    alt: 'Tangkapan layar Ringkasan Sesi: skor latihan dengan label kata, jumlah repetisi, durasi, dan rincian skor.',
+    alt: 'Tangkapan layar Ringkasan Sesi: ucapan terima kasih, skor latihan 67 berlabel Baik, repetisi 7 dari 8, durasi, dan rincian skor.',
     ...UKURAN,
   },
   afasia: {
@@ -30,7 +30,7 @@ export const LAYAR = {
   },
   keluarga: {
     src: '/landing/keluarga.webp',
-    alt: 'Tangkapan layar Untuk Keluarga: penanda "Sudah 3 hari belum latihan", status hari ini, dan grafik latihan 7 hari terakhir.',
+    alt: 'Tangkapan layar Untuk Keluarga: penanda "Sudah 3 hari belum latihan", status latihan hari ini, dan grafik sesi terjadwal 7 hari terakhir.',
     ...UKURAN,
   },
   detail: {

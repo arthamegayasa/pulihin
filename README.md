@@ -143,12 +143,18 @@ Stack sesuai Bab 4 (React + Vite + TypeScript + Tailwind, MediaPipe Tasks Vision
 | Simulasi 50 repetisi × 3 latihan inti × 6 kondisi | `akurasi.test.ts` (derau, frame hilang, yaw 0–35°, 15/30 fps) | 50/50 di semua 18 baris. Membuktikan logika hitung; bukan pengganti uji perangkat |
 | **Uji 50 repetisi di HP target (AC-F1-2)** | Mode Uji (`/app/uji`, tombol "+1 Repetisi nyata") | **[DIISI]**: belum dilakukan. Protokol di `docs/algoritma.md` Bagian 10 |
 
-### Frame rate
+### Frame rate dan latensi
 
-| Kondisi | Hasil |
-|---|---|
-| Desktop, Chrome 147, GPU delegate, kamera palsu 640×480 | 25–30 fps pemrosesan, inferensi ±15 ms (1 orang) |
-| HP Android kelas bawah acuan (AC-F1-4) | **[DIISI]**: model HP & versi Chrome belum ditentukan pemilik produk |
+Semua angka di bawah adalah **emulasi desktop** (laptop Ryzen 7 5800H, Chrome 147, build produksi, kamera palsu 24 fps, CPU diperlambat lewat DevTools), **bukan HP target**. Rincian dan metode: `docs/algoritma.md` Bagian 14.
+
+| Ukuran | GPU delegate | CPU delegate (bila GPU gagal) |
+|---|---|---|
+| Frame rate pemrosesan, 1 orang, CPU 1× / 4× / 6× | 25 / 24 / 21 fps | 25 / 7 / 3 fps |
+| AC-F1-1 kerangka pertama (model dihangatkan di Detail Latihan), CPU 1×–6× | 159–399 ms | 207–982 ms |
+| AC-F1-3 koreksi tampil setelah kondisi bertahan 0,5 s, live | 72–257 ms | 633 ms (4×) · 1 135 ms (6×, gagal) |
+| AC-F1-4 di HP Android kelas bawah acuan | **[DIISI]**: model HP & versi Chrome ditentukan pemilik produk | |
+
+Bacaan jujur: dengan GPU, target 15 fps dan latensi terpenuhi dengan cadangan; ponsel yang delegasi GPU-nya gagal kemungkinan **tidak** memenuhi AC-F1-4. Karena itu mesin mulai dengan deteksi 2 orang lalu otomatis turun ke 1 orang bila fps < 15 selama 3 detik (`kebijakanOrang.ts`, diuji), dan hitungan repetisi sudah terbukti tetap tepat pada 12 fps (replay rekaman nyata).
 
 ## Checklist Bab 11 (lembar uji 100 perilaku)
 

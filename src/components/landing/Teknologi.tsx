@@ -1,4 +1,4 @@
-import { ArrowsDownUp, Cpu, Waveform, WifiSlash } from '@phosphor-icons/react';
+import { ArrowSquareOut, ArrowsDownUp, Cpu, Waveform, WifiSlash } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 
 /** Fakta teknis yang benar-benar dipakai di kode ini (PoseEngine, RepCounter, SpeechScorer, vite-plugin-pwa). */
@@ -25,6 +25,22 @@ const FAKTA: { Ikon: Icon; nama: string; isi: string }[] = [
   },
 ];
 
+/** Hasil uji yang tercatat di README.md (bagian Hasil uji) dan docs/algoritma.md Bagian 13. */
+const BUKTI: { angka: string; isi: string }[] = [
+  {
+    angka: '14 dari 14',
+    isi: 'repetisi Tekuk Siku terhitung pada rekaman orang sungguhan, 0 hitungan ganda. Belum diuji di HP target.',
+  },
+  {
+    angka: '0 video',
+    isi: 'dikirim keluar perangkat; pose dihitung di browser. Telemetri bawaan pustaka MediaPipe diblokir.',
+  },
+  {
+    angka: '238',
+    isi: 'uji otomatis lulus, termasuk simulasi 50 repetisi dengan derau dan frame hilang.',
+  },
+];
+
 /** Strip teknologi: fakta jujur untuk kriteria Quality of Technology (Lampiran A). */
 export function Teknologi() {
   return (
@@ -46,6 +62,26 @@ export function Teknologi() {
           </div>
         ))}
       </dl>
+      <div className="mt-14 rounded-kartu border border-garis bg-white p-6 md:p-8">
+        <h3 className="text-[1.2rem] font-extrabold leading-snug">Hasil uji sejauh ini</h3>
+        <dl className="mt-6 grid gap-6 md:grid-cols-3">
+          {BUKTI.map(({ angka, isi }) => (
+            <div key={angka}>
+              <dt className="text-[1.75rem] font-extrabold leading-none text-primer">{angka}</dt>
+              <dd className="mt-2 text-[0.95rem] leading-relaxed text-teks-2">{isi}</dd>
+            </div>
+          ))}
+        </dl>
+        <a
+          href="https://github.com/arthamegayasa/pulihin#hasil-uji"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-6 inline-flex min-h-12 items-center gap-2 font-bold text-primer underline underline-offset-4"
+        >
+          Lihat rincian hasil uji di GitHub
+          <ArrowSquareOut size={20} weight="bold" aria-hidden />
+        </a>
+      </div>
     </section>
   );
 }
