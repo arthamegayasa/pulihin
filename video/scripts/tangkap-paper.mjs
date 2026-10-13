@@ -54,6 +54,7 @@ try {
   await ketukDiam(page, 'Sudah Benar');
   await tungguTeks(page, 'Benar!');
   await gulirKe(page, 0, 10);
+  await potret('04-latihan-kata-afasia.png');
   // Status hari ini tepat di bawah header, lalu grafik Sesi terjadwal 7 hari terakhir utuh
   // (kartu tanda perlu perhatian ada di atasnya dan tampil di video).
   await buka(page, BASE, '/app/keluarga', 'Sesi terjadwal 7 hari terakhir');

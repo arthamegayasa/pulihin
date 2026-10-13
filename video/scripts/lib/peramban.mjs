@@ -299,7 +299,7 @@ export const buka = async (page, base, jalur, teksTunggu) => {
 
 /**
  * Peran Pasien lewat layar Pilih Peran, petunjuk suara dimatikan lewat Pengaturan, lalu
- * Pengaturan > Data Demo > "Ada tanda perlu perhatian" > Reset Data Demo.
+ * Pengaturan > Data Demo > "Ada tanda perlu perhatian" > Setel Ulang Data Demo.
  */
 export const siapkanDemo = async (page, base) => {
   await buka(page, base, '/app');
@@ -311,9 +311,9 @@ export const siapkanDemo = async (page, base) => {
   await aturSaklar(page, 'Petunjuk suara', false);
   await ketukDiam(page, 'Pasien', { cocok: 'sama' });
   await ketukDiam(page, 'Ada tanda perlu perhatian', { cocok: 'awal' });
-  await ketukDiam(page, 'Reset Data Demo');
-  await tungguTeks(page, 'Reset Data Demo?');
-  await ketukDiam(page, 'Ya, Reset Data Demo');
+  await ketukDiam(page, 'Setel Ulang Data Demo');
+  await tungguTeks(page, 'Setel ulang data demo?');
+  await ketukDiam(page, 'Ya, Setel Ulang');
   await jeda(1500);
 };
 
@@ -345,10 +345,10 @@ export const pilihPeran = async (page, base, label) => {
  * Sesi Tekuk Siku hari ini yang SELESAI untuk Pak Budi, disiapkan untuk adegan Ringkasan
  * Sesi / Beranda / Untuk Keluarga tanpa menyalakan kamera.
  *
- * Jalur data sepenuhnya milik aplikasi: Pengaturan > Ekspor Data (JSON) mengunduh cadangan
+ * Jalur data sepenuhnya milik aplikasi: Pengaturan > Simpan cadangan (berkas .json) mengunduh cadangan
  * data demo; skrip menambahkan SATU sesi gerak berlabel demo (isDemo: true) beserta catatan
  * per repetisinya; skor, komponen skor, dan saran dihitung dengan `hitungSkor` milik aplikasi
- * (src/features/pose/scoring.ts) dari catatan repetisi itu; lalu Pengaturan > Impor Data (JSON)
+ * (src/features/pose/scoring.ts) dari catatan repetisi itu; lalu Pengaturan > Pulihkan dari cadangan
  * memulihkan berkas itu lewat validasi aplikasi. Berkas cadangan yang diimpor disimpan di
  * `jalurSalinan` agar dapat diperiksa.
  */
@@ -359,13 +359,13 @@ export const imporSesiDemo = async (page, base, jalurSalinan) => {
   const cdp = await page.createCDPSession();
   await cdp.send('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: unduhan });
   await buka(page, base, '/app/pengaturan', 'Cadangan Data');
-  await ketukDiam(page, 'Ekspor Data (JSON)');
+  await ketukDiam(page, 'Simpan cadangan (berkas .json)');
   let berkas;
   for (let i = 0; i < 50 && !berkas; i++) {
     await jeda(200);
     berkas = readdirSync(unduhan).find((n) => n.endsWith('.json'));
   }
-  if (!berkas) throw new Error('Ekspor Data (JSON) tidak menghasilkan berkas');
+  if (!berkas) throw new Error('Simpan cadangan tidak menghasilkan berkas');
   const bundel = JSON.parse(readFileSync(join(unduhan, berkas), 'utf8'));
 
   // "Hari ini" dan jam menurut peramban (zona waktu yang sama dengan aplikasi).
@@ -443,9 +443,9 @@ export const imporSesiDemo = async (page, base, jalurSalinan) => {
   mkdirSync(dirname(jalurSalinan), { recursive: true });
   writeFileSync(jalurSalinan, `${JSON.stringify(bundel, null, 2)}\n`);
 
-  // Impor lewat tombol aplikasi (input berkas tersembunyi di bawah tombol Impor Data).
+  // Pulihkan lewat tombol aplikasi (input berkas tersembunyi di bawah tombol Pulihkan dari cadangan).
   const input = await page.$('input[type="file"]');
-  if (!input) throw new Error('Input berkas Impor Data tidak ditemukan');
+  if (!input) throw new Error('Input berkas Pulihkan dari cadangan tidak ditemukan');
   await input.uploadFile(jalurSalinan);
   await tungguTeks(page, 'Pulihkan dari berkas cadangan?');
   await ketukDiam(page, 'Ya, Pulihkan');

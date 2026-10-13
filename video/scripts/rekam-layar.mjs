@@ -41,8 +41,8 @@ const DIR_KERJA = join(AKAR_VIDEO, 'out', 'rekam-layar');
 const CADANGAN = join(DIR_KERJA, 'cadangan-demo-sesi-tekuk-siku.json');
 
 /**
- * Setiap rekaman: perangkat, data awal ('awal' = Reset Data Demo skenario "Ada tanda perlu
- * perhatian"; 'sesi' = sama + satu sesi Tekuk Siku hari ini yang selesai, lewat Impor Data),
+ * Setiap rekaman: perangkat, data awal ('awal' = Setel Ulang Data Demo skenario "Ada tanda perlu
+ * perhatian"; 'sesi' = sama + satu sesi Tekuk Siku hari ini yang selesai, lewat Pulihkan dari cadangan),
  * halaman awal, durasi, dan langkah bertempo (detik di dalam berkas = `mulaiDi` di timeline.ts).
  */
 const REKAMAN = [
