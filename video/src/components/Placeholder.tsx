@@ -5,15 +5,21 @@ import { FONT, WARNA } from '../theme.ts';
 
 /**
  * Di mana kartu placeholder ditempatkan agar tidak bertabrakan dengan teks
- * penyunting: 'layar' = di dalam layar ponsel, 'penuh' = setengah kanan
- * bingkai penuh (judul/lower third/subtitle ada di kiri), 'split' = area shot
- * lebar di bawah kartu kalimat kunci.
+ * penyunting: 'layar' = di dalam layar ponsel, 'desktop' = di dalam bingkai
+ * peramban, 'penuh' = setengah kanan bingkai penuh (judul/lower third/subtitle
+ * ada di kiri), 'split' = area shot lebar di bawah kartu kalimat kunci.
  */
-export type TataPlaceholder = 'layar' | 'penuh' | 'split';
+export type TataPlaceholder = 'layar' | 'desktop' | 'penuh' | 'split';
+
+const JUDUL: Record<SlotRekaman['jenis'], string> = {
+  kamera: 'Rekam dengan kamera (manusia)',
+  layar: 'Rekam layar ponsel',
+  desktop: 'Rekam layar desktop',
+};
 
 /**
  * Kartu pengganti untuk slot rekaman yang belum ada. Jelas berlabel
- * PLACEHOLDER dan tidak meniru isi aplikasi.
+ * PLACEHOLDER, memberi instruksi perekaman, dan tidak meniru isi aplikasi.
  */
 export const Placeholder: React.FC<{ slot: SlotRekaman; detik: number; tata: TataPlaceholder }> = ({
   slot,
@@ -25,9 +31,17 @@ export const Placeholder: React.FC<{ slot: SlotRekaman; detik: number; tata: Tat
   const posisi: React.CSSProperties =
     tata === 'layar'
       ? { left: 30, right: 30, top: 0, bottom: 0, justifyContent: 'center' }
-      : tata === 'penuh'
-        ? { left: 1120, right: 100, top: 0, bottom: 0, justifyContent: 'center' }
-        : { left: 120, width: 760, top: 300 };
+      : tata === 'desktop'
+        ? { left: 70, right: 70, top: 0, bottom: 0, justifyContent: 'center' }
+        : tata === 'penuh'
+          ? { left: 1120, right: 100, top: 0, bottom: 0, justifyContent: 'center' }
+          : { left: 120, width: 760, top: 300 };
+  const cara =
+    slot.jenis === 'kamera'
+      ? 'Wajib direkam manusia (Bab 14.4). Dilarang avatar AI, wajah atau suara sintetis, dan rekaman stok.'
+      : slot.otomatis
+        ? 'Draf: npm run rekam-layar. Final boleh diganti rekaman layar ponsel asli.'
+        : 'Rekam di ponsel uji saat sesi nyata bersama pemeran (perekam layar Android, 1080x2400).';
   return (
     <AbsoluteFill style={{ backgroundColor: WARNA.latar, fontFamily: FONT, color: WARNA.teks }}>
       <div
@@ -38,7 +52,7 @@ export const Placeholder: React.FC<{ slot: SlotRekaman; detik: number; tata: Tat
           borderRadius: sempit ? 40 : 24,
         }}
       />
-      <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', gap: sempit ? 12 : 18, ...posisi }}>
+      <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', gap: sempit ? 10 : 16, ...posisi }}>
         <div
           style={{
             alignSelf: 'flex-start',
@@ -53,22 +67,30 @@ export const Placeholder: React.FC<{ slot: SlotRekaman; detik: number; tata: Tat
         >
           PLACEHOLDER
         </div>
-        <div style={{ fontSize: huruf(40), fontWeight: 700, lineHeight: 1.2 }}>
-          {slot.jenis === 'layar' ? 'Rekaman layar belum ada' : 'Rekaman kamera belum ada'}
+        <div style={{ fontSize: huruf(40), fontWeight: 750, lineHeight: 1.2 }}>{JUDUL[slot.jenis]}</div>
+        <div style={{ fontSize: huruf(26), lineHeight: 1.45 }}>{slot.rekam}</div>
+        <div
+          style={{
+            fontSize: huruf(23),
+            fontWeight: 650,
+            lineHeight: 1.4,
+            color: slot.jenis === 'kamera' ? WARNA.aksen : WARNA.primer,
+          }}
+        >
+          {cara}
         </div>
         <div
           style={{
             fontFamily: 'Consolas, "Courier New", monospace',
-            fontSize: huruf(26),
+            fontSize: huruf(24),
             color: WARNA.primer,
             overflowWrap: 'anywhere',
           }}
         >
-          public/footage/{slot.berkas}
+          Simpan sebagai public/footage/{slot.berkas}
         </div>
-        <div style={{ fontSize: huruf(26), lineHeight: 1.45 }}>{slot.rekam}</div>
-        <div style={{ fontSize: huruf(24), fontWeight: 600, color: WARNA.primer }}>
-          Bagian ini: {Math.round(detik)} dtk, mulai detik {slot.mulaiDi} dari berkas
+        <div style={{ fontSize: huruf(23), fontWeight: 600, color: WARNA.primer }}>
+          Bagian ini {Math.round(detik)} dtk, diambil mulai detik {slot.mulaiDi} dari berkas
         </div>
       </div>
     </AbsoluteFill>

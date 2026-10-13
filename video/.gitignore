@@ -1,0 +1,4 @@
+# Rekaman video tidak masuk git: rekaman layar dibuat ulang dengan `npm run rekam-layar`,
+# rekaman ponsel/kamera tim disalin manual (ukurannya puluhan sampai ratusan MB).
+public/footage/*
+!public/footage/.gitkeep

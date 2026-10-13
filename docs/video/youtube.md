@@ -34,10 +34,10 @@ Bab video:
 4:00 Terapis dan penutup
 
 Subtitle Bahasa Inggris tersedia (CC).
-Tim: [DIISI]
+Tim: [DIISI: sama dengan namaTim di src/config/identitas.ts]
 ```
 
-Catatan: bila adegan 4:00 memakai varian `streak` (dashboard klinisi belum selesai), ganti baris bab terakhir menjadi `4:00 Kepatuhan, streak, dan penutup`.
+Catatan: bila adegan 4:00 memakai varian `streak` (Dashboard Terapis belum dipakai), ganti baris bab terakhir menjadi `4:00 Kepatuhan, streak, dan penutup`.
 
 ## Tag
 

@@ -14,8 +14,11 @@ export const SideText: React.FC<{
   tahap?: string;
   gaya?: 'kolom' | 'kartu' | 'ringkas';
   atas?: number;
-}> = ({ teks, tahap, gaya = 'kolom', atas = 250 }) => {
+  /** Lebar kolom (bawaan LEBAR_KOLOM); kolom sempit (tata desktop) memakai huruf sedikit lebih kecil. */
+  lebar?: number;
+}> = ({ teks, tahap, gaya = 'kolom', atas = 250, lebar = LEBAR_KOLOM }) => {
   const ringkas = gaya === 'ringkas';
+  const sempit = lebar < LEBAR_KOLOM;
   const opasitas = useMuncul(Math.round((teks.mulaiDi ?? 0.3) * FPS), 14);
   return (
     <div
@@ -23,7 +26,7 @@ export const SideText: React.FC<{
         position: 'absolute',
         left: KIRI,
         top: atas,
-        width: LEBAR_KOLOM,
+        width: lebar,
         fontFamily: FONT,
         color: WARNA.teks,
         opacity: opasitas,
@@ -58,7 +61,7 @@ export const SideText: React.FC<{
       ) : null}
       <div
         style={{
-          fontSize: ringkas ? 40 : gaya === 'kartu' ? 56 : 64,
+          fontSize: ringkas ? 40 : gaya === 'kartu' ? 56 : sempit ? 54 : 64,
           fontWeight: 750,
           lineHeight: 1.14,
           letterSpacing: '-0.01em',

@@ -1,6 +1,6 @@
 import type React from 'react';
 import { AbsoluteFill, Html5Audio, Sequence, interpolate, staticFile } from 'remotion';
-import { BrollScene, PhoneScene, SplitScene } from './components/SplitScene.tsx';
+import { BrollScene, DesktopScene, PhoneScene, SplitScene } from './components/SplitScene.tsx';
 import { CaptionTrack } from './components/CaptionTrack.tsx';
 import { ClosingCard } from './components/ClosingCard.tsx';
 import { TalkingHead } from './components/TalkingHead.tsx';
@@ -36,6 +36,8 @@ const IsiAdegan: React.FC<{ adegan: Adegan; durasiFrame: number }> = ({ adegan, 
       return <BrollScene adegan={adegan} durasiFrame={durasiFrame} />;
     case 'ponsel':
       return <PhoneScene adegan={adegan} durasiFrame={durasiFrame} />;
+    case 'desktop':
+      return <DesktopScene adegan={adegan} durasiFrame={durasiFrame} />;
     case 'split':
       return <SplitScene adegan={adegan} durasiFrame={durasiFrame} />;
     case 'penutup':

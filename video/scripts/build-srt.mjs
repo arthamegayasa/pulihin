@@ -80,6 +80,7 @@ const NAMA_TATA = {
   dokter: 'Talking head dokter',
   broll: 'B-roll penuh layar + kalimat kunci',
   ponsel: 'Rekaman layar dalam bingkai ponsel + kalimat kunci',
+  desktop: 'Rekaman layar desktop dalam bingkai peramban + kalimat kunci',
   split: 'Shot lebar pemeran + rekaman layar dalam bingkai ponsel',
   penutup: 'Layar penutup statis',
 };
@@ -146,7 +147,11 @@ const tabelBerkas = [
         return sl.mulaiDi + (a.selesai - a.mulai) + FADE_FRAME / FPS;
       }),
     );
-    const jenis = s.slot.jenis === 'layar' ? 'Rekaman layar 1080x2400, tegak' : 'Kamera 1920x1080, mendatar';
+    const jenis = {
+      layar: 'Rekaman layar ponsel 1080x2400, tegak',
+      desktop: 'Rekaman layar desktop 1920x1080',
+      kamera: 'Kamera 1920x1080, mendatar, direkam manusia',
+    }[s.slot.jenis] + (s.slot.otomatis ? ' · draf: `npm run rekam-layar`' : '');
     return `| \`${s.berkas}\` | ${jenis} | ${s.adegan.map((a) => rentang(a.mulai, a.selesai)).join(', ')} | ${Math.ceil(butuh)} dtk | ${s.slot.rekam} |`;
   }),
 ];

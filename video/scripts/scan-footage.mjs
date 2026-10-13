@@ -95,8 +95,8 @@ for (const s of slot) {
   if (info && s.slot.jenis === 'layar' && info.lebar && info.tinggi && info.tinggi < info.lebar) {
     peringatan.push(`${s.berkas}: rekaman layar mendatar (${info.lebar}x${info.tinggi}); rekam dalam posisi tegak 1080x2400`);
   }
-  if (info && s.slot.jenis === 'kamera' && info.lebar && info.tinggi && info.tinggi > info.lebar) {
-    peringatan.push(`${s.berkas}: rekaman kamera tegak (${info.lebar}x${info.tinggi}); rekam mendatar 16:9`);
+  if (info && s.slot.jenis !== 'layar' && info.lebar && info.tinggi && info.tinggi > info.lebar) {
+    peringatan.push(`${s.berkas}: rekaman ${s.slot.jenis} tegak (${info.lebar}x${info.tinggi}); rekam mendatar 16:9`);
   }
 }
 const dikenal = new Set(slot.map((s) => s.berkas));

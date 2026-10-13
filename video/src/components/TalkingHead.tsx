@@ -7,8 +7,11 @@ import { Rekaman } from './Rekaman.tsx';
 import { SideText } from './SideText.tsx';
 import { TitleCard } from './TitleCard.tsx';
 
-/** Lower third nama dokter, di atas zona subtitle (kiri bawah). */
-const LowerThird: React.FC<{ opasitas: number }> = ({ opasitas }) => (
+/**
+ * Lower third nama dokter, di atas zona subtitle (kiri bawah). Nama dari
+ * src/config/identitas.ts (narasumberKlinis); tidak tampil selama belum diisi.
+ */
+const LowerThird: React.FC<{ opasitas: number; nama: string }> = ({ opasitas, nama }) => (
   <div
     style={{
       position: 'absolute',
@@ -25,7 +28,7 @@ const LowerThird: React.FC<{ opasitas: number }> = ({ opasitas }) => (
   >
     <div style={{ width: 10, backgroundColor: WARNA.primer }} />
     <div style={{ padding: '20px 32px 22px' }}>
-      <div style={{ fontSize: 38, fontWeight: 750, color: WARNA.teks }}>{DOKTER_NAMA}</div>
+      <div style={{ fontSize: 38, fontWeight: 750, color: WARNA.teks }}>{nama}</div>
       <div style={{ marginTop: 6, fontSize: 25, fontWeight: 600, color: WARNA.primer }}>{DOKTER_PERAN}</div>
     </div>
   </div>
@@ -46,7 +49,7 @@ export const TalkingHead: React.FC<{ adegan: Adegan; durasiFrame: number; bisu: 
       ) : null}
       {adegan.tata === 'judul-dokter' ? <TitleCard opasitas={judul} /> : null}
       {adegan.teksLayar ? <SideText teks={adegan.teksLayar} gaya="kartu" atas={110} /> : null}
-      {adegan.namaDokter ? <LowerThird opasitas={nama} /> : null}
+      {adegan.namaDokter && DOKTER_NAMA ? <LowerThird opasitas={nama} nama={DOKTER_NAMA} /> : null}
     </AbsoluteFill>
   );
 };

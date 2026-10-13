@@ -121,129 +121,125 @@ melainkan menjaga
 cara geraknya, sampai repetisi kesepuluh.
 
 27
-00:02:10,500 --> 00:02:14,000
-Di akhir sesi ada skor
-dan ringkasan sederhana:
+00:02:10,500 --> 00:02:16,082
+Di akhir sesi ada skor dan ringkasan
+sederhana: jumlah repetisi dan durasi.
 
 28
-00:02:14,040 --> 00:02:17,012
-jumlah repetisi, durasi, dan satu saran.
-
-29
-00:02:17,052 --> 00:02:21,154
+00:02:16,122 --> 00:02:20,205
 Labelnya mudah dipahami,
 mulai dari Perlu Pendampingan,
 
-30
-00:02:21,194 --> 00:02:23,981
+29
+00:02:20,245 --> 00:02:23,019
 Berkembang, Baik, sampai Sangat Baik.
 
+30
+00:02:30,500 --> 00:02:33,227
+Ada satu saran untuk sesi berikutnya.
+
 31
-00:02:30,500 --> 00:02:32,707
-Ringkasan ini bukan diagnosis.
+00:02:33,267 --> 00:02:38,426
+Ringkasan ini bukan diagnosis,
+dan kalimat batasan itu selalu tampil.
 
 32
-00:02:32,747 --> 00:02:37,167
-Kalimat batasan itu selalu
-tampil di setiap ringkasan sesi.
+00:02:42,500 --> 00:02:47,685
+Kembali ke Beranda, Tekuk Siku sudah
+bertanda selesai beserta skornya.
 
 33
-00:02:42,500 --> 00:02:47,387
-Kembali ke Beranda, status hari
-ini sudah berubah menjadi selesai.
-
-34
-00:02:47,427 --> 00:02:51,907
+00:02:47,725 --> 00:02:52,204
 Latihannya tercatat di ponsel,
 dan keluarga bisa melihatnya.
 
-35
-00:03:00,500 --> 00:03:02,571
+34
+00:03:00,500 --> 00:03:02,564
 Keluarga tidak lagi menebak.
 
+35
+00:03:02,604 --> 00:03:07,447
+Di halaman Untuk Keluarga ada tanda
+bila latihan sempat terhenti,
+
 36
-00:03:02,611 --> 00:03:05,662
-Di halaman Untuk Keluarga, mereka melihat
+00:03:07,487 --> 00:03:11,093
+status hari ini,
+dan grafik tujuh hari terakhir.
 
 37
-00:03:05,702 --> 00:03:09,019
-kepatuhan tujuh hari
-terakhir dan tren skor.
+00:03:15,500 --> 00:03:18,523
+Tren skor empat belas hari juga terlihat.
 
 38
-00:03:15,500 --> 00:03:20,011
-Bila latihan terhenti beberapa
-hari, muncul tanda yang jelas.
-
-39
-00:03:20,051 --> 00:03:25,796
+00:03:18,563 --> 00:03:24,315
 Ringkasan mingguan bisa disalin dengan
 satu ketukan, siap dikirim ke terapis.
 
-40
+39
 00:03:30,500 --> 00:03:35,460
 Untuk pasien dengan gangguan bicara
 atau afasia, ada Latihan Bicara
 
-41
+40
 00:03:35,500 --> 00:03:40,500
 berbahasa Indonesia, dengan kata
 yang dipakai di rumah setiap hari.
 
-42
+41
 00:03:42,500 --> 00:03:46,500
 Pemeran mendengarkan contoh,
 lalu menyebutkan katanya.
 
-43
+42
 00:03:51,000 --> 00:03:54,281
 Aplikasi mendengarkan dan menilai.
 
-44
+43
 00:03:54,321 --> 00:03:59,400
 Kata yang tepat dinilai Benar,
 dan skornya tercatat.
 
-45
+44
 00:04:00,500 --> 00:04:04,346
-Di dashboard klinisi,
+Di Dashboard Terapis,
 terapis dapat menyusun program
 
-46
+45
 00:04:04,386 --> 00:04:08,796
 dan mengikuti kemajuan tanpa
 menunggu kunjungan berikutnya.
 
-47
+46
 00:04:12,500 --> 00:04:15,976
 Di prototype ini, program
 yang disimpan terapis
 
-48
+47
 00:04:16,016 --> 00:04:19,981
 menjadi Latihan Hari Ini
 pada profil pasien tersebut.
 
-49
+48
 00:04:25,600 --> 00:04:28,599
 PULIHIN tidak menggantikan terapis.
 
-50
+49
 00:04:28,639 --> 00:04:32,247
 PULIHIN membantu memastikan yang diajarkan
 
-51
+50
 00:04:32,287 --> 00:04:35,500
 terapis benar-benar dilatih di rumah.
 
-52
+51
 00:04:36,800 --> 00:04:40,464
 Ini masih prototype untuk kompetisi,
 
-53
+52
 00:04:40,504 --> 00:04:43,756
 bukan alat kesehatan teregulasi.
 
-54
+53
 00:04:43,796 --> 00:04:47,500
 Silakan mencobanya di pulihinapp.id.

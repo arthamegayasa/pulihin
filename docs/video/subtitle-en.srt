@@ -120,130 +120,133 @@ movement is done, all the
 way to the tenth repetition.
 
 26
-00:02:10,500 --> 00:02:13,588
+00:02:10,500 --> 00:02:13,517
 At the end of the session there is a score
 
 27
-00:02:13,628 --> 00:02:17,759
+00:02:13,557 --> 00:02:16,938
 and a simple summary:
-repetitions, duration and one tip.
+repetitions and duration.
 
 28
-00:02:17,799 --> 00:02:21,260
+00:02:16,978 --> 00:02:20,359
 The labels are easy to read,
 from Needs Support
 
 29
-00:02:21,300 --> 00:02:23,981
+00:02:20,399 --> 00:02:23,019
 and Improving to Good and Very Good.
 
 30
-00:02:30,500 --> 00:02:33,094
-This summary is not a diagnosis.
+00:02:30,500 --> 00:02:33,301
+There is one tip for the next session.
 
 31
-00:02:33,134 --> 00:02:37,167
-That disclaimer appears
-on every session summary.
+00:02:33,341 --> 00:02:38,426
+This summary is not a diagnosis,
+and that disclaimer always appears.
 
 32
-00:02:42,500 --> 00:02:46,975
-Back on the home screen,
-today's status has changed to done.
+00:02:42,500 --> 00:02:47,492
+Back on the home screen, Elbow Flexion
+is marked done, with its score.
 
 33
-00:02:47,015 --> 00:02:51,907
+00:02:47,532 --> 00:02:52,204
 The exercise is recorded on the phone,
 and the family can see it.
 
 34
-00:03:00,500 --> 00:03:02,671
+00:03:00,500 --> 00:03:02,961
 The family no longer has to guess.
 
 35
-00:03:02,711 --> 00:03:06,053
-On the For Family page,
-the caregiver sees adherence
+00:03:03,001 --> 00:03:07,301
+The For Family page shows a flag
+when exercise has stopped,
 
 36
-00:03:06,093 --> 00:03:09,019
-over the last seven days
-and the score trend.
+00:03:07,341 --> 00:03:11,093
+today's status, and a chart
+of the last seven days.
 
 37
-00:03:15,500 --> 00:03:19,807
-If exercise stops for several
-days, a clear flag appears.
+00:03:15,500 --> 00:03:18,268
+The 14-day score trend is there too.
 
 38
-00:03:19,847 --> 00:03:25,796
-The weekly summary can be copied with
-one tap, ready to send to the therapist.
+00:03:18,308 --> 00:03:20,765
+The weekly summary can be copied
 
 39
+00:03:20,805 --> 00:03:24,315
+with one tap, ready to
+send to the therapist.
+
+40
 00:03:30,500 --> 00:03:34,492
 For patients with speech
 difficulties, or aphasia,
 
-40
+41
 00:03:34,532 --> 00:03:40,500
 there is Speech Practice in Indonesian,
 with words used at home every day.
 
-41
+42
 00:03:42,500 --> 00:03:46,500
 The performer listens to the
 example, then says the word.
 
-42
+43
 00:03:51,000 --> 00:03:54,373
 The app listens and scores the attempt.
 
-43
+44
 00:03:54,413 --> 00:03:59,400
 A correct word is marked Correct,
 and the score is saved.
 
-44
+45
 00:04:00,500 --> 00:04:04,889
-On the clinician dashboard,
+On the Therapist Dashboard,
 the therapist can set the programme
 
-45
+46
 00:04:04,929 --> 00:04:08,796
 and follow progress without
 waiting for the next visit.
 
-46
+47
 00:04:12,500 --> 00:04:16,201
 In this prototype,
 the programme the therapist saves
 
-47
+48
 00:04:16,241 --> 00:04:19,981
 becomes Today's Exercises on
 that patient's profile.
 
-48
+49
 00:04:25,600 --> 00:04:28,888
 PULIHIN does not replace the therapist.
 
-49
+50
 00:04:28,928 --> 00:04:32,473
 It helps make sure that what the therapist
 
-50
+51
 00:04:32,513 --> 00:04:35,500
 teaches is truly practised at home.
 
-51
+52
 00:04:36,800 --> 00:04:40,786
 This is still a competition prototype,
 
-52
+53
 00:04:40,826 --> 00:04:44,070
 not a regulated medical device.
 
-53
+54
 00:04:44,110 --> 00:04:47,500
 You can try it at pulihinapp.id.

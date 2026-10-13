@@ -39,4 +39,20 @@ export const PONSEL = {
 /** Panel berwarna lembut di belakang ponsel (juga batas kanan footage pada tata split). */
 export const PANEL_KIRI = 1130;
 
+/**
+ * Bingkai peramban untuk rekaman layar desktop terapis (1920x1080, 16:9) di sisi kanan.
+ * Bawah bingkai (y 869) tetap di atas zona subtitle kiri bawah (mulai sekitar y 904).
+ */
+const PERAMBAN_LEBAR = 1200;
+const PERAMBAN_BAR = 44;
+export const PERAMBAN = {
+  kiri: LEBAR - 100 - PERAMBAN_LEBAR,
+  atas: 150,
+  lebar: PERAMBAN_LEBAR,
+  bar: PERAMBAN_BAR,
+  layarTinggi: Math.round((PERAMBAN_LEBAR * 9) / 16),
+} as const;
+/** Lebar kolom teks kiri pada tata desktop. */
+export const LEBAR_KOLOM_DESKTOP = PERAMBAN.kiri - KIRI - 60;
+
 export const BAYANGAN = '0 24px 60px rgba(11, 79, 74, 0.16), 0 4px 14px rgba(26, 43, 46, 0.08)';

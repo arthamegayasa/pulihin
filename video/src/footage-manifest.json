@@ -1,5 +1,36 @@
 {
-  "dipindai": "2026-10-13T02:09:10.135Z",
-  "footage": {},
+  "dipindai": "2026-10-13T14:13:40.602Z",
+  "footage": {
+    "layar-01-beranda-detail.mp4": {
+      "bytes": 982733,
+      "durasi": 21.5,
+      "lebar": 1080,
+      "tinggi": 2400
+    },
+    "layar-03-ringkasan-beranda.mp4": {
+      "bytes": 1832968,
+      "durasi": 51,
+      "lebar": 1080,
+      "tinggi": 2400
+    },
+    "layar-04-keluarga.mp4": {
+      "bytes": 1872572,
+      "durasi": 31,
+      "lebar": 1080,
+      "tinggi": 2400
+    },
+    "layar-05-afasia.mp4": {
+      "bytes": 758049,
+      "durasi": 31.5,
+      "lebar": 1080,
+      "tinggi": 2400
+    },
+    "layar-06-klinisi.mp4": {
+      "bytes": 3406925,
+      "durasi": 26,
+      "lebar": 1920,
+      "tinggi": 1080
+    }
+  },
   "audio": {}
 }

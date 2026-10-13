@@ -40,7 +40,8 @@ export const ClosingCard: React.FC = () => {
           <br />
           {KATEGORI}
         </div>
-        <div style={{ marginTop: 34, fontSize: 30, fontWeight: 600 }}>Tim: {NAMA_TIM}</div>
+        {/* Nama tim dari src/config/identitas.ts; tidak tampil selama belum diisi (bukan "[DIISI]"). */}
+        {NAMA_TIM ? <div style={{ marginTop: 34, fontSize: 30, fontWeight: 600 }}>Tim: {NAMA_TIM}</div> : null}
         <div style={{ marginTop: 44, fontSize: 22, fontWeight: 500, color: '#4B5D60' }}>
           Prototype kompetisi, bukan alat kesehatan teregulasi · {LABEL_PEMERAN}, bukan pasien sungguhan
         </div>
