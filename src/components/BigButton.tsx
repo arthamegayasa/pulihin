@@ -13,9 +13,10 @@ const VARIAN: Record<Varian, string> = {
 };
 
 // Tinggi minimum: tombol utama 56px, tombol Mulai Sesi 72px (Bab 12.2). Nilai px agar tidak ikut membesar berlebihan.
+// Label tombol besar muat satu baris di layar 360px ("Mulai dengan Kamera"); pada Huruf Lebih Besar boleh dua baris.
 const UKURAN: Record<Ukuran, string> = {
-  normal: 'min-h-[56px] px-5 text-[1.05rem]',
-  besar: 'min-h-[72px] px-6 text-[1.25rem]',
+  normal: 'min-h-[56px] px-5 gap-3 text-[1.05rem]',
+  besar: 'min-h-[72px] px-4 gap-2.5 text-[1.15rem]',
 };
 
 interface Common {
@@ -29,7 +30,7 @@ interface Common {
 
 function kelas({ varian = 'primer', ukuran = 'normal', penuh = true, className = '' }: Omit<Common, 'children' | 'ikon'>) {
   return [
-    'inline-flex items-center justify-center gap-3 rounded-2xl font-bold leading-tight text-center',
+    'inline-flex items-center justify-center rounded-2xl font-bold leading-tight text-center text-balance',
     'transition-[transform,background-color] duration-150 active:scale-[0.98] select-none',
     'disabled:opacity-50 disabled:pointer-events-none',
     VARIAN[varian],

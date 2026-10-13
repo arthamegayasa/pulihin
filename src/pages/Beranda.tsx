@@ -16,7 +16,8 @@ import { BigLink } from '@/components/BigButton';
 import { Card } from '@/components/Card';
 import { KosongDemo } from '@/components/KosongDemo';
 import type { InfoStreak } from '@/features/adherence/adherence';
-import { useDataPasien, useLaporan, useNotifikasiPengingat, useSekarang } from '@/features/adherence/hooks';
+import { useDataPasien, useLaporan, useSekarang } from '@/features/adherence/hooks';
+import { latihanBerikutnya, statusProgramHariIni, teksProgresSet, teksTarget } from '@/features/adherence/program';
 import { bannerPengingat, pengingatHariIni } from '@/features/adherence/reminders';
 import { getExercise } from '@/features/pose/exerciseDefinitions';
 import { formatTanggalPendek, namaHari, toISODate } from '@/lib/date';
@@ -49,7 +50,6 @@ export default function Beranda() {
   const sekarang = useSekarang();
   const { data, loading, error } = useDataPasien();
   const lap = useLaporan(data, sekarang);
-  useNotifikasiPengingat(data, sekarang);
 
   if (loading && !data) return <p className="py-10 text-center text-teks-2">Memuat latihan hari ini...</p>;
   if (error) return <p className="py-10 text-center text-teks-2">Data latihan belum bisa dibaca. Coba muat ulang halaman.</p>;
@@ -64,15 +64,11 @@ export default function Beranda() {
 
   const { profile, program, schedule, sessions } = data;
   const today = toISODate(sekarang);
-  const sesiHariIni = sessions.filter((s) => s.tanggal === today);
-  const items = (program?.items ?? []).map((item) => {
-    const selesai = sesiHariIni.filter((s) => s.jenis === 'gerak' && s.latihanId === item.latihanId);
-    return { ...item, nama: namaLatihan(item.latihanId), skor: selesai.at(-1)?.skor ?? null };
-  });
+  const items = statusProgramHariIni(program?.items ?? [], sessions, today).map((s) => ({ ...s, nama: namaLatihan(s.latihanId) }));
   const afasiaSelesai = lap.hariIni.afasiaSelesai;
   const total = items.length + 1;
-  const selesai = items.filter((i) => i.skor !== null).length + (afasiaSelesai ? 1 : 0);
-  const berikut = items.find((i) => i.skor === null);
+  const selesai = items.filter((i) => i.selesai).length + (afasiaSelesai ? 1 : 0);
+  const berikut = latihanBerikutnya(items);
   const banner = bannerPengingat(pengingatHariIni(schedule, lap.hariIni, sekarang));
   const semuaSelesai = selesai === total;
 
@@ -127,8 +123,10 @@ export default function Beranda() {
               to={`${PATHS.detailLatihan(item.latihanId)}?target=${item.targetRepetisi}`}
               Ikon={PersonArmsSpread}
               nama={item.nama}
-              ukuran={`${item.targetRepetisi} kali`}
-              skor={item.skor}
+              ukuran={teksTarget(item)}
+              selesai={item.selesai}
+              skor={item.skorTerakhir}
+              progres={teksProgresSet(item)}
             />
           ))}
           <BarisLatihan
@@ -136,7 +134,8 @@ export default function Beranda() {
             Ikon={ChatCircleText}
             nama="Latihan Bicara"
             ukuran="10 kata"
-            skor={afasiaSelesai ? lap.hariIni.skorAfasiaTerakhir : null}
+            selesai={afasiaSelesai}
+            skor={lap.hariIni.skorAfasiaTerakhir}
           />
         </ul>
       </div>
@@ -153,6 +152,7 @@ export default function Beranda() {
           ikon={<Play size={28} weight="fill" aria-hidden />}
         >
           Mulai: {berikut.nama}
+          {berikut.setSelesai > 0 && ` (set ${berikut.setSelesai + 1} dari ${berikut.set})`}
         </BigLink>
       ) : (
         <BigLink to={PATHS.afasia} ukuran="besar" ikon={<Play size={28} weight="fill" aria-hidden />}>
@@ -170,8 +170,24 @@ export default function Beranda() {
   );
 }
 
-function BarisLatihan({ to, Ikon, nama, ukuran, skor }: { to: string; Ikon: Icon; nama: string; ukuran: string; skor: number | null }) {
-  const selesai = skor !== null;
+function BarisLatihan({
+  to,
+  Ikon,
+  nama,
+  ukuran,
+  selesai,
+  skor,
+  progres = null,
+}: {
+  to: string;
+  Ikon: Icon;
+  nama: string;
+  ukuran: string;
+  selesai: boolean;
+  skor: number | null;
+  /** "1 dari 2 set" bila sebagian set sudah dikerjakan. */
+  progres?: string | null;
+}) {
   return (
     <li>
       <Link to={to} className="flex min-h-[56px] items-center gap-3 px-3 py-1.5 hover:bg-primer-terang">
@@ -181,7 +197,9 @@ function BarisLatihan({ to, Ikon, nama, ukuran, skor }: { to: string; Ikon: Icon
           <span className="block text-[0.85rem] leading-snug text-teks-2">
             {ukuran} ·{' '}
             {selesai ? (
-              <span className="font-bold text-sukses">Selesai, skor {skor}</span>
+              <span className="font-bold text-sukses">Selesai{skor !== null && `, skor ${skor}`}</span>
+            ) : progres ? (
+              <span className="font-bold text-teks">{progres}</span>
             ) : (
               <span className="font-semibold">Belum</span>
             )}

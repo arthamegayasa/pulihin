@@ -85,7 +85,8 @@ export function TrendChart({ data, className = '' }: { data: TitikTren[]; classN
           </text>
         )}
       </svg>
-      <table className="sr-only">
+      <div className="sr-only">
+      <table>
         <caption>Skor latihan per hari, 14 hari terakhir</caption>
         <thead>
           <tr>
@@ -104,6 +105,7 @@ export function TrendChart({ data, className = '' }: { data: TitikTren[]; classN
           ))}
         </tbody>
       </table>
+      </div>
     </figure>
   );
 }

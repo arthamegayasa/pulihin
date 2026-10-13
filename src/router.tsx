@@ -1,10 +1,11 @@
+import type { ComponentType } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router';
 import { AppShell } from '@/components/AppShell';
 import { RouteError } from '@/components/RouteError';
 import { berandaUntukPeran } from '@/router-paths';
 import { getPrefs } from '@/lib/prefs';
 
-type PageModule = { default: React.ComponentType };
+type PageModule = { default: ComponentType };
 const page = (load: () => Promise<PageModule>) => async () => ({ Component: (await load()).default });
 
 function AppIndex() {
@@ -13,19 +14,29 @@ function AppIndex() {
   return <Navigate to={berandaUntukPeran(role)} replace />;
 }
 
+/** Tampilan singkat selama layar pertama dimuat (menghindari layar kosong). */
+function LayarMemuat() {
+  return (
+    <div className="grid min-h-[100dvh] place-items-center text-teks-2" role="status">
+      Memuat PULIHIN…
+    </div>
+  );
+}
+const umum = { errorElement: <RouteError />, hydrateFallbackElement: <LayarMemuat /> };
+
 /**
  * Peta navigasi (Bab 13). Setiap layar dimuat terpisah (code splitting) agar halaman awal ringan
  * dan MediaPipe hanya diunduh saat sesi kamera dibuka.
  */
 export const router = createBrowserRouter([
-  { path: '/', lazy: page(() => import('@/pages/Landing')), errorElement: <RouteError /> },
+  { path: '/', lazy: page(() => import('@/pages/Landing')), ...umum },
   // Layar penuh tanpa kerangka: kamera dan mode uji.
-  { path: '/app/sesi/:id', lazy: page(() => import('@/pages/SesiKamera')), errorElement: <RouteError /> },
-  { path: '/app/uji', lazy: page(() => import('@/pages/ModeUji')), errorElement: <RouteError /> },
+  { path: '/app/sesi/:id', lazy: page(() => import('@/pages/SesiKamera')), ...umum },
+  { path: '/app/uji', lazy: page(() => import('@/pages/ModeUji')), ...umum },
   {
     path: '/app',
     element: <AppShell />,
-    errorElement: <RouteError />,
+    ...umum,
     children: [
       {
         index: true,

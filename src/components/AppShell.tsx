@@ -2,8 +2,17 @@ import { GearSix } from '@phosphor-icons/react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { DemoBadge } from '@/components/DemoBadge';
 import { Logo } from '@/components/Logo';
+import { useDataPasien, useNotifikasiPengingat, useSekarang } from '@/features/adherence/hooks';
 import { berandaUntukPeran, PATHS } from '@/router-paths';
 import { usePrefs } from '@/lib/prefs';
+
+/** Notifikasi pengingat jadwal aktif di semua layar aplikasi selama PULIHIN terbuka (Bab 9.1). */
+function PengingatJadwal() {
+  const sekarang = useSekarang();
+  const { data } = useDataPasien();
+  useNotifikasiPengingat(data, sekarang);
+  return null;
+}
 
 /**
  * Kerangka layar aplikasi. Lebar seukuran ponsel di layar besar, kecuali Dashboard Klinisi (lebar desktop).
@@ -15,6 +24,7 @@ export function AppShell() {
   const lebar = pathname.startsWith(PATHS.klinisi) ? 'max-w-6xl' : 'max-w-md';
   return (
     <div className="min-h-[100dvh]">
+      <PengingatJadwal />
       <div className="sticky top-0 z-20 border-b border-garis/70 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
         <div className={`mx-auto flex h-14 items-center gap-3 px-4 ${lebar}`}>
           <Link to={berandaUntukPeran(role)} className="flex items-center gap-2" aria-label="PULIHIN, ke Beranda">

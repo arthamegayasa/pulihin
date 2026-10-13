@@ -9,7 +9,7 @@ import { StreakCalendar } from '@/components/StreakCalendar';
 import { useToast } from '@/components/Toast';
 import { TrendChart } from '@/components/TrendChart';
 import { WeeklyChart } from '@/components/WeeklyChart';
-import { useDataPasien, useLaporan, useNotifikasiPengingat, useSekarang } from '@/features/adherence/hooks';
+import { useDataPasien, useLaporan, useSekarang } from '@/features/adherence/hooks';
 import { kataTren, teksRingkasanMingguan, type LaporanKepatuhan } from '@/features/adherence/laporan';
 import type { RedFlag } from '@/features/adherence/redFlags';
 import { jamTampil } from '@/features/adherence/reminders';
@@ -41,7 +41,6 @@ export default function Pendamping() {
   const sekarang = useSekarang();
   const { data, loading, error } = useDataPasien();
   const lap = useLaporan(data, sekarang);
-  useNotifikasiPengingat(data, sekarang);
   const [toast, tampilkanToast] = useToast();
 
   if (loading && !data) return <p className="py-10 text-center text-teks-2">Memuat ringkasan...</p>;

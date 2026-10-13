@@ -3,6 +3,7 @@ import { bulkPut, clearAll, listProfiles } from '@/data/db';
 import { addDays, todayISO } from '@/lib/date';
 import { resetPrefs, setPrefs, getPrefs } from '@/lib/prefs';
 import { clamp } from '@/lib/score';
+import { setModeMandiriDipilih } from '@/features/speech/modeMandiri';
 import { getKata } from '@/features/speech/wordBank';
 
 /**
@@ -345,5 +346,6 @@ export async function resetDemoData(skenario: SkenarioDemo): Promise<void> {
 export async function hapusSemuaDataLokal(): Promise<void> {
   await clearAll();
   resetPrefs();
+  setModeMandiriDipilih(false);
   tulisLocal(AUTOSEED_KEY, 'off');
 }
