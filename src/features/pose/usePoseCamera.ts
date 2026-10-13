@@ -31,6 +31,8 @@ export interface PoseCamera {
   ulangi: () => void;
   /** Matikan kamera & loop secara sinkron (AC-F1-7). */
   hentikan: () => void;
+  /** Rasio lebar/tinggi gambar kamera (null sampai kamera memberi frame). Untuk menyesuaikan kotak video. */
+  rasio: number | null;
 }
 
 const TANPA_TITIK: readonly number[] = [];
@@ -50,8 +52,10 @@ export function usePoseCamera({ aktif, onFrame, tampilan }: OpsiPoseCamera): Pos
   const hentikanRef = useRef<() => void>(() => {});
   const [percobaan, setPercobaan] = useState(0);
   const [status, setStatus] = useState<StatusKamera>({ tahap: 'siaga' });
+  const [rasio, setRasio] = useState<number | null>(null);
   const cermin = tampilan?.cermin ?? true;
-  const isi = tampilan?.isi ?? 'cover';
+  // Bawaan 'contain': seluruh gambar yang dilihat model tampil (tidak ada anggota tubuh terpotong).
+  const isi = tampilan?.isi ?? 'contain';
 
   useEffect(() => {
     const video = videoRef.current;
@@ -110,6 +114,10 @@ export function usePoseCamera({ aktif, onFrame, tampilan }: OpsiPoseCamera): Pos
       setStatus({ tahap: 'berhenti' });
     };
 
+    // Ukuran gambar kamera bisa berubah (ponsel diputar): kotak video ikut menyesuaikan.
+    const saatUkuran = () => {
+      if (video.videoWidth > 0 && video.videoHeight > 0) setRasio(video.videoWidth / video.videoHeight);
+    };
     setStatus({ tahap: 'menyiapkan' });
     const model = preloadPoseEngine();
     model.catch(() => {}); // ditangani di bawah; cegah unhandled rejection bila kamera gagal duluan
@@ -138,6 +146,7 @@ export function usePoseCamera({ aktif, onFrame, tampilan }: OpsiPoseCamera): Pos
         return;
       }
       if (!hidup) return;
+      saatUkuran();
       try {
         await model;
       } catch (e) {
@@ -160,9 +169,13 @@ export function usePoseCamera({ aktif, onFrame, tampilan }: OpsiPoseCamera): Pos
       if (!document.hidden && jalan && video.paused) void video.play().catch(() => {});
     };
     document.addEventListener('visibilitychange', saatTerlihat);
+    video.addEventListener('resize', saatUkuran);
+    video.addEventListener('loadedmetadata', saatUkuran);
 
     return () => {
       document.removeEventListener('visibilitychange', saatTerlihat);
+      video.removeEventListener('resize', saatUkuran);
+      video.removeEventListener('loadedmetadata', saatUkuran);
       hentikanSemua();
     };
   }, [aktif, percobaan, cermin, isi]);
@@ -184,5 +197,5 @@ export function usePoseCamera({ aktif, onFrame, tampilan }: OpsiPoseCamera): Pos
   const ulangi = useCallback(() => setPercobaan((n) => n + 1), []);
   const hentikan = useCallback(() => hentikanRef.current(), []);
 
-  return { videoRef, canvasRef, status, ulangi, hentikan };
+  return { videoRef, canvasRef, status, ulangi, hentikan, rasio };
 }

@@ -6,7 +6,7 @@ import { hitungAkurasi, JENDELA_COCOK_MS } from '@/features/pose/accuracy';
 import { EXERCISES, getExercise } from '@/features/pose/exerciseDefinitions';
 import { getPoseStats, type StatistikMesin } from '@/features/pose/PoseEngine';
 import { createTracker } from '@/features/pose/tracker';
-import type { ExerciseTracker, PoseFrame, TrackerOptions, TrackerSnapshot } from '@/features/pose/types';
+import type { ExerciseTracker, Landmark, PoseFrame, TrackerOptions, TrackerSnapshot } from '@/features/pose/types';
 import { usePoseCamera } from '@/features/pose/usePoseCamera';
 import { useWakeLock } from '@/features/pose/useWakeLock';
 import { PATHS } from '@/router-paths';
@@ -19,6 +19,7 @@ import type { Sisi } from '@/types';
  */
 
 const SENDI = ['bahu', 'siku', 'lutut', 'pinggul'] as const;
+type Sendi = (typeof SENDI)[number];
 const LAMA_REKAM_MS = 20_000;
 const TARGET_UJI = 999;
 
@@ -29,8 +30,58 @@ interface SampelRekaman {
   frame: PoseFrame | null;
 }
 
-function unduhJson(namaBerkas: string, data: unknown): void {
-  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+/** [x, y, z, visibility], dibulatkan 4 desimal. */
+type TitikEkspor = [number, number, number, number];
+
+/**
+ * Format ekspor rekaman landmark (versi 1), disepakati dengan fixture uji regresi modul pose:
+ * `t` ms sejak awal rekaman; frame tanpa tubuh = `{ t, kosong: true }`.
+ */
+interface RekamanLandmark {
+  versi: 1;
+  latihanId: string;
+  sisi: Sisi;
+  /** lebar/tinggi gambar kamera */
+  aspect: number;
+  fps: number;
+  frames: Array<{ t: number; landmarks: TitikEkspor[]; world?: TitikEkspor[] } | { t: number; kosong: true }>;
+  // Metadata tambahan (diabaikan pemutar fixture).
+  app: 'PULIHIN';
+  jenis: 'rekaman-landmark';
+  modeSudut: ModeSudut;
+  perangkat: string;
+}
+
+const bulat4 = (v: number) => Math.round(v * 1e4) / 1e4;
+const keTitik = (l: Landmark): TitikEkspor => [bulat4(l.x), bulat4(l.y), bulat4(l.z), bulat4(l.visibility ?? 1)];
+
+function buatRekaman(frames: readonly SampelRekaman[], latihanId: string, sisi: Sisi, modeSudut: ModeSudut): RekamanLandmark {
+  const t0 = frames[0]?.t ?? 0;
+  const durasiDetik = frames.length > 1 ? (frames[frames.length - 1].t - t0) / 1000 : 0;
+  return {
+    versi: 1,
+    latihanId,
+    sisi,
+    aspect: bulat4(frames.find((f) => f.frame)?.frame?.aspect ?? 4 / 3),
+    fps: durasiDetik > 0 ? Math.round(((frames.length - 1) / durasiDetik) * 10) / 10 : 0,
+    frames: frames.map(({ t, frame }) => {
+      const tRel = Math.round((t - t0) * 10) / 10;
+      if (!frame) return { t: tRel, kosong: true as const };
+      return {
+        t: tRel,
+        landmarks: frame.landmarks.map(keTitik),
+        ...(frame.worldLandmarks ? { world: frame.worldLandmarks.map(keTitik) } : {}),
+      };
+    }),
+    app: 'PULIHIN',
+    jenis: 'rekaman-landmark',
+    modeSudut,
+    perangkat: navigator.userAgent,
+  };
+}
+
+function unduhJson(namaBerkas: string, data: unknown, rapat = false): void {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, rapat ? undefined : 2)], { type: 'application/json' }));
   const a = document.createElement('a');
   a.href = url;
   a.download = namaBerkas;
@@ -42,6 +93,9 @@ const stempelBerkas = () => new Date().toISOString().replace(/[:.]/g, '-').slice
 
 const fmt = (v: number | string | boolean | undefined, digit = 1) =>
   v === undefined ? '–' : typeof v === 'number' ? (Number.isFinite(v) ? v.toFixed(digit) : '–') : String(v);
+
+/** Rentang (min..maks) sudut mentah 2D/3D yang pernah terlihat untuk satu kunci debug. */
+type Rentang = Record<string, { min: number; maks: number }>;
 
 export default function ModeUji() {
   const [latihanId, setLatihanId] = useState(EXERCISES.find((e) => e.id === 'fleksi-siku')?.id ?? EXERCISES[0]?.id ?? '');
@@ -59,6 +113,9 @@ export default function ModeUji() {
   const [sisaRekam, setSisaRekam] = useState<number | null>(null);
   const [snap, setSnap] = useState<TrackerSnapshot | null>(null);
   const [stat, setStat] = useState<StatistikMesin>(getPoseStats());
+  const [sendiPilih, setSendiPilih] = useState<Sendi>('siku');
+  const rentangRef = useRef<Rentang>({});
+  const [rentang, setRentang] = useState<Rentang>({});
 
   const kunci = `${latihanId}|${sisi}|${modeSudut}`;
 
@@ -66,6 +123,8 @@ export default function ModeUji() {
     trackerRef.current = null;
     snapRef.current = null;
     otomatisRef.current = [];
+    rentangRef.current = {};
+    setRentang({});
     setOtomatis([]);
     setManual([]);
     setSnap(null);
@@ -75,19 +134,8 @@ export default function ModeUji() {
     const r = rekamRef.current;
     rekamRef.current = null;
     setSisaRekam(null);
-    if (!r) return;
-    unduhJson(`pulihin-landmark-${latihanId}-${sisi}-${stempelBerkas()}.json`, {
-      app: 'PULIHIN',
-      jenis: 'rekaman-landmark',
-      versi: 1,
-      latihanId,
-      sisi,
-      modeSudut,
-      durasiMs: LAMA_REKAM_MS,
-      perangkat: navigator.userAgent,
-      // Bentuk sama dengan SesiSintetis.frames (synthetic.ts) agar dapat diputar ulang lewat createTracker.
-      frames: r.frames,
-    });
+    if (!r || r.frames.length === 0) return;
+    unduhJson(`pulihin-landmark-${latihanId}-${sisi}-${stempelBerkas()}.json`, buatRekaman(r.frames, latihanId, sisi, modeSudut), true);
   };
 
   const onFrame = (frame: PoseFrame | null, t: number): readonly number[] => {
@@ -97,6 +145,12 @@ export default function ModeUji() {
     }
     const s = trackerRef.current.tracker.update(frame, t);
     snapRef.current = s;
+    // Rentang sudut mentah 2D vs 3D yang pernah terlihat (membandingkan pemampatan sudut antar basis).
+    for (const [k, v] of Object.entries(s.debug)) {
+      if (typeof v !== 'number' || !(k.endsWith('.2d') || k.endsWith('.3d'))) continue;
+      const lama = rentangRef.current[k];
+      rentangRef.current[k] = lama ? { min: Math.min(lama.min, v), maks: Math.max(lama.maks, v) } : { min: v, maks: v };
+    }
     if (s.repetisiBaru) {
       otomatisRef.current = [...otomatisRef.current, t];
       setOtomatis(otomatisRef.current);
@@ -117,6 +171,7 @@ export default function ModeUji() {
     if (!aktif) return;
     const id = window.setInterval(() => {
       setSnap(snapRef.current);
+      setRentang({ ...rentangRef.current });
       setStat(getPoseStats());
       const r = rekamRef.current;
       if (r) setSisaRekam(Math.max(0, Math.ceil((LAMA_REKAM_MS - (performance.now() - r.mulai)) / 1000)));
@@ -126,8 +181,15 @@ export default function ModeUji() {
 
   const akurasi = hitungAkurasi(manual, otomatis);
   const debug = snap?.debug ?? {};
-  const kunciSudut = new Set(SENDI.flatMap((j) => ['kiri', 'kanan'].flatMap((s) => [`sudut.${j}.${s}`, `sudut.${j}.${s}.rata`])));
+  const kunciSudut = new Set(
+    SENDI.flatMap((j) => ['kiri', 'kanan'].flatMap((s) => ['', '.rata', '.2d', '.3d'].map((akhir) => `sudut.${j}.${s}${akhir}`))),
+  );
   const debugLain = Object.entries(debug).filter(([k]) => !kunciSudut.has(k));
+  const kunciPilih = `sudut.${sendiPilih}.${sisi}`;
+  const teksRentang = (k: string) => {
+    const r = rentang[k];
+    return r ? `${r.min.toFixed(0)}–${r.maks.toFixed(0)}°` : '–';
+  };
 
   const simpanHasil = () =>
     unduhJson(`pulihin-uji-akurasi-${latihanId}-${sisi}-${stempelBerkas()}.json`, {
@@ -173,6 +235,8 @@ export default function ModeUji() {
                 value={latihanId}
                 onChange={(e) => {
                   setLatihanId(e.target.value);
+                  const sendi = getExercise(e.target.value)?.sendiTarget.find((j): j is Sendi => (SENDI as readonly string[]).includes(j));
+                  if (sendi) setSendiPilih(sendi);
                   aturUlang();
                 }}
                 className="mt-1 block min-h-[56px] w-full rounded-xl border border-garis bg-white px-3 text-[1rem] font-semibold"
@@ -203,8 +267,9 @@ export default function ModeUji() {
               <span className="text-[0.9rem] font-semibold text-teks-2">Mode sudut</span>
               <Segmen
                 pilihan={[
-                  ['otomatis', 'Otomatis (3D bila ada)'],
+                  ['otomatis', 'Bawaan latihan'],
                   ['2d', '2D saja'],
+                  ['3d', '3D saja'],
                 ]}
                 nilai={modeSudut}
                 onPilih={(m) => {
@@ -215,7 +280,7 @@ export default function ModeUji() {
             </div>
           </div>
 
-          <div className="relative aspect-[4/3] overflow-hidden rounded-kartu bg-black">
+          <div className="relative overflow-hidden rounded-kartu bg-black" style={{ aspectRatio: String(kamera.rasio ?? 4 / 3) }}>
             <video ref={kamera.videoRef} className="absolute inset-0 size-full -scale-x-100 object-contain" playsInline muted aria-hidden />
             <canvas ref={kamera.canvasRef} className="pointer-events-none absolute inset-0 size-full" aria-hidden />
             {status.tahap !== 'berjalan' && (
@@ -253,7 +318,7 @@ export default function ModeUji() {
               }}
               ikon={<IkonRekam size={24} weight="fill" className="text-bahaya" aria-hidden />}
             >
-              {sisaRekam !== null ? `Merekam… ${sisaRekam} dtk` : 'Rekam landmark 20 detik'}
+              {sisaRekam !== null ? `Merekam… ${sisaRekam} dtk` : 'Rekam & ekspor landmark (20 dtk)'}
             </BigButton>
           </div>
 
@@ -303,7 +368,38 @@ export default function ModeUji() {
               ))}
             </tbody>
           </table>
-          <p className="text-[0.8rem] text-teks-2">Mentah / diratakan. Siku = fleksi (0 saat lurus).</p>
+          <p className="text-[0.8rem] text-teks-2">
+            Mentah / diratakan, basis sudut latihan (mode tracker: {fmt(debug.mode)}). Siku = fleksi (0 saat lurus).
+          </p>
+
+          <section className="space-y-2 rounded-kartu border border-garis bg-white p-4 shadow-tipis">
+            <h2 className="text-[1.1rem] font-bold">2D vs 3D, sendi terpilih</h2>
+            <Segmen pilihan={SENDI.map((j) => [j, j[0].toUpperCase() + j.slice(1)] as [Sendi, string])} nilai={sendiPilih} onPilih={setSendiPilih} />
+            <table className="w-full text-left text-[0.95rem]">
+              <thead>
+                <tr className="text-[0.85rem] text-teks-2">
+                  <th className="py-1 font-semibold capitalize">
+                    {sendiPilih} {sisi}
+                  </th>
+                  <th className="py-1 text-right font-semibold">2D (gambar)</th>
+                  <th className="py-1 text-right font-semibold">3D (dunia)</th>
+                </tr>
+              </thead>
+              <tbody className="tabular">
+                <tr className="border-t border-garis">
+                  <td className="py-1.5 text-teks-2">Sekarang</td>
+                  <td className="py-1.5 text-right text-[1.4rem] font-extrabold">{fmt(debug[`${kunciPilih}.2d`])}°</td>
+                  <td className="py-1.5 text-right text-[1.4rem] font-extrabold">{fmt(debug[`${kunciPilih}.3d`])}°</td>
+                </tr>
+                <tr className="border-t border-garis">
+                  <td className="py-1.5 text-teks-2">Rentang terlihat</td>
+                  <td className="py-1.5 text-right font-semibold">{teksRentang(`${kunciPilih}.2d`)}</td>
+                  <td className="py-1.5 text-right font-semibold">{teksRentang(`${kunciPilih}.3d`)}</td>
+                </tr>
+              </tbody>
+            </table>
+            <p className="text-[0.8rem] text-teks-2">Nilai mentah per frame, tanpa perataan. Rentang diatur ulang bersama tombol Atur ulang.</p>
+          </section>
 
           <section className="space-y-3 rounded-kartu border border-garis bg-white p-4 shadow-tipis">
             <h2 className="text-[1.1rem] font-bold">Uji akurasi hitungan</h2>

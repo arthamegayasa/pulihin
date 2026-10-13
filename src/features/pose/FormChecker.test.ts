@@ -59,6 +59,28 @@ describe('deteksi koreksi lewat tracker (Bab 7.3, AC-F1-3)', () => {
     expect(mulaiTampil(jalankanSintetis(SIKU, sesi), 'badan-miring', sesi.tAwal)).toHaveLength(0);
   });
 
+  it('badan tegak yang menghadap serong 45-70° tidak memunculkan "Tegakkan badan" (rekaman nyata curl2)', () => {
+    for (const yawDerajat of [45, 60, 70]) {
+      const sesi = buatSesiSintetis({ gerakan: 'fleksi-siku', sisi: 'kiri', jumlahRepetisi: 4, yawDerajat, derauPx: 1.5, seed: 61 });
+      const jalan = jalankanSintetis(SIKU, sesi, { sisi: 'kiri' });
+      expect(mulaiTampil(jalan, 'badan-miring', sesi.tAwal)).toHaveLength(0);
+    }
+  });
+
+  it('miring 18° tetap terdeteksi saat badan menghadap serong 45°', () => {
+    const sesi = buatSesiSintetis({
+      gerakan: 'diam',
+      durasiTotalDetik: 8,
+      yawDerajat: 45,
+      miring: { mulaiDetik: 3, selesaiDetik: 5, derajat: 18 },
+      derauPx: 1,
+    });
+    const t = mulaiTampil(jalankanSintetis(SIKU, sesi), 'badan-miring', sesi.tAwal);
+    expect(t).toHaveLength(1);
+    expect(t[0]).toBeGreaterThanOrEqual(3500);
+    expect(t[0]).toBeLessThanOrEqual(4200);
+  });
+
   it('keluar frame: pesan muncul setelah landmark kunci hilang > 1 s', () => {
     const sesi = buatSesiSintetis({ gerakan: 'diam', durasiTotalDetik: 8, keluarFrame: { mulaiDetik: 3, selesaiDetik: 5.5 } });
     const jalan = jalankanSintetis(SIKU, sesi);

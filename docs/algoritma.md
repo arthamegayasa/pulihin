@@ -9,13 +9,15 @@ Kode: `src/features/pose/`
 | File | Isi |
 |---|---|
 | `landmarks.ts` | Peta 33 landmark MediaPipe → nama titik Indonesia, cek keterlihatan, `POSE_CONNECTIONS` untuk overlay |
-| `AngleCalculator.ts` | Sudut dot product 2D/3D, moving average, metrik (sudut, kenaikan, jarak, rotasi bahu), acuan awal |
+| `AngleCalculator.ts` | Sudut dot product 2D/3D/hibrida, moving average, metrik (sudut, kenaikan, jarak, rotasi bahu), kemiringan bahu tahan putaran, acuan awal |
 | `RepCounter.ts` | State machine repetisi BAWAH → NAIK → ATAS → TURUN → BAWAH |
 | `FormChecker.ts` | Deteksi 5 koreksi form + penjadwal tayang pesan |
 | `scoring.ts` | Skor sesi 0–100 dan satu saran |
-| `tracker.ts` | `createTracker(def, opsi)`: merangkai semuanya per frame |
-| `exerciseDefinitions.ts` | 10 latihan + **semua** ambang dan aturan angka (satu-satunya tempat angka ambang) |
+| `tracker.ts` | `createTracker(def, opsi)`: merangkai semuanya per frame, termasuk `sisiTerlihat` / `sisiLainTerlihat` |
+| `PoseEngine.ts` | MediaPipe Pose Landmarker (hingga 2 orang) + `pilihPoseUtama` (pasien = badan terbesar, dekat tengah, lengket) |
+| `exerciseDefinitions.ts` | 10 latihan + **semua** ambang dan aturan angka (satu-satunya tempat angka ambang), termasuk `sumberSudut` per latihan |
 | `synthetic.ts` | Generator pose sintetis ber-seed untuk uji tanpa kamera |
+| `__fixtures__/`, `realVideo.test.ts` | Landmark dari rekaman manusia nyata (Pexels) + uji regresinya (Bagian 13) |
 
 ## 1. Alur per frame
 
@@ -24,7 +26,7 @@ flowchart LR
   F[PoseFrame dari MediaPipe] --> V{Landmark kunci<br/>visibility ≥ 0,5?}
   V -- tidak --> K[keluar-frame: hitung lama hilang]
   V -- ya --> S[Masa stabil 1 detik<br/>+ rekam acuan]
-  S --> M[Metrik: sudut 3D bila ada,<br/>selain itu 2D]
+  S --> M[Metrik: sumber sudut per latihan<br/>hibrida / 2D / 3D]
   M --> A[Moving average 4 frame]
   A --> R[State machine repetisi]
   R --> C[Deteksi koreksi]
@@ -55,59 +57,79 @@ lutut 25/26, pergelangan kaki 27/28, tumit 29/30, ujung kaki 31/32 (kiri/kanan).
 tampak di sisi kanan gambar. Jadi pilihan "kiri" di aplikasi = lengan/tungkai kiri pasien, apa pun
 pencerminan tampilan di layar.
 
-## 3. Keputusan: sudut 3D bila tersedia, 2D sebagai cadangan
+## 3. Keputusan: sumber sudut per latihan (2D, 3D, atau hibrida)
 
 **Masalah.** Ponsel paling mudah diletakkan di meja **di depan** pasien. Dari depan, gerak bidang
 sagital (fleksi siku, fleksi bahu, ekstensi lutut, menggapai) bergerak **ke arah kamera**, sehingga
-proyeksi 2D-nya memendek dan sudut 2D salah besar. Sebaliknya, koreksi bidang frontal (bahu miring,
-bahu terangkat) justru paling jelas dilihat dari depan.
+proyeksi 2D-nya memendek dan sudut 2D tidak terdefinisi di tengah gerak. Iterasi 0 karena itu
+memakai `worldLandmarks` 3D MediaPipe untuk semua sudut. Rekaman manusia nyata (Bagian 13)
+membuktikan pilihan itu salah untuk latihan lengan: kedalaman 3D MediaPipe **memampatkan rentang**
+gerak yang mengarah ke kamera. Tekuk siku dari depan terbaca 3D 23–29° saat istirahat dan hanya
+101–108° di puncak (median per loop; ambang 120°/30° tidak pernah terlewati, 0 repetisi), padahal 2D
+bersih di titik ekstrem (istirahat 2–3°, puncak 175–178°).
 
-**Keputusan.** Sudut sendi dan metrik `jarak` dihitung dari `worldLandmarks` (koordinat 3D dalam
-meter, berpusat di pinggul) yang dikeluarkan MediaPipe Pose Landmarker untuk setiap frame. Sudut 3D
-dengan dot product tidak berubah ketika tubuh berputar terhadap kamera. Koreksi bidang frontal tetap
-diukur pada koordinat gambar 2D dari sudut pandang yang sama. Bila `worldLandmarks` tidak ada, sudut
-dihitung dari koordinat gambar yang dikoreksi rasio aspek (`x × aspect`, `y`). Mode Uji dapat
-memaksa 2D (`modeSudut: '2d'`) untuk membandingkan keduanya di perangkat.
+**Keputusan.** Sumber sudut adalah DATA per latihan (`ExerciseDefinition.sumberSudut`):
 
-Pengecualian yang disengaja:
+| Sumber | Dipakai oleh | Alasan |
+|---|---|---|
+| `hibrida` | fleksi-bahu, fleksi-siku, abduksi-bahu, ekstensi-lutut, abduksi-pinggul, duduk-berdiri | lihat aturan di bawah; teruji nyata untuk tiga latihan inti lengan |
+| `3d` | menggapai (jarak), putar-badan (rotasi-bahu) | gerak utamanya justru ke arah kamera / berupa rotasi; 2D tidak dapat melihatnya |
+| `2d` | jinjit, langkah-duduk (kenaikan) | landmark dunia berpusat di pinggul sehingga tidak melihat seluruh badan naik |
 
-- `kenaikan` (jinjit, langkah di tempat) selalu memakai **gambar 2D**: landmark dunia berpusat di
-  pinggul sehingga tidak bisa melihat seluruh badan naik saat jinjit.
-- `rotasi-bahu` memakai 3D `atan2(dz, dx)`; tanpa 3D diperkirakan dari pemendekan lebar bahu
-  `acos(lebar / lebar acuan)` (besar rotasi saja, cukup karena yang dihitung adalah besarnya).
+**Aturan hibrida** (`AngleCalculator.bobot2D`): untuk sendi B dengan ruas BA dan BC,
 
-**Bukti (SIMULASI, `AngleCalculator.test.ts` dan `akurasi.test.ts`).** Pose sintetis diputar pada
-sumbu tegak (yaw) terhadap kamera:
+```
+r  = (|BC| / |BA| pada gambar) / (|BC| / |BA| pada dunia 3D)
+p  = min(r, 1/r)                        pemendekan relatif ruas, 1 = keduanya sejajar bidang gambar
+w  = clamp((p − 0,35) / (0,70 − 0,35))  bobot 2D
+sudut = w × sudut2D + (1 − w) × sudut3D
+```
 
-- Tanpa derau, sudut 3D fleksi siku 60°/130° dan fleksi bahu 90° tetap dalam ±0,5° untuk yaw
-  −30° s.d. 75°, sedangkan galat sudut 2D berubah lebih dari 20° antar sudut pandang.
-- Dengan derau (3° sudut sendi, 2 px landmark, 15 fps), galat rata-rata nilai mentah terhadap sudut
-  sebenarnya:
+Artinya **2D saat anggota gerak bergerak di bidang gambar, 3D hanya saat satu ruas mengarah ke
+kamera** (tempat 2D tidak terdefinisi), dengan peralihan halus. Perbandingan antar-ruas membuat aturan
+ini tidak butuh panjang acuan per sesi. Ambang 0,35/0,70 (`ATURAN_UMUM.hibrida`) dikalibrasi pada
+`seated`: lengan menggantung atau tertekuk penuh p = 0,5–1,0; lengan bawah menunjuk kamera di tengah
+gerak p = 0,08–0,35. Pada pandangan serong `curl2` lengan dekat p = 0,79–0,98 sepanjang gerak sehingga hibrida =
+2D. Metrik non-sudut dengan sumber hibrida memakai 3D. Tanpa `worldLandmarks` semua sumber jatuh ke 2D.
+Mode Uji dapat memaksa `modeSudut: '2d'` atau `'3d'` untuk perbandingan; debug Mode Uji memuat
+`sudut.<sendi>.<sisi>.2d`, `.3d`, dan `bobot.2d`.
 
-| Latihan | 3D yaw 0° | 2D yaw 0° | 3D yaw 30° | 2D yaw 30° | 3D yaw 60° | 2D yaw 60° |
-|---|---|---|---|---|---|---|
-| fleksi-bahu | 3,4° | 22,1° | 3,3° | 10,1° | 3,0° | 5,3° |
-| fleksi-siku | 4,9° | 24,1° | 4,5° | 8,4° | 3,8° | 3,6° |
-| abduksi-bahu | 2,8° | 2,8° | 2,9° | 5,3° | 3,4° | 13,0° |
+Pilihan yang diuji lalu ditolak (data `seated`/`curl2`):
 
-Sudut 3D stabil (≈3–5°, setara derau masukan) dari arah mana pun. Sudut 2D hanya baik bila arah
-pandang tegak lurus bidang gerak (abduksi dari depan, fleksi dari samping). Catatan jujur: kedalaman
-(z) MediaPipe di dunia nyata lebih berderau daripada x/y; simulasi memberi derau z 3× lebih besar,
-tetapi galat sistematis model nyata belum termodelkan. Karena itu hasil perangkat wajib diuji dengan
-protokol di Bagian 10.
+- **2D murni** untuk semua: hitungan nyata sama baiknya, tetapi gerak setengah dari depan tidak
+  terlihat sama sekali (lengan bawah menunjuk kamera terbaca ≈ 0°), sehingga koreksi rentang-kurang
+  dan skor rentang hilang; di simulasi galat 2D dari depan 22–24°.
+- **Rekonstruksi kedalaman dari panjang ruas maksimum** (|dz| = √(L² − l²), L = panjang 2D
+  terpanjang yang pernah terlihat): rapuh terhadap satu frame pencilan; puncak `curl2` hanya
+  114–119° (tidak melewati 120°) dan istirahat lengan jauh 50–65°.
+
+**Bukti SIMULASI** (`AngleCalculator.test.ts`, `akurasi.test.ts`). Pada kerangka sintetis kaku 3D
+tepat sempurna (tidak ada bias MediaPipe), jadi simulasi hanya membuktikan logika, bukan pilihan
+sumber. Galat rata-rata nilai mentah terhadap sudut sebenarnya (derau 3°/2 px, 15 fps):
+
+| Latihan | 3D 0° | 2D 0° | hibrida 0° | 3D 30° | 2D 30° | hibrida 30° | 3D 60° | 2D 60° | hibrida 60° |
+|---|---|---|---|---|---|---|---|---|---|
+| fleksi-bahu | 3,4° | 22,1° | 18,2° | 3,3° | 10,4° | 10,4° | 3,0° | 5,3° | 5,3° |
+| fleksi-siku | 4,9° | 24,4° | 19,6° | 4,5° | 8,7° | 8,7° | 3,8° | 3,5° | 3,5° |
+| abduksi-bahu | 2,8° | 2,8° | 2,8° | 2,9° | 4,9° | 4,8° | 3,4° | 13,1° | 9,3° |
+
+(kolom = sudut putar tubuh terhadap kamera). Konsekuensi jujur: dari depan, NILAI sudut hibrida di
+tengah gerak dan di puncak tidak tepat (puncak tekuk siku dari depan terbaca 175–178°, sebenarnya
+±140°), sehingga sudut puncak di log dan skor rentang dari depan cenderung tinggi. Hitungan repetisi —
+yang dinilai AC-F1-2 — andal karena kedua titik ekstrem bersih.
 
 ## 4. Metrik per latihan
 
 Semua angka berasal dari `exerciseDefinitions.ts`. h = histeresis.
 
-| Latihan | Metrik | Basis | Ambang atas / bawah | h | Tempo target |
+| Latihan | Metrik | Sumber sudut | Ambang atas / bawah | h | Tempo target |
 |---|---|---|---|---|---|
-| Angkat Lengan ke Depan (fleksi-bahu) | sudut batang tubuh (bahu→pinggul) – lengan atas (bahu→siku) | 3D | 100° / 30° | 5 | 2–6 s |
-| Tekuk Siku (fleksi-siku) | fleksi = 180 − sudut dalam bahu–siku–pergelangan | 3D | 120° / 30° | 5 | 1,5–4 s |
-| Angkat Lengan ke Samping (abduksi-bahu) | sudut batang tubuh – lengan atas | 3D | 90° / 25° | 5 | 2–6 s |
-| Luruskan Tungkai (ekstensi-lutut) | sudut dalam pinggul–lutut–pergelangan kaki | 3D | 150° / 100° | 5 | 2–6 s |
-| Angkat Kaki ke Samping (abduksi-pinggul) | sudut garis panggul (pinggul lawan→pinggul) – paha, dikurangi 90° | 3D | 25° / 8° | 5 | 2–6 s |
-| Duduk ke Berdiri | sudut dalam lutut, rata-rata kiri & kanan yang terlihat | 3D | 160° / 100° | 5 | 3–10 s |
+| Angkat Lengan ke Depan (fleksi-bahu) | sudut batang tubuh (bahu→pinggul) – lengan atas (bahu→siku) | hibrida | 100° / 30° | 5 | 2–6 s |
+| Tekuk Siku (fleksi-siku) | fleksi = 180 − sudut dalam bahu–siku–pergelangan | hibrida | 120° / 30° | 5 | 1,5–4 s |
+| Angkat Lengan ke Samping (abduksi-bahu) | sudut batang tubuh – lengan atas | hibrida | 90° / 25° | 5 | 2–6 s |
+| Luruskan Tungkai (ekstensi-lutut) | sudut dalam pinggul–lutut–pergelangan kaki | hibrida | 150° / 100° | 5 | 2–6 s |
+| Angkat Kaki ke Samping (abduksi-pinggul) | sudut garis panggul (pinggul lawan→pinggul) – paha, dikurangi 90° | hibrida | 25° / 8° | 5 | 2–6 s |
+| Duduk ke Berdiri | sudut dalam lutut, rata-rata kiri & kanan yang terlihat | hibrida | 160° / 100° | 5 | 3–10 s |
 | Jinjit Berpegangan | kenaikan tumit terhadap acuan, % lebar bahu acuan, rata-rata dua tumit | 2D | 10% / 4% | 2,5 | 2–6 s |
 | Menggapai ke Depan | jarak pergelangan–bahu, % lebar bahu | 3D | 135% / 90% | 5 | 2–6 s |
 | Putar Badan | \|rotasi garis bahu − acuan\|, ke kiri maupun kanan | 3D | 20° / 8° | 5 | 2–6 s |
@@ -157,8 +179,8 @@ stateDiagram-v2
 
 | Prioritas | Koreksi | Deteksi | Ambang bawaan | Harus bertahan | Pesan |
 |---|---|---|---|---|---|
-| 1 | keluar-frame | landmark kunci tidak terlihat | – | > 1 s | Mundur sedikit agar tubuh terlihat penuh |
-| 2 | badan-miring | garis kedua bahu di gambar miring dari horizontal | 12° | 0,5 s | Tegakkan badan, jangan miring |
+| 1 | keluar-frame | landmark kunci sisi dilatih tidak terlihat, KECUALI sisi lawan terlihat (lihat `sisiLainTerlihat`, Bagian 13) | – | > 1 s | Mundur sedikit agar tubuh terlihat penuh |
+| 2 | badan-miring | elevasi 3D garis bahu atan2(\|dy\|, √(dx² + dz²)) (tanpa 3D: kemiringan 2D); TIDAK dinilai bila badan sangat berputar: lebar bahu < 0,5 × panjang batang tubuh pada gambar | 12° | 0,5 s | Tegakkan badan, jangan miring |
 | 3 | bahu-terangkat | jarak tegak bahu–telinga sisi dilatih menyusut dibanding acuan, hanya saat NAIK/ATAS | 20% (fleksi siku), 30% (fleksi & abduksi bahu) | 0,5 s | Rilekskan bahu, turunkan bahu Anda |
 | 4 | rentang-kurang | puncak 2 percobaan berturut-turut < ambang atas − margin | 15° (8° abduksi pinggul & langkah, 4° putar badan, 2% jinjit) | peristiwa | Sedikit lagi, angkat lebih tinggi bila mampu |
 | 5 | tempo-cepat | 2 siklus lengkap berturut-turut lebih singkat dari tempo minimum | `tempoTargetDetik.min` | peristiwa | Perlambat gerakan Anda |
@@ -166,6 +188,26 @@ stateDiagram-v2
 Margin rentang-kurang diperkecil untuk latihan berentang sempit agar puncak "rendah" tetap di atas
 ambang NAIK (bila tidak, percobaannya tidak pernah tercatat); `exerciseDefinitions.test.ts` memeriksa
 syarat ini untuk semua latihan. Kemiringan bahu dan penyusutan bahu–telinga ikut diratakan 4 frame.
+
+**Badan-miring tahan putaran badan.** Kemiringan garis bahu pada gambar 2D membesar palsu saat badan
+berputar: garis bahu memendek (dx kecil) sehingga beda tinggi bahu yang kecil terbaca sebagai sudut
+besar. Pada `curl2` (pria tegak, serong) 2D terbaca 15–24°, di atas ambang 12° hampir sepanjang
+video ("Tegakkan badan" muncul berulang di uji E2E iterasi 1). Dua lapis perbaikan:
+
+1. **Elevasi 3D** garis bahu tidak bergantung pada putaran sedang: `curl2` 0,7–4,1°; `seated`
+   (menghadap kamera) 0–9,6°.
+2. **Tidak dinilai bila badan sangat berputar.** Rasio lebar bahu / panjang batang tubuh pada gambar
+   = 0,81 saat menghadap kamera (`seated`, p5–p95 0,74–0,86), `curl2` 0,29–0,46, video gym `curl`
+   0,31–0,53. Di bawah 0,5 (≈ putaran > 50°) bidang frontal hampir searah pandang kamera, dan
+   kedalaman MediaPipe yang termampatkan juga membesarkan elevasi 3D: pada `curl` elevasi 3D
+   15–30° di 302 frame (rasio median 0,42), sehingga tanpa lapis ini "Tegakkan badan" muncul 3 kali.
+   Dengan lapis ini: 0 pada `curl2`, `elder` (berputar hingga ±84°), dan `curl`.
+
+Miring sungguhan 18° tetap terbaca > 14° dari depan maupun serong 30–45° (`AngleCalculator.test.ts`,
+`FormChecker.test.ts`). Konsekuensi: pasien yang duduk menyamping > ±50° dari ponsel tidak mendapat
+koreksi badan-miring (posisi ponsel semua latihan inti: di depan pasien). Bila pinggul di luar
+bingkai, putaran tidak dapat diperiksa; elevasi 3D tetap dipakai (bingkai dekat biasanya menghadap
+kamera), dan tanpa 3D koreksi ini dilewati.
 
 **Aturan tayang.** Satu pesan pada satu waktu; tampil minimal 1,5 s (kondisi kontinu tetap tampil
 selama kondisi bertahan; pesan peristiwa tampil 2,5 s); pesan yang sama tidak diulang dalam 4 s sejak
@@ -218,30 +260,30 @@ dicocokkan dengan jendela repetisi sebenarnya; akurasi = (benar − ganda) / 50.
 
 | Latihan | Kondisi | Benar | Ganda | Hilang | Akurasi |
 |---|---|---|---|---|---|
-| fleksi-bahu | 3D, 15 fps, yaw 15° | 50 | 0 | 0 | 100% |
-| fleksi-bahu | 3D, 30 fps, yaw 15° | 50 | 0 | 0 | 100% |
-| fleksi-bahu | 3D, 15 fps, yaw 0° | 50 | 0 | 0 | 100% |
-| fleksi-bahu | 3D, 15 fps, yaw 35° | 50 | 0 | 0 | 100% |
-| fleksi-bahu | 3D, 15 fps, derau berat* | 50 | 0 | 0 | 100% |
+| fleksi-bahu | otomatis (hibrida), 15 fps, yaw 15° | 50 | 0 | 0 | 100% |
+| fleksi-bahu | otomatis, 30 fps, yaw 15° | 50 | 0 | 0 | 100% |
+| fleksi-bahu | otomatis, 15 fps, yaw 0° | 50 | 0 | 0 | 100% |
+| fleksi-bahu | otomatis, 15 fps, yaw 35° | 50 | 0 | 0 | 100% |
+| fleksi-bahu | otomatis, 15 fps, derau berat* | 50 | 0 | 0 | 100% |
 | fleksi-bahu | 2D saja, 15 fps, yaw 0° | 50 | 0 | 0 | 100% |
-| fleksi-siku | 3D, 15 fps, yaw 15° | 50 | 0 | 0 | 100% |
-| fleksi-siku | 3D, 30 fps, yaw 15° | 50 | 0 | 0 | 100% |
-| fleksi-siku | 3D, 15 fps, yaw 0° | 50 | 0 | 0 | 100% |
-| fleksi-siku | 3D, 15 fps, yaw 35° | 50 | 0 | 0 | 100% |
-| fleksi-siku | 3D, 15 fps, derau berat* | 50 | 0 | 0 | 100% |
+| fleksi-siku | otomatis (hibrida), 15 fps, yaw 15° | 50 | 0 | 0 | 100% |
+| fleksi-siku | otomatis, 30 fps, yaw 15° | 50 | 0 | 0 | 100% |
+| fleksi-siku | otomatis, 15 fps, yaw 0° | 50 | 0 | 0 | 100% |
+| fleksi-siku | otomatis, 15 fps, yaw 35° | 50 | 0 | 0 | 100% |
+| fleksi-siku | otomatis, 15 fps, derau berat* | 50 | 0 | 0 | 100% |
 | fleksi-siku | 2D saja, 15 fps, yaw 0° | 50 | 0 | 0 | 100% |
-| abduksi-bahu | 3D, 15 fps, yaw 15° | 50 | 0 | 0 | 100% |
-| abduksi-bahu | 3D, 30 fps, yaw 15° | 50 | 0 | 0 | 100% |
-| abduksi-bahu | 3D, 15 fps, yaw 0° | 50 | 0 | 0 | 100% |
-| abduksi-bahu | 3D, 15 fps, yaw 35° | 50 | 0 | 0 | 100% |
-| abduksi-bahu | 3D, 15 fps, derau berat* | 50 | 0 | 0 | 100% |
+| abduksi-bahu | otomatis (hibrida), 15 fps, yaw 15° | 50 | 0 | 0 | 100% |
+| abduksi-bahu | otomatis, 30 fps, yaw 15° | 50 | 0 | 0 | 100% |
+| abduksi-bahu | otomatis, 15 fps, yaw 0° | 50 | 0 | 0 | 100% |
+| abduksi-bahu | otomatis, 15 fps, yaw 35° | 50 | 0 | 0 | 100% |
+| abduksi-bahu | otomatis, 15 fps, derau berat* | 50 | 0 | 0 | 100% |
 | abduksi-bahu | 2D saja, 15 fps, yaw 0° | 50 | 0 | 0 | 100% |
 
 \* derau berat: σ sudut 5°, σ landmark 4 px, 10% frame hilang, 5% frame buram.
 
 Hitungan 2D dari depan tetap melewati ambang pada gerakan penuh, tetapi nilai sudutnya salah 22–24°
-untuk fleksi bahu dan siku (tabel Bagian 3), sehingga skor rentang, bar progres, dan koreksi
-rentang-kurang tidak andal tanpa 3D.
+untuk fleksi bahu dan siku (tabel Bagian 3); hibrida 18–20° dari depan (simulasi, kerangka kaku).
+Uji regresi dengan landmark manusia nyata ada di Bagian 13.
 
 **Batas simulasi.** Kerangka tubuh kaku dan derau Gaussian tidak memodelkan galat sistematis model
 pose nyata (landmark tertukar kiri/kanan, kedalaman bias, oklusi tangan di depan badan, pakaian
@@ -254,15 +296,15 @@ Dilakukan di HP uji Bab 11.1 memakai **Mode Uji** (`/app/uji`, dari Pengaturan).
 
 1. Ponsel tegak di tripod/tumpukan buku, setinggi dada, 1 meter di depan kursi (latihan duduk),
    cahaya ruangan biasa dari depan. Catat model HP, versi Chrome, dan FPS yang tampil di Mode Uji.
-2. Pilih latihan inti, sisi, dan mode sudut **Otomatis (3D bila ada)**. Nyalakan kamera dan tunggu
-   status Siap.
+2. Pilih latihan inti, sisi, dan mode sudut **Otomatis** (sumber per latihan: hibrida untuk latihan
+   inti). Nyalakan kamera dan tunggu status Siap.
 3. Penguji (orang sehat) melakukan 50 repetisi **lambat** (±3–5 detik per repetisi, jeda singkat),
    menirukan pasien: sebagian dengan tahan di atas, sebagian langsung turun.
 4. Pendamping mengetuk **+1 Repetisi nyata** tepat saat setiap repetisi nyata selesai (lengan kembali
    ke bawah). Mode Uji mencocokkan hitungan otomatis dengan ketukan dalam ±1,5 detik dan menampilkan
    Benar, Ganda, Hilang, dan Akurasi. Tekan **Simpan hasil**.
 5. Ulangi untuk ketiga latihan inti. Bila waktu memungkinkan, ulangi satu putaran dengan mode sudut
-   **2D** dan satu putaran dengan ponsel serong ±30° untuk membandingkan.
+   **2D** atau **3D** dan satu putaran dengan ponsel serong ±30° untuk membandingkan.
 6. Lulus bila akurasi > 90% per latihan. Bila gagal: catat pola (ganda di atas? hilang karena
    tidak mencapai ambang?), ubah ambang/histeresis di `exerciseDefinitions.ts` saja, lalu ulangi.
 
@@ -287,12 +329,115 @@ Menjalankan semua tes modul ini: `npx vitest run src/features/pose`.
 
 ## 12. Keterbatasan dan risiko
 
-- Kualitas kedalaman (z) MediaPipe pada HP kelas bawah belum diuji; bila sudut 3D terlalu berderau
-  di perangkat, cadangannya adalah menyarankan ponsel diletakkan serong 45° (posisi ponsel di
-  definisi latihan kaki sudah menyarankan sedikit menyamping) dan/atau `modeSudut: '2d'`.
+- Kedalaman (z) MediaPipe terbukti memampatkan rentang gerak lengan yang mengarah ke kamera
+  (Bagian 13); hibrida hanya memakai 3D di tengah gerak. Kualitas pada HP kelas bawah belum diuji.
+- Dari depan, nilai sudut puncak hibrida cenderung tinggi (tekuk siku terbaca 175–178°), sehingga
+  sudut puncak di log dan skor rentang dari depan lebih murah hati daripada dari samping.
+- Deteksi 2 orang (`numPoses: 2`) menambah biaya inferensi (Bagian 13); pada HP sangat lemah ini dapat
+  menurunkan FPS. Belum ada penurunan otomatis ke 1 orang.
 - Bahu terangkat diukur dari jarak bahu–telinga: menunduk dapat terbaca sebagai bahu terangkat. Karena
   itu hanya dievaluasi saat fase NAIK/ATAS.
 - Jinjit memerlukan tumit terlihat (ponsel rendah, 2 m). Kenaikan dinormalkan dengan lebar bahu saat
   siap; bila ponsel sangat serong, lebar bahu tampak lebih kecil dan kenaikan terbaca sedikit lebih
   besar.
 - Rotasi tanpa 3D hanya memperkirakan besar rotasi dari pemendekan bahu dan kurang peka di bawah ±15°.
+- Koreksi badan-miring tidak dinilai saat badan berputar > ±50° dari ponsel (Bagian 7). Landmark
+  dunia searah kamera, jadi ponsel yang sangat menunduk/mendongak dapat menambah elevasi palsu.
+
+## 13. Validasi dengan rekaman manusia nyata (bukan perangkat target)
+
+**Sumber.** Empat video Pexels orang sungguhan (lisensi Pexels, hanya untuk uji internal, tidak
+disimpan di repo): `curl2` (Pexels 4159059), `seated` (9644943), `elder` (9058017), `curl` (6455077).
+Landmark direkam frame demi frame dengan model dan pengaturan yang sama dengan aplikasi (MediaPipe
+Pose Landmarker lite, GPU, Chrome for Testing 147 desktop, `numPoses: 2`, `pilihPoseUtama`), lalu
+disimpan ringkas di `src/features/pose/__fixtures__/` (≈ 0,9 MB, cara rekam di README di folder itu).
+`src/features/pose/realVideo.test.ts` memutarnya lewat `createTracker` persis seperti halaman sesi.
+**Ini bukan uji perangkat target** (HP Android kelas bawah): angka AC-F1-2 tetap dari Bagian 10.
+
+**Kebenaran dasar** dari isi video yang berulang (dicek dengan lembar kontak ffmpeg): `curl2` 1
+repetisi per loop 2,667 s untuk lengan dekat kamera (kiri); `seated` 1 repetisi per lengan per loop
+6,92 s (bergantian, dumbel istirahat di paha); `elder` 1 abduksi sampai hampir horizontal per loop lalu
+memutar badan dengan tubuh tegak; `curl` curl bergantian setengah rentang, jumlah per loop tidak tegas.
+**Toleransi:** ganda harus 0; paling banyak 1 repetisi boleh hilang, yaitu repetisi loop pertama yang
+dimulai sebelum status siap (masa stabil 1 s, `curl2` mulai 0,25 s, `seated` kiri 0,33 s) — perilaku
+yang disengaja (Bab 5.1). Repetisi `seated` kanan dimulai 4 s sehingga tidak boleh ada yang hilang.
+
+### Hasil (`npx vitest run src/features/pose/realVideo.test.ts --silent=false`)
+
+| Video | Pandangan | Sisi | Mode sudut | fps | Diharapkan | Terhitung | Ganda | Hilang | Puncak / istirahat (median per loop) | Koreksi tampil |
+|---|---|---|---|---|---|---|---|---|---|---|
+| curl2 | serong ~60°, berdiri | kiri (dekat) | otomatis (hibrida) | 24 | 8 | 7 | 0 | 1 (loop 1) | 163° / 18° | – |
+| curl2 | serong | kiri | otomatis (hibrida) | 12 | 8 | 7 | 0 | 1 (loop 1) | 158° / 20° | – |
+| curl2 | serong | kiri | 3D saja | 24 | 8 | 0 | 0 | 8 | 115° / 22° | – |
+| curl2 | serong | kiri | 2D saja | 24 | 8 | 7 | 0 | 1 | 163° / 18° | – |
+| curl2 | serong | kanan (tertutup badan) | otomatis | 24 | 0 (tidak terlihat) | 0 | 0 | – | – | – (`sisiLainTerlihat`) |
+| seated | depan, duduk | kiri | otomatis (hibrida) | 24 | 4 | 3 | 0 | 1 (loop 1) | 178° / 6° | – |
+| seated | depan | kanan | otomatis (hibrida) | 24 | 4 | 4 | 0 | 0 | 175° / 2° | – |
+| seated | depan | kiri | otomatis (hibrida) | 12 | 4 | 3 | 0 | 1 (loop 1) | 177° / 9° | – |
+| seated | depan | kanan | otomatis (hibrida) | 12 | 4 | 4 | 0 | 0 | 174° / 6° | – |
+| seated | depan | kiri | 3D saja | 24 | 4 | 0 | 0 | 4 | 108° / 29° | – |
+| seated | depan | kanan | 3D saja | 24 | 4 | 0 | 0 | 4 | 101° / 23° | rentang-kurang 3x |
+| seated | depan | kiri / kanan | 2D saja | 24 | 4 / 4 | 3 / 4 | 0 / 0 | 1 / 0 | 178° / 3°, 175° / 2° | – |
+| elder (abduksi bahu) | depan → berputar ±84° | kiri | otomatis (hibrida) | 24 | 0 (puncak < 90°) | 0 | 0 | – | 86° / 17° | rentang-kurang 3x |
+| elder | depan → berputar | kanan | otomatis (hibrida) | 24 | 0 | 0 | 0 | – | 84° / 3° | – |
+| elder | depan → berputar | kiri / kanan | 3D saja | 24 | 0 | 0 / 3 | – | – | 88° / 39°, 96° / 17° | – |
+| curl (gym, manekin di latar) | serong 40–75° | kiri | otomatis (hibrida) | 24 | tidak tegas | 2 dalam 20 s | – | – | 124° / 5° | – |
+
+Tidak ada "Tegakkan badan" pada video mana pun (Bagian 7). Ganda 0 pada semua baris otomatis.
+
+**Putar ulang rekaman kamera palsu live** (Chrome `--use-file-for-fake-video-capture`, gambar
+terpotong 600x480 / 432x480, ~62–65 deteksi/s, `numPoses: 2`), diputar lewat tracker yang sama:
+`seated` kiri 5 repetisi pada 10,0 / 17,0 / 24,0 / 30,9 / 37,9 s dan kanan 5 pada 6,6 / 13,5 / 20,5 /
+27,5 / 34,4 s (tepat 1 per loop 6,9 s; 3D saja: 0 dan 0); `curl2` kiri 9 repetisi dalam 30 s, selang
+2,7 s. Di sini 3D saja juga menghitung 9 karena puncaknya 127° pada gambar terpotong (115° pada
+gambar penuh): **rentang 3D bergantung pada pembingkaian**, salah satu alasan 3D tidak dipakai sendiri.
+Pada `seated` kiri, 2D saja mencatat 2 "percobaan" palsu berpuncak 53–56° akibat derau di tengah gerak;
+hibrida 0.
+
+**Uji E2E aplikasi** (`D:/Temp/pulihin-test/e2e-camera.mjs`, dev server, halaman `/app/sesi`):
+
+| Perintah | Hasil |
+|---|---|
+| `seated.y4m fleksi-siku kiri 45` | Siap 2 s; 6 repetisi pada ±10, 17, 24, 32, 39, 46 s (1 per loop 6,9 s; sebelumnya 0 dalam 45 s); tanpa pesan koreksi |
+| `curl2.y4m fleksi-siku kiri 30` | Siap 2 s; 10 repetisi pada ±6–30 s (selang 2,7 s), "Target 10 kali tercapai" pada 30 s; tanpa "Tegakkan badan" |
+| `curl.y4m fleksi-siku kiri 10` | kerangka menempel pada pria (tangkapan layar `sesi-8s.png`), manekin tidak ditandai |
+
+Satu putaran E2E sebelumnya terganggu muat-ulang Vite (agen lain menyunting berkas) dan tidak dipakai.
+
+**Keputusan 2D/3D dengan angka.** Untuk tekuk siku, 3D tidak pernah melewati 120°/30° pada kedua
+pandangan gambar penuh (puncak 101–115°, istirahat 22–29°); 2D dan hibrida melewati keduanya dengan
+margin (puncak 158–178°, istirahat 2–20°). Untuk abduksi bahu (bidang frontal dari depan) 2D tepat
+secara geometri: saat istirahat 3D terbaca 39° pada lengan kiri `elder` (di atas ambang bawah 25°,
+penghitung tidak akan pernah bersenjata), 2D/hibrida 3–17°. Hibrida dipilih atas 2D murni karena
+sama baiknya pada titik ekstrem, tetapi tetap melihat gerak setengah yang mengarah ke kamera dan
+meredam percobaan palsu di tengah gerak (lihat putar ulang live). Fleksi bahu belum punya video
+nyata yang memperlihatkan pinggul; ia memakai aturan hibrida yang sama karena sendinya (pinggul–
+bahu–siku) identik dengan abduksi dan rekaman `seated` menunjukkan bias istirahat 3D yang sama
+(sudut bahu saat istirahat 3D 20–51°, 2D 15–27°).
+
+**Ambang tidak diubah.** Tekuk siku 120°/30° tercapai pada gerakan penuh (tabel). Abduksi bahu:
+puncak `elder` 84–86° (hibrida). Diukur langsung pada gambar di frame puncak (frame 18–24), lengan
+atas masih 10–20° di bawah horizontal dan garis batang tubuh (bahu→pinggul) condong 6–9° ke dalam,
+sehingga lengan tepat setinggi bahu akan terbaca ±96–99°. Jadi gerakan di video ini memang belum
+setinggi bahu; itu bukan bukti ambang 90° tak tercapai oleh gerakan penuh, sehingga ambang Bab 6
+dipertahankan dan percobaannya tercatat dengan koreksi rentang-kurang.
+
+**Orang lain di latar** (`curl-dua-orang.json`, 325 frame live): 324 frame berisi 2 kandidat dan
+kandidat pertama keluaran MediaPipe adalah manekin pada 287 frame (88%), jadi urutan MediaPipe tidak
+dapat dipakai. `pilihPoseUtama` memilih pria (pusat bahu x 0,5–0,95) pada 325/325 frame. Biaya
+`numPoses: 2` (Chrome desktop, GPU, rata-rata per inferensi):
+
+| Rekaman | numPoses 1 | numPoses 2 |
+|---|---|---|
+| curl2, frame demi frame | 13,6 ms | 25,5 ms |
+| seated, frame demi frame | 14,0 ms | 28,1 ms |
+| curl (gym), frame demi frame | 18,9 ms | 23,3 ms |
+| curl (gym), kamera palsu live | 8,7 ms (92 deteksi/s) | 15,9 ms (49 deteksi/s) |
+
+Kenaikan +4 s.d. +14 ms (×1,2–2) di desktop; pada HP kelas bawah dampaknya belum diukur (Bagian 12).
+
+**Sisi yang terlihat.** `TrackerSnapshot.sisiTerlihat` (titik kunci kiri / kanan terlihat) dan
+`sisiLainTerlihat` (latihan satu sisi, sisi pilihan tidak terlihat tetapi sisi lawan terlihat, bertahan
+≥ 1 s, `ATURAN_UMUM.sisiLainTahanDetik`). Pada `curl2` sisi kanan, `sisiLainTerlihat` benar pada > 80%
+frame setelah 2 s dan tidak ada pesan "Mundur sedikit": keluar-frame tidak dimunculkan selama sisi
+lawan terlihat, karena saran yang tepat adalah hadap kamera atau ganti sisi (ditampilkan UI sesi).

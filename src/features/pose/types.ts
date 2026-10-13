@@ -100,7 +100,18 @@ export interface ExerciseDefinition {
   koreksiUmum: KoreksiDefinisi[];
   /** Aset contoh gerakan; 'bawaan' = animasi figur bawaan aplikasi. */
   animasiAtauVideo: 'bawaan' | string;
+  /**
+   * Sumber koordinat sudut sendi (lihat docs/algoritma.md "Validasi dengan rekaman manusia nyata"):
+   * '2d' = koordinat gambar; '3d' = worldLandmarks MediaPipe; 'hibrida' = rata-rata berbobot 2D/3D,
+   * 2D saat kedua ruas sendi sejajar bidang gambar, 3D saat salah satu ruas mengarah ke kamera.
+   * Bawaan '3d'.
+   */
+  sumberSudut?: SumberSudut;
+  /** Arah ponsel terhadap pasien untuk gambar penempatan ponsel. Bawaan 'depan'. */
+  arahKamera?: 'depan' | 'serong';
 }
+
+export type SumberSudut = '2d' | '3d' | 'hibrida';
 
 /** Satu landmark ternormalisasi MediaPipe. */
 export interface Landmark {
@@ -158,6 +169,13 @@ export interface TrackerSnapshot {
   debug: Record<string, number | string | boolean>;
   /** Alasan percobaan tidak dihitung pada frame `percobaanTidakDihitung`; null pada frame lain. */
   alasanTidakDihitung?: 'terlalu-cepat' | 'rentang-kurang' | null;
+  /** Titik kunci latihan sisi kiri / kanan pasien terlihat pada frame ini. */
+  sisiTerlihat?: { kiri: boolean; kanan: boolean };
+  /**
+   * true bila latihan satu sisi, sisi pilihan TIDAK terlihat tetapi sisi lawan terlihat, bertahan
+   * >= 1 detik (UI menyarankan hadap kamera atau ganti sisi).
+   */
+  sisiLainTerlihat?: boolean;
 }
 
 export interface TrackerResult {
@@ -177,8 +195,11 @@ export interface TrackerResult {
 export interface TrackerOptions {
   sisi: Sisi;
   targetRepetisi: number;
-  /** 'otomatis' (bawaan) = sudut 3D dari worldLandmarks bila ada, selain itu 2D; '2d' = paksa 2D (Mode Uji). */
-  modeSudut?: 'otomatis' | '2d';
+  /**
+   * 'otomatis' (bawaan) = sumber sudut per latihan (`def.sumberSudut`); bila worldLandmarks tidak
+   * ada, 2D. '2d' / '3d' = paksa satu sumber (perbandingan di Mode Uji).
+   */
+  modeSudut?: 'otomatis' | '2d' | '3d';
   /** Jendela moving average dalam frame (3..5, bawaan 4). */
   jendelaRata?: number;
 }

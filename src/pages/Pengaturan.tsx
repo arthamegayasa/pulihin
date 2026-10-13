@@ -9,7 +9,7 @@ import { KosongDemo } from '@/components/KosongDemo';
 import { PageHeader } from '@/components/PageHeader';
 import { Toggle } from '@/components/Toggle';
 import { useToast } from '@/components/Toast';
-import { exportAll, importAll, putSchedule } from '@/data/db';
+import { CadanganTidakValidError, exportAll, importAll, putSchedule, validasiCadangan } from '@/data/db';
 import { hapusSemuaDataLokal, resetDemoData } from '@/data/seed';
 import { useDataPasien } from '@/features/adherence/hooks';
 import { izinNotifikasi, jamKeMenit, mintaIzinNotifikasi } from '@/features/adherence/reminders';
@@ -47,7 +47,8 @@ export default function Pengaturan() {
       await aksi();
       tampilkanToast(pesan);
     } catch (e) {
-      tampilkanToast(e instanceof Error && e.message ? e.message : 'Maaf, ada kendala. Coba sekali lagi.', 'info');
+      console.error(e);
+      tampilkanToast(e instanceof CadanganTidakValidError ? e.message : 'Maaf, ada kendala. Coba sekali lagi.', 'info');
     } finally {
       setSibuk(false);
       setKonfirmasi(null);
@@ -74,8 +75,7 @@ export default function Pengaturan() {
   const pilihBerkas = async (file: File | undefined) => {
     if (!file) return;
     try {
-      const bundle = JSON.parse(await file.text()) as ExportBundle;
-      if (bundle?.app !== 'pulihin' || bundle.versi !== 1 || !Array.isArray(bundle.sessions)) throw new Error('bukan cadangan');
+      const bundle = validasiCadangan(JSON.parse(await file.text()));
       setKonfirmasi({ jenis: 'impor', bundle, nama: file.name });
     } catch {
       tampilkanToast('Berkas ini tidak bisa dibaca. Pilih berkas cadangan PULIHIN berakhiran .json.', 'info');

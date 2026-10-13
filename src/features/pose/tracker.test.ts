@@ -113,7 +113,10 @@ describe('tracker: kesiapan dan snapshot', () => {
     for (const k of ['sudut.bahu.kiri', 'sudut.siku.kanan', 'sudut.lutut.kiri', 'sudut.pinggul.kanan', 'fase', 'mode']) {
       expect(akhir.debug).toHaveProperty(k);
     }
-    expect(akhir.debug.mode).toBe('3D');
+    for (const k of ['sudut.siku.kiri.2d', 'sudut.siku.kiri.3d', 'bobot.2d']) expect(typeof akhir.debug[k]).toBe('number');
+    expect(akhir.debug.mode).toBe('Hibrida');
+    expect(akhir.sisiTerlihat).toEqual({ kiri: true, kanan: true });
+    expect(akhir.sisiLainTerlihat).toBe(false);
     const progres = snapshot.map((x) => x.s.progres);
     expect(Math.min(...progres)).toBe(0);
     expect(Math.max(...progres)).toBe(1);
@@ -153,14 +156,27 @@ describe('tracker: kesiapan dan snapshot', () => {
 describe('tracker: ambang hanya dari data (AC-F2)', () => {
   it('mengubah ambangAtas pada salinan definisi mengubah hitungan tanpa mengubah logika', () => {
     const sesi = buatSesiSintetis({ gerakan: 'fleksi-bahu', jumlahRepetisi: 5, amplitudo: 0.8, seed: 41 });
+    // Sumber 3D: pada kerangka sintetis nilai puncaknya tepat sudut sebenarnya.
     // Puncak 0,8 amplitudo ~ 102 derajat: lolos ambang 100, tidak lolos ambang 110.
-    const asli = jalankanSintetis(def('fleksi-bahu'), sesi).hasil.repetisi;
+    const opsi = { modeSudut: '3d' } as const;
+    const asli = jalankanSintetis(def('fleksi-bahu'), sesi, opsi).hasil.repetisi;
     const salinan: ExerciseDefinition = { ...def('fleksi-bahu'), ambangAtas: 110 };
-    const diubah = jalankanSintetis(salinan, sesi).hasil.repetisi;
+    const diubah = jalankanSintetis(salinan, sesi, opsi).hasil.repetisi;
     expect(asli).toBe(5);
     expect(diubah).toBe(0);
     const lebihRendah: ExerciseDefinition = { ...def('fleksi-bahu'), ambangAtas: 80 };
-    expect(jalankanSintetis(lebihRendah, buatSesiSintetis({ gerakan: 'fleksi-bahu', jumlahRepetisi: 5, amplitudo: 0.7, seed: 42 })).hasil.repetisi).toBe(5);
+    const sesiRendah = buatSesiSintetis({ gerakan: 'fleksi-bahu', jumlahRepetisi: 5, amplitudo: 0.7, seed: 42 });
+    expect(jalankanSintetis(lebihRendah, sesiRendah, opsi).hasil.repetisi).toBe(5);
+  });
+
+  it('sumberSudut adalah data definisi: modeSudut otomatis mengikuti def, Mode Uji dapat memaksa', () => {
+    const sesi = buatSesiSintetis({ gerakan: 'fleksi-siku', jumlahRepetisi: 2, seed: 43 });
+    const mode = (d: ExerciseDefinition, modeSudut?: 'otomatis' | '2d' | '3d') =>
+      jalankanSintetis(d, sesi, { modeSudut }).snapshot.at(-1)!.s.debug.mode;
+    expect(mode(def('fleksi-siku'))).toBe('Hibrida');
+    expect(mode({ ...def('fleksi-siku'), sumberSudut: '3d' })).toBe('3D');
+    expect(mode(def('fleksi-siku'), '2d')).toBe('2D');
+    expect(mode(def('fleksi-siku'), '3d')).toBe('3D');
   });
 });
 

@@ -74,7 +74,8 @@ export function WeeklyChart({ data, className = '' }: { data: BatangHari[]; clas
       <figcaption className="mt-1 text-[0.85rem] text-teks-2">
         Angka = latihan selesai dari target harian (1 latihan gerak + 1 latihan bicara). Garis bawah = hari ini.
       </figcaption>
-      <table className="sr-only">
+      <div className="sr-only">
+      <table>
         <caption>Latihan selesai dibanding target, 7 hari terakhir</caption>
         <thead>
           <tr>
@@ -93,6 +94,7 @@ export function WeeklyChart({ data, className = '' }: { data: BatangHari[]; clas
           ))}
         </tbody>
       </table>
+      </div>
     </figure>
   );
 }

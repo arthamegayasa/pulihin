@@ -1,4 +1,6 @@
 import type { PoseLandmarker } from '@mediapipe/tasks-vision';
+import { ATURAN_UMUM } from './exerciseDefinitions';
+import { INDEKS_MEDIAPIPE } from './landmarks';
 import type { Landmark, PoseFrame } from './types';
 
 /**
@@ -8,6 +10,10 @@ import type { Landmark, PoseFrame } from './types';
  *   pustaka & model baru diunduh saat Detail Latihan, Sesi Kamera, atau Mode Uji dibuka.
  * - Runtime WASM dan model disajikan dari domain sendiri (`/mediapipe/...`), tidak dari CDN.
  * - Semua inferensi terjadi di perangkat. Modul ini tidak pernah mengirim frame ke mana pun (AC-F1-5).
+ * - Hingga 2 orang dideteksi (`JUMLAH_ORANG`) agar anggota keluarga di belakang pasien tidak
+ *   "mencuri" kerangka; `pilihPoseUtama` memilih pasien (badan terbesar, dekat tengah, lengket).
+ *   Biaya terukur (Chrome desktop, GPU): inferensi 13,6 -> 25,5 ms per frame pada rekaman yang
+ *   sama (docs/algoritma.md Bagian 13).
  */
 
 export type Delegasi = 'GPU' | 'CPU';
@@ -23,6 +29,7 @@ export interface StatistikMesin {
 const WASM_PATH = '/mediapipe/wasm';
 const MODEL_PATH = '/mediapipe/models/pose_landmarker_lite.task';
 const EMA = 0.1;
+const JUMLAH_ORANG = 2;
 
 let landmarker: PoseLandmarker | null = null;
 let delegasi: Delegasi | null = null;
@@ -31,6 +38,7 @@ let tsTerakhir = -1;
 let deteksiTerakhir = 0;
 let fps = 0;
 let inferensiMs = 0;
+let orangUtama: PusatOrang | null = null;
 
 async function buat(pilihan: Delegasi): Promise<PoseLandmarker> {
   // Import dinamis disengaja: MediaPipe (~ratusan KB + WASM) harus terpisah dari bundel utama dan
@@ -40,7 +48,7 @@ async function buat(pilihan: Delegasi): Promise<PoseLandmarker> {
   return PL.createFromOptions(fileset, {
     baseOptions: { modelAssetPath: MODEL_PATH, delegate: pilihan },
     runningMode: 'VIDEO',
-    numPoses: 1,
+    numPoses: JUMLAH_ORANG,
     minPoseDetectionConfidence: 0.5,
     minPosePresenceConfidence: 0.5,
     minTrackingConfidence: 0.5,
@@ -103,11 +111,12 @@ export function isPoseEngineReady(): boolean {
   return landmarker !== null;
 }
 
-/** Atur ulang statistik saat sesi baru dimulai. */
+/** Atur ulang statistik dan ingatan orang utama saat sesi baru dimulai. */
 export function resetPoseStats(): void {
   fps = 0;
   inferensiMs = 0;
   deteksiTerakhir = 0;
+  orangUtama = null;
 }
 
 export function getPoseStats(): StatistikMesin {
@@ -121,6 +130,60 @@ function salin(daftar: ReadonlyArray<{ x: number; y: number; z: number; visibili
     hasil[i] = { x: l.x, y: l.y, z: l.z, visibility: l.visibility };
   }
   return hasil;
+}
+
+/** Pusat dan ukuran batang tubuh satu orang pada gambar (satuan tinggi gambar). */
+export interface PusatOrang {
+  x: number;
+  y: number;
+  ukuran: number;
+}
+
+type TitikGambar = Pick<Landmark, 'x' | 'y'>;
+
+/**
+ * Pusat = titik tengah kedua bahu; ukuran = max(panjang batang tubuh, lebar bahu), x dikali
+ * rasio aspek. Koordinat dipakai walau visibility rendah: MediaPipe tetap memperkirakannya.
+ */
+export function pusatOrang(lm: readonly TitikGambar[], aspect: number): PusatOrang {
+  const { bahu, pinggul } = INDEKS_MEDIAPIPE;
+  const [bl, br, pl, pr] = [lm[bahu.kiri], lm[bahu.kanan], lm[pinggul.kiri], lm[pinggul.kanan]];
+  const x = (bl.x + br.x) / 2;
+  const y = (bl.y + br.y) / 2;
+  const batang = Math.hypot((x - (pl.x + pr.x) / 2) * aspect, y - (pl.y + pr.y) / 2);
+  const lebar = Math.hypot((bl.x - br.x) * aspect, bl.y - br.y);
+  return { x, y, ukuran: Math.max(batang, lebar) };
+}
+
+/**
+ * Indeks kandidat yang dianggap pasien: skor = ukuran x (1 - bobotPusat x jarak ke tengah gambar),
+ * dikali faktorLengket bila pusatnya dekat pusat orang utama frame sebelumnya. Urutan keluaran
+ * MediaPipe tidak stabil antar frame, jadi tidak dipakai.
+ */
+export function pilihPoseUtama(
+  kandidat: ReadonlyArray<readonly TitikGambar[]>,
+  aspect: number,
+  sebelumnya: PusatOrang | null,
+): number {
+  const { bobotPusat, faktorLengket, radiusLengket } = ATURAN_UMUM.pilihOrang;
+  let terbaik = 0;
+  let skorTerbaik = -Infinity;
+  kandidat.forEach((lm, i) => {
+    const p = pusatOrang(lm, aspect);
+    const keTengah = Math.min(1, Math.hypot((p.x - 0.5) * aspect, p.y - 0.5));
+    let skor = p.ukuran * (1 - bobotPusat * keTengah);
+    if (
+      sebelumnya &&
+      Math.hypot((p.x - sebelumnya.x) * aspect, p.y - sebelumnya.y) <= radiusLengket * sebelumnya.ukuran
+    ) {
+      skor *= faktorLengket;
+    }
+    if (skor > skorTerbaik) {
+      skorTerbaik = skor;
+      terbaik = i;
+    }
+  });
+  return terbaik;
 }
 
 /** GPU kadang gagal saat inferensi pertama di perangkat tertentu: muat ulang di CPU tanpa menghentikan sesi. */
@@ -165,13 +228,17 @@ export function detectPose(video: HTMLVideoElement, tMs: number): PoseFrame | nu
   }
   deteksiTerakhir = selesai;
 
-  const pose = hasil.landmarks[0];
-  if (!pose || pose.length === 0) return null;
-  const dunia = hasil.worldLandmarks[0];
+  const kandidat = hasil.landmarks.filter((p) => p.length >= 33);
+  if (kandidat.length === 0) return null;
+  const aspect = video.videoWidth / video.videoHeight;
+  const i = kandidat.length === 1 ? 0 : pilihPoseUtama(kandidat, aspect, orangUtama);
+  const pose = kandidat[i];
+  orangUtama = pusatOrang(pose, aspect);
+  const dunia = hasil.worldLandmarks[hasil.landmarks.indexOf(pose)];
   return {
     landmarks: salin(pose),
     worldLandmarks: dunia ? salin(dunia) : undefined,
     t: tMs,
-    aspect: video.videoWidth / video.videoHeight,
+    aspect,
   };
 }

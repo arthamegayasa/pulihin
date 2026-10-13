@@ -22,7 +22,29 @@ export const ATURAN_UMUM = {
   jendelaRataBawaan: 4,
   jendelaRataMin: 3,
   jendelaRataMaks: 5,
+  /**
+   * Sumber sudut 'hibrida' (AngleCalculator.bobot2D): pemendekan relatif ruas sendi
+   * p = min(r, 1/r), r = rasio panjang dua ruas pada gambar / rasio yang sama pada 3D.
+   * p >= pemendekan2D -> murni 2D; p <= pemendekan3D -> murni 3D; di antaranya dicampur linear.
+   * Dikalibrasi pada rekaman nyata (seated.y4m): lengan menggantung/menekuk penuh p 0,5-1,0,
+   * lengan bawah mengarah ke kamera di tengah gerak p 0,08-0,35.
+   */
+  hibrida: { pemendekan2D: 0.7, pemendekan3D: 0.35 },
+  /** Pesan "sisi lain terlihat" baru diberikan bila keadaan itu bertahan selama ini. */
+  sisiLainTahanDetik: 1,
+  /**
+   * Pemilihan orang utama bila MediaPipe mendeteksi lebih dari satu orang (PoseEngine.pilihPoseUtama).
+   * skor = ukuran batang tubuh x (1 - bobotPusat x jarak pusat ke tengah gambar), dikali
+   * faktorLengket bila pusat orang berada dalam radiusLengket x ukuran dari pusat orang utama
+   * frame sebelumnya (agar tidak berpindah-pindah antar orang).
+   */
+  pilihOrang: { bobotPusat: 0.5, faktorLengket: 2, radiusLengket: 0.5 },
   koreksi: {
+    /**
+     * Badan-miring tidak dinilai bila lebar bahu pada gambar < rasio ini x panjang batang tubuh pada
+     * gambar (badan berputar ~> 50°). Menghadap kamera ~0,81 (rekaman nyata seated); curl2 serong 0,32.
+     */
+    rasioLebarBahuMin: 0.5,
     /** Kondisi kontinu harus bertahan sekian sebelum pesan dimunculkan (AC-F1-3). */
     tahanBawaanDetik: 0.5,
     /** Tiap pesan tampil minimal sekian (Bab 7.3). */
@@ -73,7 +95,8 @@ export const KOREKSI_BAWAAN: Record<IdKoreksiBawaan, KoreksiDefinisi> = {
   },
   'badan-miring': {
     id: 'badan-miring',
-    kondisi: 'Garis kedua bahu pada gambar miring lebih dari {ambang} derajat dari horizontal selama 0,5 detik.',
+    kondisi:
+      'Garis kedua bahu miring lebih dari {ambang} derajat dari horizontal selama 0,5 detik. Diukur sebagai elevasi 3D garis bahu sehingga badan yang berputar menghadap serong tidak terbaca miring.',
     pesan: 'Tegakkan badan, jangan miring',
     ambang: 12,
     tahanDetik: 0.5,
@@ -148,6 +171,8 @@ export const EXERCISES: ExerciseDefinition[] = [
       koreksi('tempo-cepat'),
     ],
     animasiAtauVideo: 'bawaan',
+    sumberSudut: 'hibrida',
+    arahKamera: 'depan',
   },
   {
     id: 'fleksi-siku',
@@ -183,6 +208,10 @@ export const EXERCISES: ExerciseDefinition[] = [
       koreksi('tempo-cepat'),
     ],
     animasiAtauVideo: 'bawaan',
+    // Rekaman nyata (median per loop): 3D istirahat 22-29° / puncak 101-115° (tidak pernah melewati
+    // 120/30), hibrida istirahat 2-20° / puncak 158-178° dari depan maupun serong. docs/algoritma.md Bagian 13.
+    sumberSudut: 'hibrida',
+    arahKamera: 'depan',
   },
   {
     id: 'abduksi-bahu',
@@ -217,6 +246,8 @@ export const EXERCISES: ExerciseDefinition[] = [
       koreksi('tempo-cepat'),
     ],
     animasiAtauVideo: 'bawaan',
+    sumberSudut: 'hibrida',
+    arahKamera: 'depan',
   },
   {
     id: 'ekstensi-lutut',
@@ -246,6 +277,8 @@ export const EXERCISES: ExerciseDefinition[] = [
     wajibBerpegangan: false,
     koreksiUmum: [koreksi('keluar-frame'), koreksi('badan-miring'), koreksi('rentang-kurang'), koreksi('tempo-cepat')],
     animasiAtauVideo: 'bawaan',
+    sumberSudut: 'hibrida',
+    arahKamera: 'serong',
   },
   {
     id: 'abduksi-pinggul',
@@ -282,6 +315,8 @@ export const EXERCISES: ExerciseDefinition[] = [
       koreksi('tempo-cepat'),
     ],
     animasiAtauVideo: 'bawaan',
+    sumberSudut: 'hibrida',
+    arahKamera: 'depan',
   },
   {
     id: 'duduk-berdiri',
@@ -311,6 +346,8 @@ export const EXERCISES: ExerciseDefinition[] = [
     wajibBerpegangan: true,
     koreksiUmum: [koreksi('keluar-frame'), koreksi('badan-miring'), koreksi('rentang-kurang'), koreksi('tempo-cepat')],
     animasiAtauVideo: 'bawaan',
+    sumberSudut: 'hibrida',
+    arahKamera: 'serong',
   },
   {
     id: 'jinjit',
@@ -346,6 +383,9 @@ export const EXERCISES: ExerciseDefinition[] = [
       koreksi('tempo-cepat'),
     ],
     animasiAtauVideo: 'bawaan',
+    // Metrik kenaikan selalu dari gambar 2D (landmark dunia berpusat di pinggul).
+    sumberSudut: '2d',
+    arahKamera: 'depan',
   },
   {
     id: 'menggapai',
@@ -381,6 +421,9 @@ export const EXERCISES: ExerciseDefinition[] = [
       koreksi('tempo-cepat'),
     ],
     animasiAtauVideo: 'bawaan',
+    // Tangan bergerak ke arah kamera: jarak hanya terukur dengan 3D.
+    sumberSudut: '3d',
+    arahKamera: 'serong',
   },
   {
     id: 'putar-badan',
@@ -415,6 +458,9 @@ export const EXERCISES: ExerciseDefinition[] = [
       koreksi('tempo-cepat'),
     ],
     animasiAtauVideo: 'bawaan',
+    // Rotasi garis bahu terhadap bidang kamera hanya terukur dengan 3D.
+    sumberSudut: '3d',
+    arahKamera: 'depan',
   },
   {
     id: 'langkah-duduk',
@@ -450,6 +496,8 @@ export const EXERCISES: ExerciseDefinition[] = [
       koreksi('tempo-cepat'),
     ],
     animasiAtauVideo: 'bawaan',
+    sumberSudut: '2d',
+    arahKamera: 'depan',
   },
 ];
 

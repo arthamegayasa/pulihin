@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { PengumpulBaseline, RataBergerak, sudutDi, sudutSendi, ukurMetrik } from './AngleCalculator';
+import { bobot2D, kemiringanBahu, PengumpulBaseline, RataBergerak, sudutDi, sudutSendi, ukurMetrik } from './AngleCalculator';
 import { getExercise } from './exerciseDefinitions';
 import { indeksTitik } from './landmarks';
 import { bangunAdegan, kameraBawaan, paramAwal, proyeksikan, type ParamPose } from './synthetic';
 import type { MetrikDasar } from './AngleCalculator';
-import type { PoseFrame } from './types';
+import type { PoseFrame, SumberSudut } from './types';
 
 const SIKU: MetrikDasar = { jenis: 'sudut', a: 'bahu', b: 'siku', c: 'pergelangan', ubah: 'fleksi' };
 const BAHU: MetrikDasar = { jenis: 'sudut', a: 'pinggul', b: 'bahu', c: 'siku' };
@@ -15,8 +15,8 @@ function pose(ubah: (p: ParamPose) => void, yaw = 0, postur: ParamPose['postur']
   return proyeksikan(bangunAdegan(p), kameraBawaan(postur === 'berdiri' ? 'jinjit' : 'fleksi-siku'), 0, { yawDerajat: yaw });
 }
 
-const nilai = (m: MetrikDasar, f: PoseFrame, izinkan3D: boolean, sisi: 'kiri' | 'kanan' = 'kanan') =>
-  ukurMetrik(m, f, sisi, izinkan3D, null)!.nilai;
+const nilai = (m: MetrikDasar, f: PoseFrame, sumber: SumberSudut, sisi: 'kiri' | 'kanan' = 'kanan') =>
+  ukurMetrik(m, f, sisi, sumber, null)!.nilai;
 
 describe('sudutDi (dot product, Bab 7.1)', () => {
   it('menghitung sudut di titik B', () => {
@@ -42,7 +42,7 @@ describe('keterlihatan (Bab 7.1)', () => {
     expect(sudutSendi(f, a, b, c, '3d')).not.toBeNull();
     f.landmarks[c].visibility = 0.49;
     expect(sudutSendi(f, a, b, c, '3d')).toBeNull();
-    expect(ukurMetrik(SIKU, f, 'kanan', true, null)).toBeNull();
+    expect(ukurMetrik(SIKU, f, 'kanan', '3d', null)).toBeNull();
   });
 });
 
@@ -58,9 +58,9 @@ describe('invariansi sudut pandang: 3D vs 2D', () => {
       for (const yaw of [0, 15, 30, 45, 60, 75, -30]) {
         const f = pose(k.ubah, yaw);
         // Batang tubuh-lengan untuk fleksi bahu: acuan bahu->pinggul condong ~9° karena bahu lebih lebar dari pinggul.
-        const acuan = k.metrik === BAHU ? nilai(k.metrik, pose(k.ubah, 0), true) : k.benar;
-        expect(Math.abs(nilai(k.metrik, f, true) - acuan)).toBeLessThan(0.5);
-        galat2D.push(Math.abs(nilai(k.metrik, f, false) - acuan));
+        const acuan = k.metrik === BAHU ? nilai(k.metrik, pose(k.ubah, 0), '3d') : k.benar;
+        expect(Math.abs(nilai(k.metrik, f, '3d') - acuan)).toBeLessThan(0.5);
+        galat2D.push(Math.abs(nilai(k.metrik, f, '2d') - acuan));
       }
       // Proyeksi 2D bergantung pada arah pandang: galat berubah besar antar sudut putar.
       expect(Math.max(...galat2D)).toBeGreaterThan(25);
@@ -70,7 +70,7 @@ describe('invariansi sudut pandang: 3D vs 2D', () => {
 
   it('abduksi bahu (bidang frontal) terbaca baik oleh keduanya dari depan', () => {
     const f = pose((p) => ((p.bahuAbduksi.kanan = 80), (p.bahuFleksi.kanan = 0)));
-    expect(Math.abs(nilai(BAHU, f, true) - nilai(BAHU, f, false))).toBeLessThan(3);
+    expect(Math.abs(nilai(BAHU, f, '3d') - nilai(BAHU, f, '2d'))).toBeLessThan(3);
   });
 });
 
@@ -80,8 +80,8 @@ describe('metrik selain sudut', () => {
     for (const yaw of [0, 40]) {
       const lurus = pose((p) => (p.pinggulAbduksi.kanan = 0), yaw, 'berdiri');
       const abd = pose((p) => (p.pinggulAbduksi.kanan = 30), yaw, 'berdiri');
-      expect(nilai(m, lurus, true)).toBeCloseTo(0, 0);
-      expect(nilai(m, abd, true)).toBeCloseTo(30, 0);
+      expect(nilai(m, lurus, '3d')).toBeCloseTo(0, 0);
+      expect(nilai(m, abd, '3d')).toBeCloseTo(30, 0);
     }
   });
 
@@ -91,22 +91,24 @@ describe('metrik selain sudut', () => {
     const kumpul = new PengumpulBaseline([indeksTitik('tumit', 'kiri'), indeksTitik('tumit', 'kanan')]);
     kumpul.tambah(diam);
     const acuan = kumpul.hasil();
-    expect(ukurMetrik(m, diam, 'kiri', true, null)).toBeNull(); // tanpa acuan belum bisa diukur
-    expect(ukurMetrik(m, diam, 'kiri', true, acuan)!.nilai).toBeCloseTo(0, 5);
+    expect(ukurMetrik(m, diam, 'kiri', '3d', null)).toBeNull(); // tanpa acuan belum bisa diukur
+    expect(ukurMetrik(m, diam, 'kiri', '3d', acuan)!.nilai).toBeCloseTo(0, 5);
     const naik = pose((p) => (p.jinjit = 0.06), 0, 'berdiri');
     // 6 cm / lebar bahu 36 cm ~ 17% (sedikit berbeda karena perspektif).
-    expect(ukurMetrik(m, naik, 'kiri', true, acuan)!.nilai).toBeGreaterThan(14);
-    expect(ukurMetrik(m, naik, 'kiri', true, acuan)!.nilai).toBeLessThan(20);
+    expect(ukurMetrik(m, naik, 'kiri', '3d', acuan)!.nilai).toBeGreaterThan(14);
+    expect(ukurMetrik(m, naik, 'kiri', '3d', acuan)!.nilai).toBeLessThan(20);
   });
 
   it('jarak pergelangan-bahu (menggapai) memakai 3D: lengan lurus ke arah kamera tetap terbaca', () => {
     const m: MetrikDasar = { jenis: 'jarak', dari: 'bahu', ke: 'pergelangan' };
     const dada = pose((p) => ((p.bahuFleksi.kanan = 55), (p.sikuFleksi.kanan = 125)));
     const gapai = pose((p) => ((p.bahuFleksi.kanan = 90), (p.sikuFleksi.kanan = 5)));
-    expect(nilai(m, dada, true)).toBeLessThan(90);
-    expect(nilai(m, gapai, true)).toBeGreaterThan(150);
+    expect(nilai(m, dada, '3d')).toBeLessThan(90);
+    expect(nilai(m, gapai, '3d')).toBeGreaterThan(150);
+    // Sumber hibrida berarti 3D untuk metrik jarak.
+    expect(nilai(m, gapai, 'hibrida')).toBeCloseTo(nilai(m, gapai, '3d'), 5);
     // 2D dari depan hampir tidak melihat gerak menggapai.
-    expect(nilai(m, gapai, false)).toBeLessThan(135);
+    expect(nilai(m, gapai, '2d')).toBeLessThan(135);
   });
 
   it('rotasi garis bahu: 3D atan2(dz, dx) relatif acuan; 2D memperkirakan dari pemendekan', () => {
@@ -116,12 +118,66 @@ describe('metrik selain sudut', () => {
     kumpul.tambah(lurus);
     const acuan = kumpul.hasil();
     const putar = pose((p) => (p.rotasiBatang = -25), 20);
-    expect(ukurMetrik(m, lurus, 'kiri', true, acuan)!.nilai).toBeCloseTo(0, 5);
-    expect(ukurMetrik(m, putar, 'kiri', true, acuan)!.nilai).toBeCloseTo(25, 0);
+    expect(ukurMetrik(m, lurus, 'kiri', '3d', acuan)!.nilai).toBeCloseTo(0, 5);
+    expect(ukurMetrik(m, putar, 'kiri', '3d', acuan)!.nilai).toBeCloseTo(25, 0);
     const lurusDepan = pose(() => {});
     const kumpul2D = new PengumpulBaseline([]);
     kumpul2D.tambah(lurusDepan);
     const putarDepan = pose((p) => (p.rotasiBatang = 25));
-    expect(ukurMetrik(m, putarDepan, 'kiri', false, kumpul2D.hasil())!.nilai).toBeGreaterThan(18);
+    expect(ukurMetrik(m, putarDepan, 'kiri', '2d', kumpul2D.hasil())!.nilai).toBeGreaterThan(18);
+  });
+});
+
+describe('sumber sudut hibrida', () => {
+  const iSiku = [indeksTitik('bahu', 'kanan'), indeksTitik('siku', 'kanan'), indeksTitik('pergelangan', 'kanan')] as const;
+
+  it('kedua ruas sejajar bidang gambar -> bobot 2D penuh, nilai = 2D', () => {
+    // Lengan menggantung lurus, dan abduksi bahu 80° dilihat dari depan.
+    const lurus = pose((p) => (p.sikuFleksi.kanan = 0));
+    expect(bobot2D(lurus, ...iSiku)).toBe(1);
+    expect(nilai(SIKU, lurus, 'hibrida')).toBeCloseTo(nilai(SIKU, lurus, '2d'), 5);
+    const abd = pose((p) => ((p.bahuAbduksi.kanan = 80), (p.bahuFleksi.kanan = 0)));
+    expect(nilai(BAHU, abd, 'hibrida')).toBeCloseTo(nilai(BAHU, abd, '2d'), 5);
+  });
+
+  it('lengan bawah mengarah ke kamera (fleksi 90° dari depan) -> 2D tidak terdefinisi, nilai = 3D', () => {
+    const f = pose((p) => (p.sikuFleksi.kanan = 90));
+    expect(bobot2D(f, ...iSiku)).toBe(0);
+    expect(nilai(SIKU, f, 'hibrida')).toBeCloseTo(nilai(SIKU, f, '3d'), 5);
+    expect(nilai(SIKU, f, 'hibrida')).toBeCloseTo(90, 0);
+  });
+
+  it('tekuk penuh dari depan maupun serong 45° tetap di atas ambang atas 120°', () => {
+    for (const yaw of [0, 45]) {
+      expect(nilai(SIKU, pose((p) => (p.sikuFleksi.kanan = 140), yaw), 'hibrida')).toBeGreaterThan(125);
+      expect(nilai(SIKU, pose((p) => (p.sikuFleksi.kanan = 5), yaw), 'hibrida')).toBeLessThan(25);
+    }
+  });
+
+  it('tanpa worldLandmarks hibrida jatuh ke 2D', () => {
+    const f = pose((p) => (p.sikuFleksi.kanan = 60));
+    const tanpa: PoseFrame = { ...f, worldLandmarks: undefined };
+    expect(ukurMetrik(SIKU, tanpa, 'kanan', 'hibrida', null)!.basis).toBe('2d');
+  });
+});
+
+describe('kemiringan bahu tahan putaran badan (badan-miring)', () => {
+  it('badan tegak yang diputar 0-75° terhadap kamera tidak terbaca miring (atau tidak dinilai)', () => {
+    for (const yaw of [0, 30, 45, 60, 75, -60]) {
+      expect(kemiringanBahu(pose(() => {}, yaw)) ?? 0).toBeLessThan(2);
+    }
+  });
+
+  it('miring 18° ke samping terbaca ~18° dari depan maupun serong 30-45°', () => {
+    for (const yaw of [0, 30, 45]) {
+      expect(kemiringanBahu(pose((p) => (p.miringBatang = 18), yaw))!).toBeGreaterThan(14);
+    }
+  });
+
+  it('badan sangat berputar (lebar bahu < 0,5 x batang tubuh pada gambar): tidak dinilai, dengan atau tanpa 3D', () => {
+    const tanpaDunia = (f: PoseFrame): PoseFrame => ({ ...f, worldLandmarks: undefined });
+    expect(kemiringanBahu(pose((p) => (p.miringBatang = 18), 75))).toBeNull();
+    expect(kemiringanBahu(tanpaDunia(pose(() => {}, 75)))).toBeNull();
+    expect(kemiringanBahu(tanpaDunia(pose((p) => (p.miringBatang = 18))))!).toBeGreaterThan(14);
   });
 });

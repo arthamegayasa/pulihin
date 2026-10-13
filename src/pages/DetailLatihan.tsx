@@ -43,7 +43,7 @@ export default function DetailLatihan() {
     <section className="space-y-5">
       <PageHeader judul={def.nama} sub={`${LABEL_POSISI[def.posisi]} · ${labelSendi(def.sendiTarget)}`} />
 
-      <ExerciseDemo exerciseId={def.id} nama={def.nama} sisi={pilihSisi ? sisiLatihan : undefined} />
+      <ExerciseDemo exerciseId={def.id} nama={def.nama} sisi={pilihSisi ? sisiLatihan : undefined} tempoDetik={def.tempoTargetDetik} />
 
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-kartu border border-garis bg-white p-4 shadow-tipis">
@@ -74,7 +74,7 @@ export default function DetailLatihan() {
         </ol>
       </section>
 
-      <PhonePlacement posisi={def.posisi} teks={def.posisiPonsel} />
+      <PhonePlacement def={def} />
 
       <SafetyNotice wajibBerpegangan={def.wajibBerpegangan} tambahan={def.peringatan} />
 

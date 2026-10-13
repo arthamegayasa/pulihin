@@ -211,19 +211,55 @@ export async function exportAll(): Promise<ExportBundle> {
   return { app: 'pulihin', versi: 1, dieksporAt: Date.now(), profiles, sessions, repLogs, speechAttempts, programs, schedules };
 }
 
-/** Ganti seluruh isi penyimpanan dengan bundle (cadangan untuk perekaman video). */
-export async function importAll(b: ExportBundle): Promise<void> {
-  if (b?.app !== 'pulihin' || b.versi !== 1) throw new Error('Berkas ini bukan cadangan PULIHIN yang dikenali.');
+export class CadanganTidakValidError extends Error {}
+
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const semua = (v: unknown, cek: (x: Record<string, unknown>) => boolean): boolean => Array.isArray(v) && v.every((x) => isObj(x) && cek(x));
+const str = (v: unknown) => typeof v === 'string' && v.length > 0;
+
+/**
+ * Periksa berkas cadangan SEBELUM menyentuh penyimpanan: bentuk tiap koleksi dan kunci utamanya.
+ * Berkas rusak tidak pernah menghapus data yang ada.
+ */
+export function validasiCadangan(raw: unknown): ExportBundle {
+  if (!isObj(raw) || raw.app !== 'pulihin' || raw.versi !== 1) {
+    throw new CadanganTidakValidError('Berkas ini bukan cadangan PULIHIN yang dikenali.');
+  }
+  const ok =
+    semua(raw.profiles, (p) => str(p.id) && str(p.namaSamaran)) &&
+    semua(raw.sessions, (s) => str(s.id) && str(s.patientId) && str(s.tanggal) && (s.jenis === 'gerak' || s.jenis === 'afasia')) &&
+    semua(raw.repLogs, (r) => str(r.sessionId) && typeof r.nomor === 'number') &&
+    semua(raw.speechAttempts, (a) => str(a.sessionId) && str(a.kataId)) &&
+    semua(raw.programs, (p) => str(p.patientId) && Array.isArray(p.items)) &&
+    semua(raw.schedules, (s) => str(s.patientId) && str(s.jamGerak) && str(s.jamAfasia));
+  if (!ok) throw new CadanganTidakValidError('Isi berkas cadangan tidak lengkap atau rusak. Data Anda tidak diubah.');
+  // Bentuk sudah diperiksa per koleksi di atas.
+  const bundle: ExportBundle = raw as unknown as ExportBundle;
+  return bundle;
+}
+
+/** Ganti seluruh isi penyimpanan dengan cadangan yang sudah divalidasi (dipakai saat perekaman video). */
+export async function importAll(raw: unknown): Promise<void> {
+  const b = validasiCadangan(raw);
   const db = await getDb();
   const tx = db.transaction([...ALL_STORES], 'readwrite');
-  await Promise.all(ALL_STORES.map((s) => tx.objectStore(s).clear()));
-  for (const p of b.profiles) await tx.objectStore('profiles').put(p);
-  for (const s of b.sessions) await tx.objectStore('sessions').put(s);
-  for (const r of b.repLogs) await tx.objectStore('repLogs').put(r);
-  for (const a of b.speechAttempts) await tx.objectStore('speechAttempts').put(a);
-  for (const p of b.programs) await tx.objectStore('programs').put(p);
-  for (const s of b.schedules) await tx.objectStore('schedules').put(s);
-  await tx.done;
+  try {
+    await Promise.all(ALL_STORES.map((s) => tx.objectStore(s).clear()));
+    for (const p of b.profiles) await tx.objectStore('profiles').put(p);
+    for (const s of b.sessions) await tx.objectStore('sessions').put(s);
+    for (const r of b.repLogs) await tx.objectStore('repLogs').put(r);
+    for (const a of b.speechAttempts) await tx.objectStore('speechAttempts').put(a);
+    for (const p of b.programs) await tx.objectStore('programs').put(p);
+    for (const s of b.schedules) await tx.objectStore('schedules').put(s);
+    await tx.done;
+  } catch {
+    try {
+      tx.abort();
+    } catch {
+      /* transaksi sudah berakhir */
+    }
+    throw new CadanganTidakValidError('Cadangan tidak dapat dipulihkan. Data Anda tidak diubah.');
+  }
   notifyDataChange();
 }
 

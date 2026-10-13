@@ -1,10 +1,10 @@
-import { ArrowCounterClockwise, House, Lightbulb } from '@phosphor-icons/react';
+import { ArrowCounterClockwise, CheckCircle, House, Lightbulb } from '@phosphor-icons/react';
 import { Navigate, useParams } from 'react-router';
 import { BigLink } from '@/components/BigButton';
 import { NonDiagnosisNote } from '@/components/NonDiagnosisNote';
 import { PageHeader } from '@/components/PageHeader';
 import { ScoreRing } from '@/components/ScoreRing';
-import { getSession } from '@/data/db';
+import { getSession, listRepLogs } from '@/data/db';
 import { useLiveQuery } from '@/data/useLiveQuery';
 import { getExercise } from '@/features/pose/exerciseDefinitions';
 import { urlSesi } from '@/features/pose/sesiParams';
@@ -109,6 +109,8 @@ export default function RingkasanSesi() {
         </section>
       )}
 
+      {def && <StripRepetisi sessionId={sesi.id} ambangAtas={def.ambangAtas} satuan={def.satuan} />}
+
       {sesi.saran && (
         <div className="flex gap-3 rounded-kartu border border-aksen/30 bg-aksen-terang p-4">
           <Lightbulb size={28} weight="fill" className="mt-0.5 shrink-0 text-aksen" aria-hidden />
@@ -135,6 +137,75 @@ export default function RingkasanSesi() {
           </BigLink>
         )}
       </div>
+    </section>
+  );
+}
+
+/**
+ * Jejak ukur per gerakan dari repLogs tersimpan: tinggi batang = nilai puncak metrik, garis putus = ambang hitung.
+ * Terhitung / belum terhitung selalu ditulis dengan kata (bukan warna saja).
+ */
+function StripRepetisi({ sessionId, ambangAtas, satuan }: { sessionId: string; ambangAtas: number; satuan: '°' | '%' }) {
+  const { data: logs } = useLiveQuery(() => listRepLogs(sessionId), [sessionId]);
+  if (!logs || logs.length === 0) return null;
+  const terhitung = logs.filter((l) => l.dihitung).length;
+  const skalaMaks = Math.max(ambangAtas * 1.15, ...logs.map((l) => l.sudutPuncak));
+  const tinggiAmbang = (ambangAtas / skalaMaks) * 100;
+  const label = satuan === '°' ? 'Sudut puncak tiap gerakan' : 'Nilai puncak tiap gerakan';
+  return (
+    <section className="rounded-kartu border border-garis bg-white p-5 shadow-tipis">
+      <h2 className="text-[1.15rem] font-bold">{label}</h2>
+      <p className="mb-3 text-[0.95rem] text-teks-2">
+        Diukur kamera: {terhitung} dari {logs.length} gerakan terhitung. Garis putus-putus = batas hitung {ambangAtas}
+        {satuan}.
+      </p>
+      <div className="overflow-x-auto pb-1">
+        <ol className="relative flex min-w-max items-end gap-1.5 pt-5" aria-label={label}>
+          <li
+            className="pointer-events-none absolute inset-x-0 border-t-2 border-dashed border-aksen/70"
+            style={{ bottom: `calc(2.6rem + ${tinggiAmbang / 100} * 8rem)` }}
+            aria-hidden
+          />
+          {logs.map((l) => {
+            const nilai = Math.round(l.sudutPuncak);
+            return (
+              <li
+                key={l.nomor}
+                className="flex w-9 flex-col items-center"
+                aria-label={`Gerakan ${l.nomor}: puncak ${nilai}${satuan === '°' ? ' derajat' : ' persen'}, ${l.dihitung ? 'terhitung' : 'belum terhitung'}`}
+              >
+                <span className="tabular text-[0.75rem] font-bold text-teks-2" aria-hidden>
+                  {nilai}
+                  {satuan}
+                </span>
+                <div className="flex h-32 w-full items-end" aria-hidden>
+                  <div
+                    className={`w-full rounded-t-md ${l.dihitung ? 'bg-primer' : 'border-2 border-dashed border-teks-2/60 bg-primer-terang'}`}
+                    style={{ height: `${Math.max(4, (clamp(l.sudutPuncak, 0, skalaMaks) / skalaMaks) * 100)}%` }}
+                  />
+                </div>
+                <span className="tabular mt-1 text-[0.85rem] font-bold" aria-hidden>
+                  {l.nomor}
+                </span>
+                <span className="h-[1.1rem] text-[0.7rem] font-semibold leading-none text-teks-2" aria-hidden>
+                  {l.dihitung ? '' : 'belum'}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+      <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[0.9rem]" aria-hidden>
+        <li className="flex items-center gap-1.5">
+          <span className="inline-block size-3.5 rounded-sm bg-primer" />
+          <CheckCircle size={18} weight="fill" className="text-primer" />
+          Terhitung
+        </li>
+        <li className="flex items-center gap-1.5">
+          <span className="inline-block size-3.5 rounded-sm border-2 border-dashed border-teks-2/60 bg-primer-terang" />
+          Belum terhitung (terlalu cepat atau kurang jauh)
+        </li>
+      </ul>
     </section>
   );
 }

@@ -14,13 +14,14 @@ import {
 } from './AngleCalculator';
 import { ATURAN_UMUM } from './exerciseDefinitions';
 import { FormChecker } from './FormChecker';
-import { indeksTitik, indeksTitikKunci, JUMLAH_LANDMARK, semuaTerlihat, sisiDipantau } from './landmarks';
+import { indeksTitik, indeksTitikKunci, JUMLAH_LANDMARK, semuaTerlihat, sisiDipantau, sisiLawan } from './landmarks';
 import { progresNilai, RepCounter, type PeristiwaSiklus } from './RepCounter';
 import { hitungSkor } from './scoring';
 import type {
   ExerciseDefinition,
   ExerciseTracker,
   PoseFrame,
+  SumberSudut,
   TrackerOptions,
   TrackerResult,
   TrackerSnapshot,
@@ -39,6 +40,8 @@ import type {
  */
 
 type KunciKanal = Sisi | 'tunggal';
+
+const LABEL_BASIS: Record<BasisKoordinat, string> = { '2d': '2D', '3d': '3D', hibrida: 'Hibrida' };
 
 interface Kanal {
   kunci: KunciKanal;
@@ -66,7 +69,8 @@ export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): Ex
       Math.max(ATURAN_UMUM.jendelaRataMin, opts.jendelaRata ?? ATURAN_UMUM.jendelaRataBawaan),
     ),
   );
-  const izinkan3D = opts.modeSudut !== '2d';
+  const sumber: SumberSudut =
+    opts.modeSudut === '2d' || opts.modeSudut === '3d' ? opts.modeSudut : (def.sumberSudut ?? '3d');
   const bergantian = def.metrik.jenis === 'bergantian';
   const metrik: MetrikDasar = def.metrik.jenis === 'bergantian' ? def.metrik.per : def.metrik;
   const konfig = {
@@ -77,6 +81,10 @@ export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): Ex
   };
   const sisiPantau = sisiDipantau(def, opts.sisi);
   const titikAktif = indeksTitikKunci(def, opts.sisi);
+  const titikSisi: Record<Sisi, number[]> = {
+    kiri: def.titikKunci.map((t) => indeksTitik(t, 'kiri')),
+    kanan: def.titikKunci.map((t) => indeksTitik(t, 'kanan')),
+  };
 
   const buatKanal = (kunci: KunciKanal, sisiUkur: Sisi[]): Kanal => ({
     kunci,
@@ -104,6 +112,7 @@ export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): Ex
   let terakhirTerlihat: number | null = null;
   let baseline: Baseline | null = null;
   let progresTerakhir = 0;
+  let sisiLainSejak: number | null = null;
   const repLogs: LogTanpaId[] = [];
 
   const ratakanDebug = (kunci: string, nilai: number | null): number | string => {
@@ -152,24 +161,38 @@ export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): Ex
     const tubuhTerlihat = f !== null && semuaTerlihat(f.landmarks, titikAktif, vis);
     perbaruiSiap(f, t, tubuhTerlihat);
 
-    let basis: BasisKoordinat | null = f ? basisFrame(f, izinkan3D) : null;
+    const sisiTerlihat = {
+      kiri: f !== null && semuaTerlihat(f.landmarks, titikSisi.kiri, vis),
+      kanan: f !== null && semuaTerlihat(f.landmarks, titikSisi.kanan, vis),
+    };
+    const sisiLainSaatIni =
+      def.sisi === 'pilih' && !sisiTerlihat[opts.sisi] && sisiTerlihat[sisiLawan(opts.sisi)];
+    if (!sisiLainSaatIni) sisiLainSejak = null;
+    else sisiLainSejak ??= t;
+    const sisiLainTerlihat = sisiLainSejak !== null && t - sisiLainSejak >= ATURAN_UMUM.sisiLainTahanDetik * 1000;
+
+    let basis: BasisKoordinat | null = f ? basisFrame(f, sumber) : null;
+    let bobot2D: number | null = null;
     const siklus: Array<{ kanal: Kanal; p: PeristiwaSiklus }> = [];
     for (const k of kanal) {
       k.mentah = null;
       k.nilai = null;
       if (!f) continue;
       let jumlah = 0;
+      let jumlahBobot = 0;
       let n = 0;
       for (const s of k.sisiUkur) {
-        const h = ukurMetrik(metrik, f, s, izinkan3D, baseline, vis);
+        const h = ukurMetrik(metrik, f, s, sumber, baseline, vis);
         if (!h) continue;
         jumlah += h.nilai;
+        jumlahBobot += h.bobot2D;
         n += 1;
         basis = h.basis;
       }
       if (n === 0) continue;
       k.mentah = jumlah / n;
       k.nilai = k.rata.tambah(k.mentah);
+      bobot2D = jumlahBobot / n;
       if (siap) {
         const p = k.counter.update(k.nilai, t);
         if (p) siklus.push({ kanal: k, p });
@@ -189,7 +212,9 @@ export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): Ex
 
     const hasilForm = form.update({
       t,
-      tubuhTerlihat,
+      // Hanya sisi lawan yang terlihat: "Mundur sedikit" bukan saran yang tepat; UI memakai
+      // `sisiLainTerlihat` untuk menyarankan hadap kamera atau ganti sisi.
+      tubuhTerlihat: tubuhTerlihat || sisiLainSaatIni,
       siap,
       sedangNaik: kanal.some((k) => k.counter.fase === 'NAIK' || k.counter.fase === 'ATAS'),
       kemiringanBahu: miring,
@@ -218,7 +243,8 @@ export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): Ex
       fase: aktif.counter.fase,
       siap,
       bersenjata: aktif.counter.bersenjata,
-      mode: basis === null ? '-' : basis === '3d' ? '3D' : '2D',
+      mode: basis === null ? '-' : LABEL_BASIS[basis],
+      'bobot.2d': bobot2D === null ? '-' : bulat(bobot2D, 2),
       'nilai.mentah': aktif.mentah === null ? '-' : bulat(aktif.mentah, 1),
       'nilai.rata': aktif.nilai === null ? '-' : bulat(aktif.nilai, 1),
       'miring.bahu': miring === null ? '-' : bulat(miring, 1),
@@ -230,16 +256,18 @@ export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): Ex
         debug[`nilai.${k.kunci}`] = k.nilai === null ? '-' : bulat(k.nilai, 1);
       }
     }
-    const basisDebug = f ? basisFrame(f, izinkan3D) : '2d';
+    const basisDebug = f ? basisFrame(f, sumber) : '2d';
     for (const sendi of SENDI_DEBUG) {
       for (const s of ['kiri', 'kanan'] as const) {
         const kunci = `sudut.${sendi.sendi}.${s}`;
-        const sudut = f
-          ? sudutSendi(f, indeksTitik(sendi.a, s), indeksTitik(sendi.b, s), indeksTitik(sendi.c, s), basisDebug, vis)
-          : null;
-        const nilai = sudut === null ? null : sendi.fleksi ? 180 - sudut : sudut;
-        debug[kunci] = nilai === null ? '-' : bulat(nilai, 1);
-        debug[`${kunci}.rata`] = ratakanDebug(kunci, nilai);
+        const [ia, ib, ic] = [indeksTitik(sendi.a, s), indeksTitik(sendi.b, s), indeksTitik(sendi.c, s)];
+        // Kunci utama memakai sumber latihan; `.2d` / `.3d` = perbandingan mentah untuk Mode Uji.
+        for (const [akhiran, b] of [['', basisDebug], ['.2d', '2d'], ['.3d', '3d']] as const) {
+          const sudut = f && basisFrame(f, b) === b ? sudutSendi(f, ia, ib, ic, b, vis) : null;
+          const nilai = sudut === null ? null : sendi.fleksi ? 180 - sudut : sudut;
+          debug[kunci + akhiran] = nilai === null ? '-' : bulat(nilai, 1);
+          if (akhiran === '') debug[`${kunci}.rata`] = ratakanDebug(kunci, nilai);
+        }
       }
     }
 
@@ -259,6 +287,8 @@ export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): Ex
       alasanTidakDihitung,
       titikAktif,
       debug,
+      sisiTerlihat,
+      sisiLainTerlihat,
     };
   }
 

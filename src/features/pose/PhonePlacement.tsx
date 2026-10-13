@@ -1,66 +1,139 @@
 import { DeviceMobile } from '@phosphor-icons/react';
-import type { Posisi } from './types';
+import type { ExerciseDefinition } from './types';
 
 /**
- * Ilustrasi sederhana posisi ponsel: ponsel berdiri di meja, pasien di depannya, jarak ditandai.
- * Jarak mengikuti kondisi uji Bab 11.1: duduk 0,8-1,2 m, berdiri 1,5-2,5 m.
+ * Ilustrasi letak ponsel per latihan, diturunkan dari definisi (bukan teks tetap):
+ * - Tampak samping: tinggi ponsel (lantai/lutut/pinggang/dada, dibaca dari `posisiPonsel`) dan jaraknya ke pasien.
+ * - Tampak atas: ponsel tepat di depan (`arahKamera` 'depan') atau serong ± 45° ('serong').
+ * Teks `posisiPonsel` tetap ditampilkan utuh sebagai acuan utama.
  */
-export function PhonePlacement({ posisi, teks }: { posisi: Posisi; teks: string }) {
-  const berdiri = posisi !== 'duduk';
-  const jarak = berdiri ? '± 2 meter' : '± 1 meter';
-  const primer = '#0b4f4a';
-  const garis = '#9fb7b3';
-  // Figur pasien: berdiri atau duduk di kursi, menghadap ponsel (ke kiri).
-  const xOrang = 196;
+
+const PRIMER = '#0b4f4a';
+const AKSEN = '#c46a1b';
+const GARIS = '#9fb7b3';
+const TANAH = '#c9dcd8';
+
+type Tinggi = 'lantai' | 'lutut' | 'pinggang' | 'dada';
+
+/** Y layar (viewBox samping) untuk tiap tinggi ponsel; lantai = 112. */
+const Y_TINGGI: Record<Tinggi, number> = { lantai: 104, lutut: 86, pinggang: 72, dada: 56 };
+
+function bacaTinggi(teks: string): Tinggi {
+  const t = teks.toLowerCase();
+  if (t.includes('lantai')) return 'lantai';
+  if (t.includes('lutut')) return 'lutut';
+  if (t.includes('pinggang')) return 'pinggang';
+  return 'dada';
+}
+
+export function PhonePlacement({ def }: { def: Pick<ExerciseDefinition, 'posisi' | 'posisiPonsel' | 'arahKamera'> }) {
+  const teks = def.posisiPonsel;
+  const berdiri = def.posisi !== 'duduk';
+  const angkaJarak = /(\d+(?:,\d+)?)\s*meter/.exec(teks)?.[1];
+  const jarak = angkaJarak ? `${angkaJarak} m` : berdiri ? '± 2 m' : '± 1 m';
+  const serong = def.arahKamera === 'serong';
+  const tinggi = bacaTinggi(teks);
+  const yPonsel = Y_TINGGI[tinggi];
+  const xOrang = 198;
+  const xPonsel = 50;
+  const yMata = berdiri ? 30 : 46;
+  // Tampak atas: ponsel di depan pasien, atau diputar 45° pada lingkaran berjari-jari sama (pusat = kepala).
+  const sudutAtas = serong ? Math.PI / 4 : 0;
+  const atas = {
+    x: 60 + Math.sin(sudutAtas) * 70,
+    y: 25 + Math.cos(sudutAtas) * 70,
+    putar: (-sudutAtas * 180) / Math.PI,
+    busurX: 60 + Math.sin(sudutAtas) * 47,
+    busurY: 25 + Math.cos(sudutAtas) * 47,
+  };
+
   return (
     <section className="rounded-kartu border border-garis bg-white p-4 shadow-tipis">
-      <h2 className="mb-2 flex items-center gap-2 text-[1.15rem] font-bold">
+      <h2 className="mb-3 flex items-center gap-2 text-[1.15rem] font-bold">
         <DeviceMobile size={26} weight="bold" className="text-primer" aria-hidden />
         Letak ponsel
       </h2>
-      <svg viewBox="0 0 240 120" className="h-auto w-full" role="img" aria-label={`Ponsel di meja, pasien sekitar ${jarak} di depannya`}>
-        <g strokeLinecap="round" strokeLinejoin="round" fill="none">
-          <line x1={8} y1={112} x2={232} y2={112} stroke="#c9dcd8" strokeWidth={3} />
-          {/* meja */}
-          <line x1={14} y1={64} x2={62} y2={64} stroke={garis} strokeWidth={5} />
-          <line x1={20} y1={64} x2={20} y2={112} stroke={garis} strokeWidth={5} />
-          <line x1={56} y1={64} x2={56} y2={112} stroke={garis} strokeWidth={5} />
-          {/* ponsel berdiri, kamera menghadap pasien */}
-          <rect x={44} y={34} width={9} height={28} rx={2.5} fill={primer} />
-          <circle cx={52} cy={39} r={1.6} fill="#c46a1b" />
-          {/* garis pandang kamera */}
-          <line x1={58} y1={48} x2={xOrang - 18} y2={48} stroke="#c46a1b" strokeWidth={2} strokeDasharray="5 5" />
-          <polyline points={`${xOrang - 24},43 ${xOrang - 18},48 ${xOrang - 24},53`} stroke="#c46a1b" strokeWidth={2} />
-          {berdiri ? (
-            <g stroke={primer}>
-              <circle cx={xOrang} cy={22} r={7} fill={primer} stroke="none" />
-              <line x1={xOrang} y1={32} x2={xOrang} y2={68} strokeWidth={9} />
-              <polyline points={`${xOrang},68 ${xOrang - 2},90 ${xOrang},110`} strokeWidth={7} />
-              <polyline points={`${xOrang},36 ${xOrang - 4},56 ${xOrang - 2},72`} strokeWidth={6} />
-            </g>
-          ) : (
-            <g>
-              <polyline points={`${xOrang + 14},50 ${xOrang + 14},82 ${xOrang - 12},82`} stroke={garis} strokeWidth={4} />
-              <line x1={xOrang + 12} y1={82} x2={xOrang + 12} y2={112} stroke={garis} strokeWidth={4} />
-              <line x1={xOrang - 10} y1={82} x2={xOrang - 10} y2={112} stroke={garis} strokeWidth={4} />
-              <g stroke={primer}>
-                <circle cx={xOrang + 4} cy={34} r={7} fill={primer} stroke="none" />
-                <line x1={xOrang + 4} y1={44} x2={xOrang + 4} y2={76} strokeWidth={9} />
-                <polyline points={`${xOrang + 4},77 ${xOrang - 18},77 ${xOrang - 18},108`} strokeWidth={7} />
-                <polyline points={`${xOrang + 4},48 ${xOrang},64 ${xOrang - 8},72`} strokeWidth={6} />
+      <figure>
+        <svg viewBox="0 0 240 122" className="h-auto w-full" role="img" aria-label={`Tampak samping: ponsel setinggi ${tinggi}, sekitar ${jarak} dari pasien`}>
+          <g strokeLinecap="round" strokeLinejoin="round" fill="none">
+            <line x1={8} y1={112} x2={232} y2={112} stroke={TANAH} strokeWidth={3} />
+            {/* penyangga ponsel setinggi yang diminta */}
+            {tinggi !== 'lantai' && (
+              <>
+                <line x1={28} y1={yPonsel + 14} x2={66} y2={yPonsel + 14} stroke={GARIS} strokeWidth={5} />
+                <line x1={33} y1={yPonsel + 14} x2={33} y2={112} stroke={GARIS} strokeWidth={4} />
+                <line x1={61} y1={yPonsel + 14} x2={61} y2={112} stroke={GARIS} strokeWidth={4} />
+              </>
+            )}
+            <rect x={xPonsel - 5} y={yPonsel - 13} width={10} height={26} rx={2.5} fill={PRIMER} />
+            <circle cx={xPonsel + 3} cy={yPonsel - 8} r={1.6} fill={AKSEN} />
+            {/* sudut pandang kamera */}
+            <polygon points={`${xPonsel + 6},${yPonsel - 4} ${xOrang - 16},${yMata - 22} ${xOrang - 16},112`} fill={AKSEN} opacity={0.08} />
+            <line x1={xPonsel + 6} y1={yPonsel - 4} x2={xOrang - 18} y2={yPonsel - 4} stroke={AKSEN} strokeWidth={2} strokeDasharray="5 5" />
+            {berdiri ? (
+              <g stroke={PRIMER}>
+                <circle cx={xOrang} cy={18} r={7.5} fill={PRIMER} stroke="none" />
+                <line x1={xOrang} y1={28} x2={xOrang} y2={66} strokeWidth={11} />
+                <polyline points={`${xOrang},66 ${xOrang - 2},88 ${xOrang},108`} strokeWidth={8} />
+                <polyline points={`${xOrang - 6},108 ${xOrang - 1},108`} strokeWidth={6} />
+                <polyline points={`${xOrang},32 ${xOrang - 3},52 ${xOrang - 1},68`} strokeWidth={6.5} stroke="#0e6a63" />
               </g>
-            </g>
-          )}
-          {/* penanda jarak */}
-          <line x1={58} y1={100} x2={xOrang - 22} y2={100} stroke={primer} strokeWidth={1.5} />
-          <line x1={58} y1={96} x2={58} y2={104} stroke={primer} strokeWidth={1.5} />
-          <line x1={xOrang - 22} y1={96} x2={xOrang - 22} y2={104} stroke={primer} strokeWidth={1.5} />
-        </g>
-        <text x={(58 + xOrang - 22) / 2} y={94} textAnchor="middle" fontSize={11} fontWeight={700} fill={primer}>
-          {jarak}
-        </text>
-      </svg>
-      <p className="mt-2">{teks}</p>
+            ) : (
+              <g>
+                <rect x={xOrang + 12} y={46} width={6} height={42} rx={3} fill={GARIS} />
+                <rect x={xOrang - 14} y={83} width={32} height={6} rx={3} fill={GARIS} />
+                <line x1={xOrang + 14} y1={86} x2={xOrang + 14} y2={112} stroke={GARIS} strokeWidth={4} />
+                <line x1={xOrang - 10} y1={86} x2={xOrang - 10} y2={112} stroke={GARIS} strokeWidth={4} />
+                <g stroke={PRIMER}>
+                  <circle cx={xOrang + 3} cy={33} r={7.5} fill={PRIMER} stroke="none" />
+                  <line x1={xOrang + 3} y1={44} x2={xOrang + 3} y2={78} strokeWidth={11} />
+                  <polyline points={`${xOrang + 3},79 ${xOrang - 18},79 ${xOrang - 18},106`} strokeWidth={8} />
+                  <polyline points={`${xOrang - 24},107 ${xOrang - 17},107`} strokeWidth={6} />
+                  <polyline points={`${xOrang + 3},48 ${xOrang},64 ${xOrang - 9},74`} strokeWidth={6.5} stroke="#0e6a63" />
+                </g>
+              </g>
+            )}
+            {/* penanda jarak */}
+            <line x1={xPonsel + 8} y1={118} x2={xOrang - 24} y2={118} stroke={PRIMER} strokeWidth={1.5} />
+            <line x1={xPonsel + 8} y1={114} x2={xPonsel + 8} y2={120} stroke={PRIMER} strokeWidth={1.5} />
+            <line x1={xOrang - 24} y1={114} x2={xOrang - 24} y2={120} stroke={PRIMER} strokeWidth={1.5} />
+          </g>
+          <rect x={(xPonsel + xOrang) / 2 - 30} y={94} width={60} height={18} rx={9} fill="#ffffff" stroke={TANAH} />
+          <text x={(xPonsel + xOrang) / 2} y={107.5} textAnchor="middle" fontSize={13} fontWeight={800} fill={PRIMER}>
+            {jarak}
+          </text>
+        </svg>
+        <figcaption className="sr-only">Dari samping</figcaption>
+      </figure>
+
+      <figure className="mt-2 flex items-center gap-3 rounded-xl bg-primer-terang p-2">
+        <svg viewBox="0 0 120 112" className="h-auto w-24 shrink-0" role="img" aria-label={serong ? 'Tampak atas: ponsel serong sekitar 45 derajat' : 'Tampak atas: ponsel tepat di depan'}>
+          <g strokeLinecap="round" strokeLinejoin="round">
+            {/* pasien dari atas (bahu + kepala), menghadap ke bawah gambar */}
+            {!berdiri && <rect x={42} y={6} width={36} height={22} rx={5} fill={GARIS} opacity={0.6} />}
+            <ellipse cx={60} cy={24} rx={20} ry={7} fill={PRIMER} />
+            <circle cx={60} cy={25} r={7} fill="#0e6a63" stroke="#ffffff" strokeWidth={1.5} />
+            {/* garis arah hadap */}
+            <line x1={60} y1={36} x2={60} y2={98} stroke={TANAH} strokeWidth={1.5} strokeDasharray="3 4" />
+            <polygon points={`${atas.x},${atas.y} 42,30 78,30`} fill={AKSEN} opacity={0.12} />
+            <line x1={atas.x} y1={atas.y} x2={60} y2={30} stroke={AKSEN} strokeWidth={2} strokeDasharray="4 4" />
+            <rect x={atas.x - 9} y={atas.y - 3} width={18} height={6} rx={2} fill={PRIMER} transform={`rotate(${atas.putar} ${atas.x} ${atas.y})`} />
+            {serong && (
+              <>
+                <path d={`M60 72 A47 47 0 0 0 ${atas.busurX} ${atas.busurY}`} fill="none" stroke={AKSEN} strokeWidth={1.5} />
+                <text x={74} y={84} fontSize={11} fontWeight={800} fill={AKSEN}>
+                  45°
+                </text>
+              </>
+            )}
+          </g>
+        </svg>
+        <figcaption className="text-[0.95rem] leading-snug">
+          <span className="block font-bold">Dari atas</span>
+          {serong ? 'Ponsel serong ± 45° ke arah sisi yang dilatih.' : 'Ponsel tepat di depan Anda.'}
+        </figcaption>
+      </figure>
+      <p className="mt-3">{teks}</p>
     </section>
   );
 }

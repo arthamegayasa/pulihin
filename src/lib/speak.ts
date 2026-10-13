@@ -61,7 +61,11 @@ export function speak(text: string, opts: SpeakOptions = {}): void {
     u.pitch = 1;
     if (onEnd) {
       u.onend = () => onEnd();
-      u.onerror = () => onEnd();
+      // Ucapan yang sengaja dihentikan (cancel/disela) TIDAK memicu lanjutan: mencegah kalimat contoh terputar
+      // saat mikrofon sudah mendengarkan (bisa memberi nilai Benar palsu di latihan bicara).
+      u.onerror = (e) => {
+        if (e.error !== 'interrupted' && e.error !== 'canceled') onEnd();
+      };
     }
     synth.speak(u);
   } catch {

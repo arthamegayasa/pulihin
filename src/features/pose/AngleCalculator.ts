@@ -1,16 +1,20 @@
 import type { Sisi } from '@/types';
+import { ATURAN_UMUM } from './exerciseDefinitions';
 import { AMBANG_VISIBILITAS, INDEKS_MEDIAPIPE, indeksMetrik, indeksTitik, semuaTerlihat } from './landmarks';
-import type { Landmark, Metrik, NamaTitik, PoseFrame } from './types';
+import type { Landmark, Metrik, NamaTitik, PoseFrame, SumberSudut } from './types';
 
 /**
  * Perhitungan sudut & metrik (Bab 7.1).
  *
- * Keputusan 2D/3D (lihat docs/algoritma.md): sudut sendi dihitung dari `worldLandmarks` (3D, meter)
- * bila tersedia, karena sudut 3D tidak berubah ketika tubuh berputar terhadap kamera. Dengan begitu
- * ponsel dapat diletakkan DI DEPAN pasien dan tetap mengukur gerak bidang sagital (fleksi siku,
- * fleksi bahu, ekstensi lutut), sementara koreksi bidang frontal (bahu miring, bahu terangkat)
- * diukur pada gambar 2D dari sudut pandang yang sama. Tanpa worldLandmarks, sudut dihitung dari
- * koordinat gambar yang dikoreksi rasio aspek (x * aspect, y).
+ * Sumber sudut per latihan (`def.sumberSudut`, lihat docs/algoritma.md Bagian 3 dan 13):
+ * - '2d'      : koordinat gambar dikoreksi rasio aspek (x * aspect, y).
+ * - '3d'      : `worldLandmarks` MediaPipe (meter, berpusat di pinggul).
+ * - 'hibrida' : rata-rata berbobot sudut 2D dan 3D. Bobot 2D = 1 bila kedua ruas sendi sejajar
+ *               bidang gambar, turun ke 0 bila salah satu ruas memendek tajam (mengarah ke kamera),
+ *               tempat sudut 2D tidak terdefinisi. Rekaman manusia nyata menunjukkan sudut 3D
+ *               MediaPipe memampatkan fleksi siku dari depan (istirahat 25-50°, puncak 100-110°),
+ *               sedangkan 2D bersih di titik ekstrem (istirahat 2-20°, puncak 160-178°).
+ * Tanpa worldLandmarks semua sumber jatuh ke 2D.
  */
 
 export interface Vec3 {
@@ -19,7 +23,8 @@ export interface Vec3 {
   z: number;
 }
 
-export type BasisKoordinat = '3d' | '2d';
+/** Basis efektif satu frame (setelah memperhitungkan ada/tidaknya worldLandmarks). */
+export type BasisKoordinat = SumberSudut;
 export type MetrikDasar = Exclude<Metrik, { jenis: 'bergantian' }>;
 
 const RAD = 180 / Math.PI;
@@ -47,18 +52,65 @@ export function sudutDi(a: Vec3, b: Vec3, c: Vec3): number | null {
   return Math.acos(Math.min(1, Math.max(-1, cos))) * RAD;
 }
 
-/** Basis koordinat untuk frame ini: 3D bila diizinkan dan worldLandmarks lengkap. */
-export function basisFrame(frame: PoseFrame, izinkan3D: boolean): BasisKoordinat {
-  return izinkan3D && frame.worldLandmarks !== undefined && frame.worldLandmarks.length >= 33 ? '3d' : '2d';
+/** worldLandmarks lengkap tersedia. */
+export function punyaDunia(frame: PoseFrame): boolean {
+  return frame.worldLandmarks !== undefined && frame.worldLandmarks.length >= 33;
 }
 
-/** Titik ke-i dalam basis yang dipilih. Keterlihatan selalu dinilai dari landmark gambar. */
-export function titikBasis(frame: PoseFrame, i: number, basis: BasisKoordinat): Vec3 {
+/** Basis koordinat untuk frame ini: sumber yang diminta, atau 2D bila worldLandmarks tidak ada. */
+export function basisFrame(frame: PoseFrame, sumber: SumberSudut): BasisKoordinat {
+  return sumber === '2d' || !punyaDunia(frame) ? '2d' : sumber;
+}
+
+/** Titik ke-i pada koordinat gambar ('2d') atau dunia ('3d'). Keterlihatan selalu dinilai dari landmark gambar. */
+export function titikBasis(frame: PoseFrame, i: number, basis: '2d' | '3d'): Vec3 {
   if (basis === '3d') {
     const w = frame.worldLandmarks![i];
     return { x: w.x, y: w.y, z: w.z };
   }
   return titik2D(frame.landmarks[i], frame.aspect);
+}
+
+/**
+ * Bobot sudut 2D (0..1) untuk sendi B dengan ruas BA dan BC.
+ * r = (|BC|/|BA| pada gambar) / (|BC|/|BA| pada dunia 3D); pemendekan relatif p = min(r, 1/r).
+ * p = 1: kedua ruas sama-sama sejajar bidang gambar (2D tepat). p kecil: satu ruas mengarah ke
+ * kamera (2D tidak terdefinisi). Perbandingan antar-ruas tidak memerlukan panjang acuan per sesi.
+ */
+export function bobot2D(frame: PoseFrame, ia: number, ib: number, ic: number): number {
+  const [a2, b2, c2] = [ia, ib, ic].map((i) => titikBasis(frame, i, '2d'));
+  const [a3, b3, c3] = [ia, ib, ic].map((i) => titikBasis(frame, i, '3d'));
+  const ba2 = jarak(a2, b2);
+  const ba3 = jarak(a3, b3);
+  const bc3 = jarak(c3, b3);
+  if (!(ba2 > 1e-9 && ba3 > 1e-9 && bc3 > 1e-9)) return 0;
+  const r = jarak(c2, b2) / ba2 / (bc3 / ba3);
+  const p = r > 1 ? 1 / r : r;
+  const { pemendekan3D, pemendekan2D } = ATURAN_UMUM.hibrida;
+  return Math.min(1, Math.max(0, (p - pemendekan3D) / (pemendekan2D - pemendekan3D)));
+}
+
+export interface HasilSudut {
+  /** Derajat, 0..180. */
+  sudut: number;
+  /** Porsi sudut 2D dalam nilai (1 = murni 2D, 0 = murni 3D). */
+  bobot2D: number;
+}
+
+/** Sudut di B (dot product) menurut basis; null bila vektor nol. Tidak memeriksa keterlihatan. */
+export function sudutBasis(frame: PoseFrame, ia: number, ib: number, ic: number, basis: BasisKoordinat): HasilSudut | null {
+  const sudutPada = (b: '2d' | '3d') =>
+    sudutDi(titikBasis(frame, ia, b), titikBasis(frame, ib, b), titikBasis(frame, ic, b));
+  if (basis === '2d') {
+    const s = sudutPada('2d');
+    return s === null ? null : { sudut: s, bobot2D: 1 };
+  }
+  const s3 = sudutPada('3d');
+  if (s3 === null) return null;
+  if (basis === '3d') return { sudut: s3, bobot2D: 0 };
+  const s2 = sudutPada('2d');
+  const w = s2 === null ? 0 : bobot2D(frame, ia, ib, ic);
+  return { sudut: w * (s2 ?? 0) + (1 - w) * s3, bobot2D: w };
 }
 
 /**
@@ -74,7 +126,7 @@ export function sudutSendi(
   ambangVisibilitas = AMBANG_VISIBILITAS,
 ): number | null {
   if (!semuaTerlihat(frame.landmarks, [ia, ib, ic], ambangVisibilitas)) return null;
-  return sudutDi(titikBasis(frame, ia, basis), titikBasis(frame, ib, basis), titikBasis(frame, ic, basis));
+  return sudutBasis(frame, ia, ib, ic, basis)?.sudut ?? null;
 }
 
 /** Moving average atas N nilai valid terakhir (Bab 7.1). Frame yang diabaikan tidak dimasukkan. */
@@ -108,11 +160,36 @@ export function lebarBahu2D(frame: PoseFrame, ambangVisibilitas = AMBANG_VISIBIL
   return jarak(titik2D(frame.landmarks[BAHU_KIRI], frame.aspect), titik2D(frame.landmarks[BAHU_KANAN], frame.aspect));
 }
 
-/** Kemiringan garis bahu dari horizontal pada gambar, derajat 0..90 (koreksi badan-miring). */
+/**
+ * Kemiringan garis bahu dari horizontal, derajat 0..90 (koreksi badan-miring), tahan putaran badan.
+ *
+ * 1. Badan sangat berputar -> null (tidak dinilai): lebar bahu pada gambar < `rasioLebarBahuMin` x
+ *    panjang batang tubuh pada gambar (menghadap kamera ~0,81 pada rekaman nyata, 0,5 ~ putaran 50°).
+ *    Pada putaran sebesar itu bidang frontal hampir searah pandang kamera: garis bahu 2D memendek
+ *    sehingga beda tinggi kecil terbaca miring besar, dan kedalaman MediaPipe yang termampatkan
+ *    juga membesarkan elevasi 3D (video gym `curl`: 3D 15-30° pada rasio 0,42).
+ * 2. Dengan worldLandmarks: elevasi 3D garis bahu atan2(|dy|, hypot(dx, dz)); putaran sedang (yaw)
+ *    hanya mengubah dx/dz, bukan elevasinya. Tanpa 3D: kemiringan pada gambar.
+ * Pinggul tidak terlihat: langkah 1 dilewati bila ada 3D (bingkai dekat menghadap kamera), selain
+ * itu null karena putaran tidak dapat diperiksa.
+ * Rekaman nyata curl2 (serong, tegak): 2D 15-24°, 3D 0,7-4,1°, rasio 0,29-0,46.
+ */
 export function kemiringanBahu(frame: PoseFrame, ambangVisibilitas = AMBANG_VISIBILITAS): number | null {
   if (!semuaTerlihat(frame.landmarks, [BAHU_KIRI, BAHU_KANAN], ambangVisibilitas)) return null;
-  const l = titik2D(frame.landmarks[BAHU_KIRI], frame.aspect);
-  const r = titik2D(frame.landmarks[BAHU_KANAN], frame.aspect);
+  const pinggul = [INDEKS_MEDIAPIPE.pinggul.kiri, INDEKS_MEDIAPIPE.pinggul.kanan];
+  const [l, r, pl, pr] = [BAHU_KIRI, BAHU_KANAN, ...pinggul].map((i) => titik2D(frame.landmarks[i], frame.aspect));
+  const dunia = punyaDunia(frame);
+  if (semuaTerlihat(frame.landmarks, pinggul, ambangVisibilitas)) {
+    const batang = Math.hypot((l.x + r.x - pl.x - pr.x) / 2, (l.y + r.y - pl.y - pr.y) / 2);
+    if (jarak(l, r) < ATURAN_UMUM.koreksi.rasioLebarBahuMin * batang) return null;
+  } else if (!dunia) {
+    return null;
+  }
+  if (dunia) {
+    const wl = frame.worldLandmarks![BAHU_KIRI];
+    const wr = frame.worldLandmarks![BAHU_KANAN];
+    return Math.atan2(Math.abs(wl.y - wr.y), Math.hypot(wl.x - wr.x, wl.z - wr.z)) * RAD;
+  }
   return Math.atan2(Math.abs(l.y - r.y), Math.abs(l.x - r.x)) * RAD;
 }
 
@@ -121,7 +198,7 @@ export function kemiringanBahu(frame: PoseFrame, ambangVisibilitas = AMBANG_VISI
  * 0 bila bahu sejajar bidang gambar. Null tanpa worldLandmarks atau bila bahu tidak terlihat.
  */
 export function rotasiBahu3D(frame: PoseFrame, ambangVisibilitas = AMBANG_VISIBILITAS): number | null {
-  if (basisFrame(frame, true) !== '3d') return null;
+  if (!punyaDunia(frame)) return null;
   if (!semuaTerlihat(frame.landmarks, [BAHU_KIRI, BAHU_KANAN], ambangVisibilitas)) return null;
   const l = frame.worldLandmarks![BAHU_KIRI];
   const r = frame.worldLandmarks![BAHU_KANAN];
@@ -209,62 +286,67 @@ function selisihSudut(a: number, b: number): number {
 export interface HasilMetrik {
   nilai: number;
   basis: BasisKoordinat;
+  /** Porsi sudut 2D (1 = 2D, 0 = 3D); untuk metrik non-sudut 1 pada basis 2D, 0 pada 3D. */
+  bobot2D: number;
 }
 
 /**
  * Nilai metrik satu sisi untuk satu frame, atau null bila frame harus diabaikan
  * (landmark yang dibutuhkan tidak terlihat, atau acuan belum tersedia untuk metrik relatif).
  *
- * - sudut: dot product di titik b, 3D bila tersedia; `ubah: 'fleksi'` = 180 - sudut,
- *   `ubah: 'selisih-90'` = sudut - 90; `aSisiLawan` mengambil titik a dari sisi berlawanan.
+ * - sudut: dot product di titik b menurut `sumber` (2D, 3D, atau hibrida berbobot pemendekan
+ *   ruas); `ubah: 'fleksi'` = 180 - sudut, `ubah: 'selisih-90'` = sudut - 90; `aSisiLawan`
+ *   mengambil titik a dari sisi berlawanan.
  * - kenaikan: (y acuan - y sekarang) / lebar bahu acuan * 100, dari GAMBAR. Landmark dunia
  *   berpusat di pinggul sehingga tidak bisa melihat seluruh badan naik (jinjit).
- * - jarak: |ke - dari| / lebar bahu * 100, 3D bila tersedia (gerak menggapai mengarah ke kamera).
- * - rotasi-bahu: |atan2(dz, dx) - acuan| dari landmark dunia; tanpa 3D diperkirakan dari
- *   pemendekan lebar bahu pada gambar: acos(lebar / lebar acuan).
+ * - jarak: |ke - dari| / lebar bahu * 100, 3D kecuali sumber '2d' (gerak menggapai mengarah ke kamera).
+ * - rotasi-bahu: |atan2(dz, dx) - acuan| dari landmark dunia kecuali sumber '2d'; dengan 2D
+ *   diperkirakan dari pemendekan lebar bahu pada gambar: acos(lebar / lebar acuan).
  */
 export function ukurMetrik(
   metrik: MetrikDasar,
   frame: PoseFrame,
   sisi: Sisi,
-  izinkan3D: boolean,
+  sumber: SumberSudut,
   baseline: Baseline | null,
   ambangVisibilitas = AMBANG_VISIBILITAS,
 ): HasilMetrik | null {
   if (!semuaTerlihat(frame.landmarks, indeksMetrik(metrik, sisi), ambangVisibilitas)) return null;
-  const basis = basisFrame(frame, izinkan3D);
+  const basis = basisFrame(frame, sumber);
+  // Metrik non-sudut tidak punya ruas sendi untuk dibobot: hibrida berarti 3D.
+  const ruang = basis === '2d' ? '2d' : '3d';
   switch (metrik.jenis) {
     case 'sudut': {
       const [ia, ib, ic] = indeksMetrik(metrik, sisi);
-      const s = sudutDi(titikBasis(frame, ia, basis), titikBasis(frame, ib, basis), titikBasis(frame, ic, basis));
-      if (s === null) return null;
-      const nilai = metrik.ubah === 'fleksi' ? 180 - s : metrik.ubah === 'selisih-90' ? s - 90 : s;
-      return { nilai, basis };
+      const h = sudutBasis(frame, ia, ib, ic, basis);
+      if (h === null) return null;
+      const nilai = metrik.ubah === 'fleksi' ? 180 - h.sudut : metrik.ubah === 'selisih-90' ? h.sudut - 90 : h.sudut;
+      return { nilai, basis, bobot2D: h.bobot2D };
     }
     case 'kenaikan': {
       const i = indeksTitik(metrik.titik, sisi);
       const y0 = baseline?.y[i];
       const lebar = baseline?.lebarBahu2D;
       if (y0 === undefined || !lebar) return null;
-      return { nilai: ((y0 - frame.landmarks[i].y) / lebar) * 100, basis: '2d' };
+      return { nilai: ((y0 - frame.landmarks[i].y) / lebar) * 100, basis: '2d', bobot2D: 1 };
     }
     case 'jarak': {
-      const dari = titikBasis(frame, indeksTitik(metrik.dari, sisi), basis);
-      const ke = titikBasis(frame, indeksTitik(metrik.ke, sisi), basis);
-      const lebar = jarak(titikBasis(frame, BAHU_KIRI, basis), titikBasis(frame, BAHU_KANAN, basis));
+      const dari = titikBasis(frame, indeksTitik(metrik.dari, sisi), ruang);
+      const ke = titikBasis(frame, indeksTitik(metrik.ke, sisi), ruang);
+      const lebar = jarak(titikBasis(frame, BAHU_KIRI, ruang), titikBasis(frame, BAHU_KANAN, ruang));
       if (!(lebar > 1e-9)) return null;
-      return { nilai: (jarak(dari, ke) / lebar) * 100, basis };
+      return { nilai: (jarak(dari, ke) / lebar) * 100, basis: ruang, bobot2D: ruang === '2d' ? 1 : 0 };
     }
     case 'rotasi-bahu': {
-      if (basis === '3d') {
+      if (ruang === '3d') {
         const r = rotasiBahu3D(frame, ambangVisibilitas);
         if (r === null) return null;
-        return { nilai: Math.abs(selisihSudut(r, baseline?.rotasiBahu3D ?? 0)), basis };
+        return { nilai: Math.abs(selisihSudut(r, baseline?.rotasiBahu3D ?? 0)), basis: '3d', bobot2D: 0 };
       }
       const lebar = lebarBahu2D(frame, ambangVisibilitas);
       const lebar0 = baseline?.lebarBahu2D;
       if (lebar === null || !lebar0) return null;
-      return { nilai: Math.acos(Math.min(1, lebar / lebar0)) * RAD, basis: '2d' };
+      return { nilai: Math.acos(Math.min(1, lebar / lebar0)) * RAD, basis: '2d', bobot2D: 1 };
     }
   }
 }

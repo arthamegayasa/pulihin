@@ -55,7 +55,7 @@ describe('SIMULASI akurasi 50 repetisi latihan inti', () => {
 
   for (const id of INTI) {
     it(`${id}: 15 fps, derau realistis, tempo lambat -> akurasi >= 90%`, () => {
-      const { a, hasil, baris } = uji(id, '3D, 15 fps, yaw 15°', {}, 101);
+      const { a, hasil, baris } = uji(id, 'otomatis, 15 fps, yaw 15°', {}, 101);
       tabel.push(baris);
       expect(a.akurasi).toBeGreaterThanOrEqual(0.9);
       expect(hasil.repetisi).toBe(a.benar + a.ganda);
@@ -63,10 +63,10 @@ describe('SIMULASI akurasi 50 repetisi latihan inti', () => {
 
     it(`${id}: ketahanan (30 fps; ponsel tepat di depan; serong 35°; derau berat)`, () => {
       const varian: Array<[string, Partial<OpsiSintetis>]> = [
-        ['3D, 30 fps, yaw 15°', { fps: 30 }],
-        ['3D, 15 fps, yaw 0°', { yawDerajat: 0 }],
-        ['3D, 15 fps, yaw 35°', { yawDerajat: 35 }],
-        ['3D, 15 fps, derau berat', { derauSudut: 5, derauPx: 4, peluangHilang: 0.1, peluangBuram: 0.05 }],
+        ['otomatis, 30 fps, yaw 15°', { fps: 30 }],
+        ['otomatis, 15 fps, yaw 0°', { yawDerajat: 0 }],
+        ['otomatis, 15 fps, yaw 35°', { yawDerajat: 35 }],
+        ['otomatis, 15 fps, derau berat', { derauSudut: 5, derauPx: 4, peluangHilang: 0.1, peluangBuram: 0.05 }],
       ];
       for (const [nama, ubah] of varian) {
         const { a, baris } = uji(id, nama, ubah, 202);
@@ -91,21 +91,22 @@ describe('SIMULASI akurasi 50 repetisi latihan inti', () => {
   });
 });
 
-describe('SIMULASI galat sudut: 3D vs 2D terhadap sudut sebenarnya', () => {
+describe('SIMULASI galat sudut: 3D vs 2D vs hibrida terhadap sudut sebenarnya', () => {
   /** Rata-rata galat mutlak nilai mentah tracker vs nilai sebenarnya dari pose tanpa derau. */
-  function galat(id: (typeof INTI)[number], yawDerajat: number, tanpaDunia: boolean): number {
+  function galat(id: (typeof INTI)[number], yawDerajat: number, modeSudut: 'otomatis' | '2d' | '3d'): number {
     const opsi: OpsiSintetis = { ...SKENARIO_UTAMA, gerakan: id, jumlahRepetisi: 10, yawDerajat, seed: 404 };
     const bersih = buatSesiSintetis({ ...opsi, derauSudut: 0, derauPx: 0, peluangHilang: 0, peluangBuram: 0 });
-    const berderau = buatSesiSintetis({ ...opsi, tanpaDunia });
+    const berderau = buatSesiSintetis(opsi);
     const def = getExercise(id)!;
-    const { snapshot } = jalankanSintetis(def, berderau);
+    const { snapshot } = jalankanSintetis(def, berderau, { modeSudut });
     let jumlah = 0;
     let n = 0;
     snapshot.forEach(({ s }, i) => {
       const f = bersih.frames[i].frame;
       const mentah = s.debug['nilai.mentah'];
       if (!f || typeof mentah !== 'number') return;
-      const benar = ukurMetrik(def.metrik as MetrikDasar, f, 'kanan', true, null);
+      // Kerangka sintetis kaku: 3D tanpa derau = sudut sebenarnya.
+      const benar = ukurMetrik(def.metrik as MetrikDasar, f, 'kanan', '3d', null);
       if (!benar) return;
       jumlah += Math.abs(mentah - benar.nilai);
       n++;
@@ -113,16 +114,19 @@ describe('SIMULASI galat sudut: 3D vs 2D terhadap sudut sebenarnya', () => {
     return jumlah / n;
   }
 
-  it('sudut 3D tetap akurat dari depan maupun serong; 2D dari depan tidak (fleksi bidang sagital)', () => {
+  it('3D akurat dari arah mana pun pada kerangka sintetis; 2D dari depan tidak; hibrida di antaranya', () => {
     const tabel: Array<Record<string, string>> = [];
     for (const id of INTI) {
       const baris: Record<string, string> = { latihan: id };
       for (const yaw of [0, 30, 60]) {
-        const g3 = galat(id, yaw, false);
-        const g2 = galat(id, yaw, true);
+        const g3 = galat(id, yaw, '3d');
+        const g2 = galat(id, yaw, '2d');
+        const gh = galat(id, yaw, 'otomatis');
         baris[`3D yaw ${yaw}°`] = `${g3.toFixed(1)}°`;
         baris[`2D yaw ${yaw}°`] = `${g2.toFixed(1)}°`;
+        baris[`hibrida yaw ${yaw}°`] = `${gh.toFixed(1)}°`;
         expect(g3).toBeLessThan(6);
+        expect(gh).toBeLessThanOrEqual(g2 + 1);
       }
       tabel.push(baris);
     }
