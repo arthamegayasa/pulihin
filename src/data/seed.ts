@@ -1,5 +1,5 @@
 import type { ExportBundle, HasilKata, ISODate, Profile, Program, ProgramItem, RepLog, Schedule, Session, SkenarioDemo, SpeechAttempt } from '@/types';
-import { bulkPut, clearAll, getProgram, getSchedule, importAll, listProfiles, listSessions } from '@/data/db';
+import { bulkPut, clearAll, deleteSession, exportAll, getProgram, getSchedule, importAll, listProfiles, listRepLogs, listSessions, listSpeechAttempts } from '@/data/db';
 import { addDays, todayISO } from '@/lib/date';
 import { resetPrefs, setPrefs, getPrefs } from '@/lib/prefs';
 import { clamp } from '@/lib/score';
@@ -90,7 +90,8 @@ function rencana(skenario: SkenarioDemo): RencanaPasien[] {
       profile: { id: 'joko', namaSamaran: 'Pak Joko', usia: 61, keterangan: 'Stroke 2 bulan lalu', sisiLemah: 'kiri', isDemo: true },
       items: [
         { latihanId: 'fleksi-siku', targetRepetisi: 8, set: 1 },
-        { latihanId: 'abduksi-bahu', targetRepetisi: 8, set: 1 },
+        // Target rentang 80% dari terapis: Dashboard Klinisi memperlihatkan fitur rentang personal.
+        { latihanId: 'abduksi-bahu', targetRepetisi: 8, set: 1, rentangPersen: 80 },
         { latihanId: 'ekstensi-lutut', targetRepetisi: 10, set: 1 },
       ],
       frekuensiPerMinggu: 5,
@@ -149,7 +150,9 @@ function sesiGerak(
   const skor = Math.round(0.5 * komponenRepetisi + 0.3 * rentang + 0.2 * tempo);
 
   const id = `demo-${r.profile.id}-${tanggal}-${item.latihanId}`;
-  const atas = AMBANG_ATAS_DEMO[item.latihanId] ?? 90;
+  // Butir resep dengan target rentang (persen ambang atas) menghasilkan sudut puncak di sekitar ambang efektifnya.
+  const skalaRentang = (item.rentangPersen ?? 100) / 100;
+  const atas = (AMBANG_ATAS_DEMO[item.latihanId] ?? 90) * skalaRentang;
   const logs: RepLog[] = [];
   let nomor = 0;
   let durasi = 12;
@@ -169,7 +172,7 @@ function sesiGerak(
       sessionId: id,
       nomor: ++nomor,
       dihitung: true,
-      sudutPuncak: Math.round(Math.min(178, atas + 2 + (rentang / 100) * 30 + acak() * 5)),
+      sudutPuncak: Math.round(Math.min(178, atas + 2 + (rentang / 100) * 30 * skalaRentang + acak() * 5)),
       durasiSiklusDetik: round1(siklus),
       koreksi,
     });
@@ -200,6 +203,7 @@ function sesiGerak(
     selesai: true,
     saran,
     sisi: r.profile.sisiLemah,
+    ...(item.rentangPersen !== undefined ? { rentangPersen: item.rentangPersen } : {}),
     isDemo: true,
   });
   out.repLogs.push(...logs);
@@ -336,7 +340,8 @@ function tanamDemo(skenario: SkenarioDemo, today: ISODate): Promise<void> {
  * (tanggalMulaiProgram = hari tanam - 14). Pemeriksaan tidak bergantung pada isi pembangkit, agar data demo
  * dari versi aplikasi sebelumnya tetap dikenali:
  * - semua profil dan semua sesi berlabel demo (sesi yang direkam pengguna selalu `isDemo: false`, termasuk
- *   sesi yang dihentikan);
+ *   sesi yang dihentikan). Pemanggil membuang dulu sesi `selesai: false` tanpa RepLog/SpeechAttempt (layar yang
+ *   hanya dibuka), karena itu belum aktivitas pengguna;
  * - resep belum pernah disimpan ulang (tanggalUbah masih waktu tanam, Dashboard Klinisi menulis waktu simpan);
  * - jadwal masih jadwal bawaan demo.
  */
@@ -355,7 +360,33 @@ export function tanggalTanamDemoUtuh(data: Pick<DataDemo, 'profiles' | 'programs
 }
 
 /**
+ * Bersih-bersih saat aplikasi dibuka: sesi `selesai: false` dari hari sebelumnya (kamera ditinggal, layar latihan
+ * yang hanya dibuka) dihapus beserta RepLog dan SpeechAttempt-nya. Sesi hari ini dibiarkan: mungkin masih berjalan
+ * di tab lain. Mengembalikan jumlah sesi yang dihapus.
+ */
+export async function bersihkanSesiBelumSelesai(today: ISODate = todayISO(), profiles?: Profile[]): Promise<number> {
+  let jumlah = 0;
+  for (const p of profiles ?? (await listProfiles())) {
+    const lama = await listSessions(p.id, { sampai: addDays(today, -1), hanyaSelesai: false });
+    for (const s of lama) {
+      if (s.selesai) continue;
+      await deleteSession(s.id);
+      jumlah++;
+    }
+  }
+  return jumlah;
+}
+
+/** Sesi belum selesai tanpa satu pun percobaan tercatat (layar hanya dibuka). */
+async function sesiKosong(s: Session): Promise<boolean> {
+  if (s.selesai) return false;
+  const [reps, ucapan] = await Promise.all([listRepLogs(s.id), listSpeechAttempts(s.id)]);
+  return reps.length === 0 && ucapan.length === 0;
+}
+
+/**
  * Dipanggil setiap aplikasi dibuka (main.tsx).
+ * - Bersih-bersih rekaman belum selesai dari hari sebelumnya (`bersihkanSesiBelumSelesai`).
  * - Pembukaan pertama (belum ada profil): tanam data demo, kecuali pengguna sengaja menghapus semua data.
  * - Data demo yang ditanam pada hari sebelumnya dan belum diubah pengguna ditanam ulang untuk hari ini, sehingga
  *   skenario selalu tampak sama kapan pun dibuka (mis. stagnasi tetap "3 hari belum latihan", bukan 4 atau 5).
@@ -363,9 +394,10 @@ export function tanggalTanamDemoUtuh(data: Pick<DataDemo, 'profiles' | 'programs
  */
 export function ensureDemoData(today: ISODate = todayISO()): Promise<void> {
   sedangMenanam ??= (async () => {
+    const profiles = await listProfiles();
+    await bersihkanSesiBelumSelesai(today, profiles);
     if (bacaLocal(AUTOSEED_KEY) === 'off') return;
     const skenario = getPrefs().skenarioDemo;
-    const profiles = await listProfiles();
     if (profiles.length === 0) {
       await bulkPut(buatDataDemo(skenario, today));
       return;
@@ -374,11 +406,15 @@ export function ensureDemoData(today: ISODate = todayISO()): Promise<void> {
     // Pemeriksaan murah dulu: hanya data demo dari hari sebelumnya yang perlu diperiksa lengkap.
     if (!budi?.isDemo || addDays(budi.tanggalMulaiProgram, 14) >= today) return;
     const per = await Promise.all(
-      profiles.map(async (p) => ({
-        sessions: await listSessions(p.id, { hanyaSelesai: false }),
-        program: await getProgram(p.id),
-        schedule: await getSchedule(p.id),
-      })),
+      profiles.map(async (p) => {
+        const semua = await listSessions(p.id, { hanyaSelesai: false });
+        const kosong = await Promise.all(semua.map(sesiKosong));
+        return {
+          sessions: semua.filter((_, i) => !kosong[i]),
+          program: await getProgram(p.id),
+          schedule: await getSchedule(p.id),
+        };
+      }),
     );
     const tanggal = tanggalTanamDemoUtuh({
       profiles,
@@ -393,7 +429,22 @@ export function ensureDemoData(today: ISODate = todayISO()): Promise<void> {
   return sedangMenanam;
 }
 
-/** Ganti semua data dengan skenario yang dipilih (tombol Reset Data Demo / Muat Data Demo). */
+/**
+ * Isi berkas cadangan (Pengaturan, "Simpan cadangan"): semua data kecuali sesi yang belum selesai beserta
+ * RepLog/SpeechAttempt-nya; rekaman setengah jalan bukan riwayat latihan.
+ */
+export async function buatCadangan(): Promise<ExportBundle> {
+  const b = await exportAll();
+  const belum = new Set(b.sessions.filter((s) => !s.selesai).map((s) => s.id));
+  return {
+    ...b,
+    sessions: b.sessions.filter((s) => !belum.has(s.id)),
+    repLogs: b.repLogs.filter((r) => !belum.has(r.sessionId)),
+    speechAttempts: b.speechAttempts.filter((a) => !belum.has(a.sessionId)),
+  };
+}
+
+/** Ganti semua data dengan skenario yang dipilih (tombol Setel Ulang Data Demo / Muat Data Demo). */
 export async function resetDemoData(skenario: SkenarioDemo, today: ISODate = todayISO()): Promise<void> {
   await tanamDemo(skenario, today);
   setPrefs({ skenarioDemo: skenario, activePatientId: 'budi' });

@@ -22,8 +22,10 @@ interface InfoKoneksi {
 let sudahDijadwalkan = false;
 
 /**
- * Jadwalkan unduhan aset pose saat browser senggang (sekali per pemuatan halaman). Dilewati bila
- * pengguna menyalakan Penghemat Data atau jaringan 2G, dan di mode pengembangan (tanpa service worker).
+ * Jadwalkan unduhan aset pose saat browser senggang (sekali per pemuatan halaman). Hanya dipanggil di jalur
+ * pasien (Beranda dengan peran pasien, Detail Latihan): Pilih Peran, Keluarga, dan Terapis tidak perlu
+ * mengunduh ~18 MB. Dilewati bila pengguna menyalakan Penghemat Data atau jaringan 2G, dan di mode
+ * pengembangan (tanpa service worker).
  */
 export function prefetchAsetPose(): void {
   if (sudahDijadwalkan || import.meta.env.DEV || typeof window === 'undefined') return;

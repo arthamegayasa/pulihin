@@ -64,6 +64,8 @@ export interface Session {
   /** Satu saran sederhana untuk sesi berikutnya. */
   saran: string | null;
   sisi: Sisi | null;
+  /** Target rentang (persen ambang atas) yang dipakai sesi gerak ini; tidak ada = 100. */
+  rentangPersen?: number;
   isDemo: boolean;
 }
 
@@ -101,6 +103,11 @@ export interface ProgramItem {
   latihanId: string;
   targetRepetisi: number;
   set: number;
+  /**
+   * Target rentang gerak yang ditetapkan terapis, persen dari ambang atas latihan (50..100, bawaan 100).
+   * Untuk pasien dengan rentang terbatas: 80 berarti fase atas tercapai pada 80% ambang atas pustaka.
+   */
+  rentangPersen?: number;
 }
 
 export interface Program {

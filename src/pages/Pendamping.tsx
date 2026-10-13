@@ -1,7 +1,6 @@
 import { CheckCircle, Clock, Copy, Fire, ShareNetwork } from '@phosphor-icons/react';
 import { BigButton } from '@/components/BigButton';
 import { Card } from '@/components/Card';
-import { DemoBadge } from '@/components/DemoBadge';
 import { KosongDemo } from '@/components/KosongDemo';
 import { NonDiagnosisNote } from '@/components/NonDiagnosisNote';
 import { PageHeader } from '@/components/PageHeader';
@@ -78,18 +77,17 @@ export default function Pendamping() {
 
   return (
     <section className="space-y-4">
-      <PageHeader
-        judul="Untuk Keluarga"
-        sub={
-          <span className="flex flex-wrap items-center gap-2">
-            <span className="font-bold text-teks">{profile.namaSamaran}</span>
-            <span>
-              {profile.usia} tahun, {profile.keterangan.toLowerCase()}
-            </span>
-            {profile.isDemo && <DemoBadge />}
+      {/* Nama pasien di baris sendiri selebar layar: kolom judul tidak terjepit tombol Kembali/Beranda pada
+          Huruf Lebih Besar. Label Demo cukup satu, di kepala aplikasi (AppShell). */}
+      <div>
+        <PageHeader judul="Untuk Keluarga" />
+        <p className="-mt-2 flex flex-wrap items-baseline gap-x-2 text-teks-2">
+          <span className="font-bold text-teks">{profile.namaSamaran}</span>
+          <span>
+            {profile.usia} tahun, {profile.keterangan.toLowerCase()}
           </span>
-        }
-      />
+        </p>
+      </div>
 
       {lap.redFlags.length > 0 && (
         <section className="space-y-3" aria-label="Tanda perlu perhatian">

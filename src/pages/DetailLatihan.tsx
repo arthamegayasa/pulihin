@@ -1,6 +1,6 @@
-import { CheckSquare, ShieldCheck, Square, VideoCamera, WarningCircle } from '@phosphor-icons/react';
+import { CheckSquare, ShieldCheck, Square, Target as IkonTarget, VideoCamera, WarningCircle } from '@phosphor-icons/react';
 import { useEffect, useId, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { BigButton, BigLink } from '@/components/BigButton';
 import { PageHeader } from '@/components/PageHeader';
 import { SafetyNotice } from '@/components/SafetyNotice';
@@ -8,8 +8,9 @@ import { ExerciseDemo } from '@/features/pose/ExerciseDemo';
 import { getExercise } from '@/features/pose/exerciseDefinitions';
 import { LABEL_POSISI, labelSendi } from '@/features/pose/labels';
 import { PhonePlacement } from '@/features/pose/PhonePlacement';
+import { prefetchAsetPose } from '@/features/pose/asetPose';
 import { preloadPoseEngine } from '@/features/pose/PoseEngine';
-import { bacaSisi, bacaTarget, urlSesi } from '@/features/pose/sesiParams';
+import { bacaRentang, bacaSisi, bacaTarget, RENTANG_PENUH, urlSesi, type StatusMulaiSesi } from '@/features/pose/sesiParams';
 import { getPrefs, setPrefs, usePrefs } from '@/lib/prefs';
 import { PATHS } from '@/router-paths';
 import type { Sisi } from '@/types';
@@ -18,6 +19,7 @@ import type { Sisi } from '@/types';
 export default function DetailLatihan() {
   const { id = '' } = useParams();
   const [cari] = useSearchParams();
+  const navigate = useNavigate();
   const def = getExercise(id);
   const { sisiLatihan } = usePrefs();
   // Konfirmasi berpegangan wajib setiap kali halaman dibuka (tidak disimpan).
@@ -28,6 +30,8 @@ export default function DetailLatihan() {
   useEffect(() => {
     preloadPoseEngine().catch((e: unknown) => console.warn('Model pose belum termuat, dicoba lagi saat sesi dimulai', e));
   }, []);
+  // Aset MediaPipe ke cache service worker saat senggang (pemakaian berikutnya bisa luring).
+  useEffect(prefetchAsetPose, []);
 
   // `?sisi=` (dari Ulangi Latihan / kembali dari sesi) menjadi sisi terpilih.
   const sisiDariUrl = cari.get('sisi');
@@ -48,13 +52,19 @@ export default function DetailLatihan() {
   }
 
   const target = bacaTarget(cari.get('target'), def.targetRepetisiDefault);
+  const rentang = bacaRentang(cari.get('rentang'));
   const pilihSisi = def.sisi === 'pilih';
   const wajibPegangan = def.wajibBerpegangan;
   const bolehMulai = !wajibPegangan || sudahBerpegangan;
+  // Status navigasi menandai bahwa layar keselamatan ini sudah dilewati (sesi berdiri tanpa status ini dialihkan ke sini).
+  const statusMulai: StatusMulaiSesi = { konfirmasiKeselamatan: true };
 
   return (
     <section className="space-y-5">
       <PageHeader judul={def.nama} sub={`${LABEL_POSISI[def.posisi]} · ${labelSendi(def.sendiTarget)}`} />
+
+      {/* Pilihan sisi di atas contoh gerakan: terlihat di layar pertama (tidak tertutup bilah Mulai) dan contoh langsung mengikuti. */}
+      {pilihSisi && <PilihSisi nilai={sisiLatihan} onPilih={(s) => setPrefs({ sisiLatihan: s })} />}
 
       <ExerciseDemo exerciseId={def.id} nama={def.nama} sisi={pilihSisi ? sisiLatihan : undefined} tempoDetik={def.tempoTargetDetik} />
 
@@ -74,7 +84,15 @@ export default function DetailLatihan() {
         </div>
       </div>
 
-      {pilihSisi && <PilihSisi nilai={sisiLatihan} onPilih={(s) => setPrefs({ sisiLatihan: s })} />}
+      {rentang < RENTANG_PENUH && (
+        <p className="flex items-start gap-3 rounded-kartu border border-primer-garis bg-primer-terang p-4">
+          <IkonTarget size={26} weight="bold" className="mt-0.5 shrink-0 text-primer" aria-hidden />
+          <span>
+            <span className="block font-bold">Target rentang dari terapis: {rentang}%</span>
+            <span className="block text-[0.95rem] text-teks-2">Gerakan dihitung saat mencapai batas yang disarankan terapis Anda.</span>
+          </span>
+        </p>
+      )}
 
       <section>
         <h2 className="mb-2 text-[1.15rem] font-bold">Cara melakukan</h2>
@@ -96,7 +114,7 @@ export default function DetailLatihan() {
 
       <p className="flex gap-2 text-[0.95rem] text-teks-2">
         <ShieldCheck size={22} weight="bold" className="mt-0.5 shrink-0 text-primer" aria-hidden />
-        <span>Gambar kamera hanya diproses di ponsel ini dan tidak dikirim ke mana pun.</span>
+        <span>Gambar kamera hanya diproses di perangkat ini dan tidak dikirim ke mana pun.</span>
       </p>
 
       {/* Titik keputusan: pengingat keselamatan (dan konfirmasi berpegangan untuk latihan berdiri) tepat di atas tombol Mulai. */}
@@ -124,15 +142,15 @@ export default function DetailLatihan() {
             Saya sudah berpegangan pada kursi atau meja yang stabil
           </button>
         )}
-        {bolehMulai ? (
-          <BigLink to={urlSesi(def.id, target, sisiLatihan)} ukuran="besar" ikon={<VideoCamera size={30} weight="fill" aria-hidden />}>
-            Mulai dengan Kamera
-          </BigLink>
-        ) : (
-          <BigButton disabled aria-describedby={idKonfirmasi} ukuran="besar" ikon={<VideoCamera size={30} weight="fill" aria-hidden />}>
-            Mulai dengan Kamera
-          </BigButton>
-        )}
+        <BigButton
+          disabled={!bolehMulai}
+          aria-describedby={bolehMulai ? undefined : idKonfirmasi}
+          onClick={() => navigate(urlSesi(def.id, target, sisiLatihan, rentang), { state: statusMulai })}
+          ukuran="besar"
+          ikon={<VideoCamera size={30} weight="fill" aria-hidden />}
+        >
+          Mulai dengan Kamera
+        </BigButton>
       </div>
     </section>
   );

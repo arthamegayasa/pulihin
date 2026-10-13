@@ -91,9 +91,11 @@ export default function AfasiaLatihan() {
 
   const catatanRef = useRef<PercobaanRingkas[]>([]);
   const simpananRef = useRef<Promise<void>[]>([]);
+  // Session baru ditulis saat percobaan pertama tercatat: layar yang hanya dibuka tidak meninggalkan sesi kosong.
+  const sesiTersimpanRef = useRef<Promise<void> | null>(null);
   const dengarRef = useRef<SesiDengar | null>(null);
 
-  // Siapkan 10 kata dan buat Session (selesai=false) saat layar dibuka.
+  // Siapkan 10 kata dan Session (belum disimpan) saat layar dibuka.
   useEffect(() => {
     let batal = false;
     (async () => {
@@ -121,10 +123,9 @@ export default function AfasiaLatihan() {
         sisi: null,
         isDemo: false,
       };
-      await putSession(sesi);
-      if (batal) return;
       catatanRef.current = [];
       simpananRef.current = [];
+      sesiTersimpanRef.current = null;
       setPersiapan({ sesi, daftar });
       setIndeks(0);
       setPercobaan(0);
@@ -187,17 +188,22 @@ export default function AfasiaLatihan() {
     const skor = skorPercobaan(hasil, nomor);
     catatanRef.current.push({ kataId: kata.id, kategoriHasil: hasil, nomorPercobaan: nomor });
     // Satu percobaan yang gagal tersimpan tidak boleh menggagalkan seluruh sesi.
+    sesiTersimpanRef.current ??= putSession(sesi);
     simpananRef.current.push(
-      addSpeechAttempt({
-        sessionId: sesi.id,
-        kataId: kata.id,
-        teksHasil,
-        kategoriHasil: hasil,
-        skor,
-        nomorPercobaan: nomor,
-        mode,
-        at: Date.now(),
-      }).catch((e: unknown) => console.warn('Percobaan afasia belum tersimpan', e)),
+      sesiTersimpanRef.current
+        .then(() =>
+          addSpeechAttempt({
+            sessionId: sesi.id,
+            kataId: kata.id,
+            teksHasil,
+            kategoriHasil: hasil,
+            skor,
+            nomorPercobaan: nomor,
+            mode,
+            at: Date.now(),
+          }),
+        )
+        .catch((e: unknown) => console.warn('Percobaan afasia belum tersimpan', e)),
     );
     setPercobaan(nomor);
     return { nomor, akhir: hasil === 'benar' || nomor >= MAKS };

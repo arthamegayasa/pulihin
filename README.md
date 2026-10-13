@@ -133,7 +133,7 @@ Stack sesuai Bab 4 (React + Vite + TypeScript + Tailwind, MediaPipe Tasks Vision
 
 ### Uji otomatis
 
-`npm test` menjalankan seluruh uji unit, uji logika kepatuhan/red flag/seed, penilaian suara, dan **replay landmark rekaman manusia nyata** melalui tracker yang sama dengan aplikasi. Hasil terakhir: lihat bagian [Laporan serah terima](#laporan-serah-terima-bab-194).
+`npm test` menjalankan seluruh uji unit, uji logika kepatuhan/red flag/seed, penilaian suara, dan **replay landmark rekaman manusia nyata** melalui tracker yang sama dengan aplikasi. Hasil terakhir (13 Okt 2026): **25 berkas uji, 250 uji lulus**; `npm run typecheck` bersih.
 
 ### Akurasi hitung repetisi
 
@@ -201,8 +201,10 @@ URL repo        : https://github.com/arthamegayasa/pulihin
 Perangkat uji   : [DIISI] / Chrome [DIISI]   (verifikasi saat ini: Chrome 147 desktop, emulasi 360x740)
 P0 selesai      : F1 [x] F2 [x] F3 [x] F4 [x] F5 [x]
 P1 selesai      : F6 [x] F7 [x]
-Akurasi repetisi: rekaman manusia nyata 14/14 (0 ganda) pada Tekuk Siku; perangkat target [DIISI] dari 50
-Frame rate pose : desktop 25-30 fps; perangkat target [DIISI] fps
+Akurasi repetisi: rekaman manusia nyata 14 dari 14 repetisi yang dimulai setelah status Siap (16 di klip,
+                  2 sengaja tidak dihitung karena dimulai sebelum Siap), 0 ganda; perangkat target [DIISI] dari 50
+Frame rate pose : emulasi desktop GPU 21-25 fps (1 orang, CPU 1x-6x); perangkat target [DIISI] fps
+Uji otomatis    : 25 berkas, 250 uji lulus
 Video           : draf rakitan Remotion (placeholder rekaman manusia); final [DIISI] setelah perekaman
 Yang belum      : uji perangkat target (AC-F1-2, AC-F1-4, AC-F3-2), rekaman manusia untuk video
 [DIISI] kosong  : lihat bagian "Isian [DIISI] yang masih kosong"

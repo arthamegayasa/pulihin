@@ -24,16 +24,16 @@ export interface PenjelasanGalat {
 export const PENJELASAN_GALAT_KAMERA: Record<JenisGalatKamera, PenjelasanGalat> = {
   'izin-ditolak': {
     judul: 'Kamera belum diizinkan',
-    isi: 'PULIHIN butuh kamera untuk melihat dan menghitung gerakan Anda. Gambar kamera hanya diproses di ponsel ini dan tidak dikirim ke mana pun.',
+    isi: 'PULIHIN butuh kamera untuk melihat dan menghitung gerakan Anda. Gambar kamera hanya diproses di perangkat ini dan tidak dikirim ke mana pun.',
     langkah: [
-      'Ketuk ikon gembok di sebelah alamat situs, di bagian atas Chrome.',
+      'Ketuk ikon di sebelah kiri alamat situs (ikon setelan situs), di bagian atas Chrome.',
       'Pilih Izin, lalu Kamera.',
       'Pilih Izinkan, lalu kembali ke sini dan ketuk Coba Lagi.',
     ],
   },
   'tidak-ditemukan': {
     judul: 'Kamera tidak ditemukan',
-    isi: 'Ponsel ini sepertinya tidak punya kamera yang bisa dipakai. Coba buka PULIHIN di ponsel lain yang memiliki kamera depan.',
+    isi: 'Perangkat ini sepertinya tidak punya kamera yang bisa dipakai. Coba buka PULIHIN di ponsel atau laptop lain yang memiliki kamera.',
   },
   'sedang-dipakai': {
     judul: 'Kamera sedang dipakai aplikasi lain',

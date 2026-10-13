@@ -11,15 +11,17 @@ import {
   SealCheck,
   type Icon,
 } from '@phosphor-icons/react';
+import { useEffect } from 'react';
 import { Link } from 'react-router';
 import { BigLink } from '@/components/BigButton';
 import { Card } from '@/components/Card';
 import { KosongDemo } from '@/components/KosongDemo';
 import type { InfoStreak } from '@/features/adherence/adherence';
 import { useDataPasien, useLaporan, useSekarang } from '@/features/adherence/hooks';
-import { latihanBerikutnya, statusProgramHariIni, teksProgresSet, teksSudahDicoba, teksTarget } from '@/features/adherence/program';
+import { latihanBerikutnya, statusProgramHariIni, teksProgresSet, teksSudahDicoba, teksTarget, urlLatihanProgram } from '@/features/adherence/program';
 import { bannerPengingat, pengingatHariIni } from '@/features/adherence/reminders';
 import { getExercise } from '@/features/pose/exerciseDefinitions';
+import { prefetchAsetPose } from '@/features/pose/asetPose';
 import { formatTanggalPendek, namaHari, namaHariPendek, toISODate } from '@/lib/date';
 import { usePrefs } from '@/lib/prefs';
 import { PATHS } from '@/router-paths';
@@ -53,7 +55,11 @@ export default function Beranda() {
   const lap = useLaporan(data, sekarang);
   // Huruf Lebih Besar: salam & pengingat dipadatkan agar daftar latihan dan tombol Untuk Keluarga
   // tetap terlihat tanpa menggulir di HP 6 inci (360x740).
-  const { hurufBesar: padat } = usePrefs();
+  const { hurufBesar: padat, role } = usePrefs();
+  // Aset MediaPipe (~18 MB) hanya untuk jalur pasien: diunduh ke cache SW saat senggang agar sesi kamera bisa luring.
+  useEffect(() => {
+    if (role === 'pasien') prefetchAsetPose();
+  }, [role]);
 
   if (loading && !data) return <p className="py-10 text-center text-teks-2">Memuat latihan hari ini...</p>;
   if (error) return <p className="py-10 text-center text-teks-2">Data latihan belum bisa dibaca. Coba muat ulang halaman.</p>;
@@ -74,7 +80,7 @@ export default function Beranda() {
   const total = items.length + 1;
   const selesai = items.filter((i) => i.selesai).length + (afasiaSelesai ? 1 : 0);
   const berikut = latihanBerikutnya(items);
-  const banner = bannerPengingat(pengingatHariIni(schedule, lap.hariIni, sekarang));
+  const banner = bannerPengingat(pengingatHariIni(schedule, lap.hariIni, sekarang), sekarang);
   const semuaSelesai = selesai === total;
 
   return (
@@ -136,7 +142,7 @@ export default function Beranda() {
           {items.map((item) => (
             <BarisLatihan
               key={item.latihanId}
-              to={`${PATHS.detailLatihan(item.latihanId)}?target=${item.targetRepetisi}`}
+              to={urlLatihanProgram(item)}
               Ikon={PersonArmsSpread}
               nama={item.nama}
               ukuran={teksTarget(item)}
@@ -165,7 +171,7 @@ export default function Beranda() {
         </Card>
       ) : berikut ? (
         <BigLink
-          to={`${PATHS.detailLatihan(berikut.latihanId)}?target=${berikut.targetRepetisi}`}
+          to={urlLatihanProgram(berikut)}
           ukuran="besar"
           ikon={<Play size={28} weight="fill" aria-hidden />}
         >

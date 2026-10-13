@@ -36,14 +36,15 @@ export function StreakCalendar({ hari, className = '' }: { hari: HariKalender[];
   if (hari.some((h) => h.status === 'hari-ini-belum')) keterangan.push('hari-ini-belum');
   return (
     <div className={className}>
-      <ol className="grid grid-cols-7 gap-0.5" aria-label="Kalender latihan 7 hari terakhir">
+      {/* -mx-3 tanpa celah antar kolom: label hari 0.95rem tetap muat di 7 kolom pada 360 px, Huruf Lebih Besar. */}
+      <ol className="-mx-3 grid grid-cols-7" aria-label="Kalender latihan 7 hari terakhir">
         {hari.map((h) => (
           <li
             key={h.tanggal}
             className={`flex flex-col items-center gap-1 rounded-xl py-1.5 ${h.hariIni ? 'bg-primer-terang' : ''}`}
             aria-label={`${h.hariIni ? 'Hari ini, ' : ''}${namaHari(h.tanggal)} ${formatTanggalPendek(h.tanggal)}: ${KATA[h.status]}`}
           >
-            <span className={`text-[0.9rem] leading-tight ${h.hariIni ? 'font-extrabold text-primer' : 'font-semibold text-teks-2'}`} aria-hidden>
+            <span className={`text-[0.95rem] leading-tight tracking-tight ${h.hariIni ? 'font-extrabold text-primer' : 'font-semibold text-teks-2'}`} aria-hidden>
               {h.label}
             </span>
             <Tanda status={h.status} />

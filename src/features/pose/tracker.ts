@@ -61,6 +61,27 @@ const bulat = (n: number, desimal: number) => {
   return Math.round(n * f) / f;
 };
 
+/** Target rentang resep: tidak ada / tidak valid = 100; selain itu dibulatkan dan dibatasi 50..100. */
+export function normalisasiRentang(rentangPersen?: number): number {
+  const { minPersen, maksPersen } = ATURAN_UMUM.rentangPersonal;
+  if (rentangPersen === undefined || !Number.isFinite(rentangPersen)) return maksPersen;
+  return Math.min(maksPersen, Math.max(minPersen, Math.round(rentangPersen)));
+}
+
+/**
+ * Ambang atas yang dipakai tracker untuk target rentang resep (docs/algoritma.md Bagian 8a):
+ * ambangAtas x p / 100, tidak lebih rendah dari ambangBawah + 3 x histeresis dan tidak lebih tinggi
+ * dari ambangAtas definisi. Ambang bawah, histeresis, dan durasi minimum tidak berubah.
+ */
+export function ambangAtasRentang(def: ExerciseDefinition, rentangPersen?: number): number {
+  const { maksPersen, kelipatanHisteresisMin } = ATURAN_UMUM.rentangPersonal;
+  const p = normalisasiRentang(rentangPersen);
+  if (p === maksPersen) return def.ambangAtas;
+  const histeresis = def.histeresis ?? ATURAN_UMUM.histeresisBawaan;
+  const lantai = def.ambangBawah + kelipatanHisteresisMin * histeresis;
+  return Math.min(def.ambangAtas, Math.max(bulat((def.ambangAtas * p) / 100, 1), lantai));
+}
+
 export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): ExerciseTracker {
   const vis = ATURAN_UMUM.ambangVisibilitas;
   const jendela = Math.round(
@@ -73,8 +94,12 @@ export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): Ex
     opts.modeSudut === '2d' || opts.modeSudut === '3d' ? opts.modeSudut : (def.sumberSudut ?? '3d');
   const bergantian = def.metrik.jenis === 'bergantian';
   const metrik: MetrikDasar = def.metrik.jenis === 'bergantian' ? def.metrik.per : def.metrik;
+  // Target rentang resep: ambang atas (hitungan, bar progres, koreksi "rentang kurang", skor rentang)
+  // diskalakan; sisanya tetap dari definisi latihan.
+  const ambangAtas = ambangAtasRentang(def, opts.rentangPersen);
+  const defEfektif: ExerciseDefinition = ambangAtas === def.ambangAtas ? def : { ...def, ambangAtas };
   const konfig = {
-    ambangAtas: def.ambangAtas,
+    ambangAtas,
     ambangBawah: def.ambangBawah,
     histeresis: def.histeresis ?? ATURAN_UMUM.histeresisBawaan,
     durasiMinDetik: ATURAN_UMUM.durasiRepetisiMinDetik,
@@ -101,7 +126,7 @@ export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): Ex
 
   const indeksY = metrik.jenis === 'kenaikan' ? sisiPantau.map((s) => indeksTitik(metrik.titik, s)) : [];
   const pengumpul = new PengumpulBaseline(indeksY, vis);
-  const form = new FormChecker(def);
+  const form = new FormChecker(defEfektif);
   const rataMiring = new RataBergerak(jendela);
   const rataSusut = new RataBergerak(jendela);
   const rataDebug: Record<string, RataBergerak> = {};
@@ -203,7 +228,7 @@ export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): Ex
     const aktif =
       kanal.find((k) => k.counter.fase !== 'BAWAH') ??
       kanal.reduce((a, b) => ((b.nilai ?? -Infinity) > (a.nilai ?? -Infinity) ? b : a));
-    if (aktif.nilai !== null) progresTerakhir = progresNilai(aktif.nilai, def.ambangBawah, def.ambangAtas);
+    if (aktif.nilai !== null) progresTerakhir = progresNilai(aktif.nilai, def.ambangBawah, ambangAtas);
 
     const miringMentah = f ? kemiringanBahu(f, vis) : null;
     const miring = miringMentah === null ? null : rataMiring.tambah(miringMentah);
@@ -243,6 +268,7 @@ export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): Ex
       fase: aktif.counter.fase,
       siap,
       bersenjata: aktif.counter.bersenjata,
+      'ambang.atas': ambangAtas,
       mode: basis === null ? '-' : LABEL_BASIS[basis],
       'bobot.2d': bobot2D === null ? '-' : bulat(bobot2D, 2),
       'nilai.mentah': aktif.mentah === null ? '-' : bulat(aktif.mentah, 1),
@@ -298,7 +324,7 @@ export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): Ex
     const { skor, skorKomponen, saran } = hitungSkor({
       repLogs,
       targetRepetisi: opts.targetRepetisi,
-      ambangAtas: def.ambangAtas,
+      ambangAtas,
       ambangBawah: def.ambangBawah,
       tempoTargetDetik: def.tempoTargetDetik,
     });

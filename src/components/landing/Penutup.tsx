@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { BigLink } from '@/components/BigButton';
 import { Logo } from '@/components/Logo';
-import { IDENTITAS } from '@/config/identitas';
+import { HOST_PUBLIK, IDENTITAS } from '@/config/identitas';
 import { PATHS } from '@/router-paths';
 
 /** Ajakan penutup: juri dapat langsung mencoba tanpa akun karena data contoh sudah tersedia. */
@@ -39,7 +39,7 @@ export function KakiLanding() {
           {IDENTITAS.narasumberKlinis && <p>Narasumber klinis: {IDENTITAS.narasumberKlinis}</p>}
         </div>
         <div className="space-y-2 md:col-span-4 md:text-right">
-          <p className="font-bold text-teks">{IDENTITAS.domain}</p>
+          <p className="font-bold text-teks">{HOST_PUBLIK}</p>
           {IDENTITAS.kontakPublik && <p>Kontak: {IDENTITAS.kontakPublik}</p>}
           <p>
             <Link to={PATHS.tentang} className="font-bold text-primer underline decoration-2 underline-offset-4 hover:text-primer-tua">

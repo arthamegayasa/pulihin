@@ -5,7 +5,7 @@ import { formatTanggalPendek } from '@/lib/date';
  * Tren skor 14 hari (Bab 9.2): skor latihan gerak (garis penuh, titik bulat) dan skor latihan bicara
  * (garis putus-putus, titik kotak). Bentuk garis dan titik membedakan keduanya, bukan warna saja.
  * Hari tanpa sesi tidak diberi titik; garis menyambung antar hari yang ada datanya.
- * SVG hanya menggambar garis & titik; semua label berupa teks HTML (>= 0.9rem, ikut Huruf Lebih Besar),
+ * SVG hanya menggambar garis & titik; semua label berupa teks HTML (>= 0.95rem, ikut Huruf Lebih Besar),
  * diletakkan dengan persentase koordinat SVG sehingga tetap sejajar pada lebar layar berapa pun.
  */
 export function TrendChart({ data, className = '' }: { data: TitikTren[]; className?: string }) {
@@ -48,7 +48,7 @@ export function TrendChart({ data, className = '' }: { data: TitikTren[]; classN
       <div aria-hidden>
         <div className="flex gap-1">
           {/* Kolom angka setinggi SVG saja, agar persentase posisi sama dengan koordinat garis bantu. */}
-          <div className="relative w-[2.1rem] shrink-0 text-[0.9rem] leading-none text-teks-2 tabular">
+          <div className="relative w-[2.1rem] shrink-0 text-[0.95rem] leading-none text-teks-2 tabular">
             {[0, 50, 100].map((v) => (
               <span key={v} className="absolute right-0 -translate-y-1/2" style={{ top: `${(y(v) / H) * 100}%` }}>
                 {v}
@@ -78,7 +78,7 @@ export function TrendChart({ data, className = '' }: { data: TitikTren[]; classN
             )}
           </div>
         </div>
-        <div className="relative ml-[calc(2.1rem+0.25rem)] mt-1.5 h-[1.3em] text-[0.9rem] leading-none text-teks-2">
+        <div className="relative ml-[calc(2.1rem+0.25rem)] mt-1.5 h-[1.3em] text-[0.95rem] leading-none text-teks-2">
           {labelX.map((i, n) => (
             <span
               key={i}

@@ -1,4 +1,4 @@
-import { ArrowCounterClockwise, CheckCircle, House, Lightbulb, XCircle } from '@phosphor-icons/react';
+import { ArrowCounterClockwise, CheckCircle, House, Lightbulb, Target as IkonTarget, XCircle } from '@phosphor-icons/react';
 import { Navigate, useParams } from 'react-router';
 import { BigLink } from '@/components/BigButton';
 import { NonDiagnosisNote } from '@/components/NonDiagnosisNote';
@@ -7,7 +7,8 @@ import { ScoreRing } from '@/components/ScoreRing';
 import { getSession, listRepLogs } from '@/data/db';
 import { useLiveQuery } from '@/data/useLiveQuery';
 import { getExercise } from '@/features/pose/exerciseDefinitions';
-import { urlDetail } from '@/features/pose/sesiParams';
+import { RENTANG_PENUH, urlDetail } from '@/features/pose/sesiParams';
+import { ambangAtasRentang, normalisasiRentang } from '@/features/pose/tracker';
 import { formatDurasi } from '@/lib/date';
 import { usePrefs } from '@/lib/prefs';
 import { clamp, labelSkor } from '@/lib/score';
@@ -55,6 +56,7 @@ export default function RingkasanSesi() {
   const def = sesi.latihanId ? getExercise(sesi.latihanId) : undefined;
   const nama = def?.nama ?? 'Latihan gerak';
   const namaSisi = sesi.sisi === 'kanan' ? 'sisi kanan' : sesi.sisi === 'kiri' ? 'sisi kiri' : null;
+  const rentang = normalisasiRentang(sesi.rentangPersen);
 
   return (
     <section className="space-y-5">
@@ -63,6 +65,13 @@ export default function RingkasanSesi() {
       {!sesi.selesai && (
         <p className="rounded-kartu border border-peringatan/30 bg-peringatan-terang p-4">
           Sesi ini terhenti sebelum selesai, jadi belum dihitung sebagai latihan hari ini.
+        </p>
+      )}
+
+      {rentang < RENTANG_PENUH && (
+        <p className="flex items-center gap-3 rounded-kartu border border-primer-garis bg-primer-terang p-4 font-bold">
+          <IkonTarget size={26} weight="bold" className="shrink-0 text-primer" aria-hidden />
+          Target rentang dari terapis: {rentang}%
         </p>
       )}
 
@@ -108,7 +117,7 @@ export default function RingkasanSesi() {
         </section>
       )}
 
-      {def && <StripRepetisi sessionId={sesi.id} ambangAtas={def.ambangAtas} satuan={def.satuan} />}
+      {def && <StripRepetisi sessionId={sesi.id} ambangAtas={ambangAtasRentang(def, sesi.rentangPersen)} satuan={def.satuan} rentang={rentang} />}
 
       {sesi.saran && (
         <div className="flex gap-3 rounded-kartu border border-aksen/30 bg-aksen-terang p-4">
@@ -129,7 +138,7 @@ export default function RingkasanSesi() {
         {def && (
           // Ulangi lewat Detail Latihan: peringatan keselamatan & konfirmasi berpegangan selalu dilewati dulu.
           <BigLink
-            to={urlDetail(def.id, sesi.repetisiTarget, sesi.sisi ?? undefined)}
+            to={urlDetail(def.id, sesi.repetisiTarget, sesi.sisi ?? undefined, rentang)}
             varian="garis"
             ikon={<ArrowCounterClockwise size={24} weight="bold" aria-hidden />}
           >
@@ -145,7 +154,18 @@ export default function RingkasanSesi() {
  * Jejak ukur per gerakan dari repLogs tersimpan: tinggi batang = nilai puncak metrik, garis putus = ambang hitung.
  * Terhitung / belum terhitung selalu ditulis dengan kata (bukan warna saja).
  */
-function StripRepetisi({ sessionId, ambangAtas, satuan }: { sessionId: string; ambangAtas: number; satuan: '°' | '%' }) {
+function StripRepetisi({
+  sessionId,
+  ambangAtas,
+  satuan,
+  rentang,
+}: {
+  sessionId: string;
+  /** Ambang hitung yang dipakai sesi ini (sudah disesuaikan target rentang terapis). */
+  ambangAtas: number;
+  satuan: '°' | '%';
+  rentang: number;
+}) {
   const { data: logs } = useLiveQuery(() => listRepLogs(sessionId), [sessionId]);
   if (!logs || logs.length === 0) return null;
   const terhitung = logs.filter((l) => l.dihitung).length;
@@ -156,8 +176,10 @@ function StripRepetisi({ sessionId, ambangAtas, satuan }: { sessionId: string; a
     <section className="rounded-kartu border border-garis bg-white p-5 shadow-tipis">
       <h2 className="text-[1.15rem] font-bold">{label}</h2>
       <p className="mb-3 text-[0.95rem] text-teks-2">
-        Diukur kamera: {terhitung} dari {logs.length} gerakan terhitung. Garis putus-putus = batas hitung {ambangAtas}
-        {satuan}.
+        Diukur kamera: {terhitung} dari {logs.length} gerakan terhitung. Garis putus-putus = batas hitung{' '}
+        {Math.round(ambangAtas)}
+        {satuan}
+        {rentang < RENTANG_PENUH ? ` (target rentang dari terapis ${rentang}%)` : ''}.
       </p>
       <div className="overflow-x-auto pb-1">
         <ol className="relative flex min-w-max items-end gap-1.5 pt-6" aria-label={label}>

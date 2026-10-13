@@ -22,7 +22,7 @@ export function Stepper({
     'grid size-14 shrink-0 place-items-center rounded-2xl border-2 border-primer bg-white text-primer hover:bg-primer-terang active:scale-[0.97] disabled:border-garis disabled:text-teks-2/50 disabled:pointer-events-none';
   return (
     <div role="group" aria-labelledby={id}>
-      <p id={id} className="mb-1 text-[0.9rem] font-bold text-teks-2">
+      <p id={id} className="mb-1 text-[0.95rem] font-bold text-teks-2">
         {label}
       </p>
       <div className="flex items-center gap-2">
@@ -37,7 +37,7 @@ export function Stepper({
         </button>
         <output className="min-w-[4.5rem] flex-1 text-center leading-none" aria-live="polite">
           <span className="block text-[1.6rem] font-extrabold tabular text-teks">{nilai}</span>
-          <span className="text-[0.8rem] font-semibold text-teks-2">{satuan}</span>
+          <span className="text-[0.95rem] font-semibold text-teks-2">{satuan}</span>
         </output>
         <button
           type="button"

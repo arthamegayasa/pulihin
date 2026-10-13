@@ -245,7 +245,7 @@ Sumber: README.md (bagian Arsitektur dan privasi, Keputusan teknis, Hasil uji) d
 
 **Kinerja: semua angka dari desktop atau emulasi desktop, bukan HP target**
 
-- Desktop, Chrome 147, delegasi GPU, kamera palsu 640×480: **25–30 fps**, inferensi **±15 ms** untuk 1 orang (README.md).
+- Desktop, Chrome 147, delegasi GPU, kamera palsu 24 fps: **24–25 fps** pemrosesan, inferensi **10–18 ms** (1–2 orang, tanpa pelambatan CPU; docs/algoritma.md Bagian 14.2).
 - Emulasi dengan CPU diperlambat (docs/algoritma.md Bagian 14.2):
   - Dengan delegasi GPU, mode 1 orang bertahan **≥ 21 fps** sampai pelambatan CPU 6×. Pelambatan CPU tidak memperlambat GPU, jadi angka ini terlalu optimistis dibanding GPU ponsel murah.
   - Dengan delegasi CPU saja, pada pelambatan 4× ke atas hasilnya hanya **3–7 fps**. Ponsel tanpa delegasi GPU yang berfungsi kemungkinan tidak memenuhi target ≥ 15 fps.

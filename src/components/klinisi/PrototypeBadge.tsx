@@ -4,7 +4,7 @@ import { Flask } from '@phosphor-icons/react';
 export function PrototypeBadge({ className = '' }: { className?: string }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border-2 border-primer bg-white px-3 py-0.5 text-[0.85rem] font-extrabold uppercase tracking-wide text-primer ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border-2 border-primer bg-white px-3 py-0.5 text-[0.95rem] font-extrabold uppercase tracking-wide text-primer ${className}`}
       title="Prototype untuk peragaan lomba, bukan sistem rekam medis"
     >
       <Flask size={18} weight="bold" aria-hidden />

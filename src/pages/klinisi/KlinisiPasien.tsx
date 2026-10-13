@@ -19,7 +19,7 @@ import { putProgram } from '@/data/db';
 import { useSekarang } from '@/features/adherence/hooks';
 import { ringkasPasien, sesiTerbaru } from '@/features/adherence/klinisi';
 import { kataTren } from '@/features/adherence/laporan';
-import { buatProgram, draftDariProgram, programSama, type DraftProgram } from '@/features/adherence/program';
+import { buatProgram, draftDariProgram, programSama, teksRentang, type DraftProgram } from '@/features/adherence/program';
 import { getExercise } from '@/features/pose/exerciseDefinitions';
 import { formatJam, formatTanggalPendek, namaHari, toISODate } from '@/lib/date';
 import { setPrefs } from '@/lib/prefs';
@@ -75,6 +75,10 @@ function HalamanPasien({ patientId }: { patientId: string }) {
 
   const { profile, sessions } = data;
   const lap = ringkasan.laporan;
+  const rentangKhusus = (tersimpan?.items ?? []).flatMap((i) => {
+    const teks = teksRentang(i);
+    return teks ? [{ nama: getExercise(i.latihanId)?.nama ?? i.latihanId, teks }] : [];
+  });
   const keBerandaPasien = () => setPrefs({ activePatientId: profile.id, role: 'pasien' });
 
   const simpan = async () => {
@@ -112,15 +116,25 @@ function HalamanPasien({ patientId }: { patientId: string }) {
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-[0.95rem] text-teks-2">
-          {profile.usia} tahun · {profile.keterangan} · program sejak {formatTanggalPendek(profile.tanggalMulaiProgram)}
-        </p>
+        <div className="min-w-0 space-y-1 text-[0.95rem] text-teks-2">
+          <p>
+            {profile.usia} tahun · {profile.keterangan} · program sejak {formatTanggalPendek(profile.tanggalMulaiProgram)}
+          </p>
+          {rentangKhusus.length > 0 && (
+            <p>
+              <span className="font-bold text-teks">Target rentang khusus:</span>{' '}
+              {rentangKhusus.map((r) => `${r.nama} (${r.teks.toLowerCase()})`).join(', ')}
+            </p>
+          )}
+        </div>
         <BigButton varian="garis" onClick={lihatPasien} ikon={<DeviceMobile size={24} weight="bold" aria-hidden />} className="sm:w-auto">
           Lihat sebagai pasien
         </BigButton>
       </div>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+      {/* Kolom eksplisit minmax(0,1fr) + min-w-0 pada setiap anak grid: isi kartu tidak boleh melebarkan halaman
+          ponsel (360 px, Huruf Lebih Besar). */}
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] [&>*]:min-w-0">
         <div className="space-y-4">
           <h2 className="text-[1.3rem] font-extrabold leading-tight">Progres latihan</h2>
 
@@ -231,6 +245,7 @@ function SesiTerakhir({ sessions, today }: { sessions: Session[]; today: string 
         const def = gerak && s.latihanId ? getExercise(s.latihanId) : undefined;
         const Ikon = gerak ? PersonArmsSpread : ChatCircleText;
         const waktu = s.selesaiAt ?? s.mulaiAt;
+        const rentang = gerak ? teksRentang(s) : null;
         return (
           <li key={s.id} className="flex items-center gap-3 py-2.5">
             <Ikon size={26} weight="bold" className="shrink-0 text-primer" aria-hidden />
@@ -239,14 +254,15 @@ function SesiTerakhir({ sessions, today }: { sessions: Session[]; today: string 
                 {gerak ? (def?.nama ?? s.latihanId ?? 'Latihan gerak') : 'Latihan Bicara'}
                 {def && <span className="font-normal text-teks-2"> · {def.namaKlinis}</span>}
               </p>
-              <p className="text-[0.88rem] leading-snug text-teks-2">
+              <p className="text-[0.95rem] leading-snug text-teks-2">
                 {s.tanggal === today ? 'Hari ini' : `${namaHari(s.tanggal)}, ${formatTanggalPendek(s.tanggal)}`} pukul {formatJam(waktu)} ·{' '}
                 {s.repetisiTercapai} dari {s.repetisiTarget} {gerak ? 'kali' : 'kata benar'}
+                {rentang && ` · ${rentang.toLowerCase()}`}
               </p>
             </div>
             <div className="shrink-0 text-right">
               <p className="text-[1.3rem] font-extrabold leading-none text-primer tabular">{s.skor}</p>
-              <p className="text-[0.8rem] font-semibold text-teks-2">{labelSkor(s.skor)}</p>
+              <p className="text-[0.95rem] font-semibold text-teks-2">{labelSkor(s.skor)}</p>
             </div>
           </li>
         );

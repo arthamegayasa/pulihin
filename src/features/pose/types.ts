@@ -202,6 +202,11 @@ export interface TrackerOptions {
   modeSudut?: 'otomatis' | '2d' | '3d';
   /** Jendela moving average dalam frame (3..5, bawaan 4). */
   jendelaRata?: number;
+  /**
+   * Target rentang dari resep terapis, persen ambang atas (50..100, bawaan 100). Hanya menskalakan ambang
+   * atas (dan batas "rentang kurang"); ambang bawah, histeresis, dan durasi minimum tetap.
+   */
+  rentangPersen?: number;
 }
 
 export interface ExerciseTracker {

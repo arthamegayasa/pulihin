@@ -82,7 +82,7 @@ export interface GalatPengenalan {
 const GALAT: Record<KodeGalat, Omit<GalatPengenalan, 'kode'>> = {
   izin: {
     pesan:
-      'Mikrofon belum diizinkan. Ketuk ikon gembok di samping alamat situs, izinkan Mikrofon, lalu tekan Coba Lagi.',
+      'Mikrofon belum diizinkan. Ketuk ikon di sebelah kiri alamat situs (ikon setelan situs), izinkan Mikrofon, lalu tekan Coba Lagi.',
     sarankanMandiri: true,
   },
   'tidak-terdengar': { pesan: 'Belum terdengar. Coba dekatkan ponsel dan ucapkan lagi.', sarankanMandiri: false },

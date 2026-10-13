@@ -29,14 +29,14 @@ const FAKTA: { Ikon: Icon; nama: string; isi: string }[] = [
 const BUKTI: { angka: string; isi: string }[] = [
   {
     angka: '14 dari 14',
-    isi: 'repetisi Tekuk Siku terhitung pada rekaman orang sungguhan, 0 hitungan ganda. Belum diuji di HP target.',
+    isi: 'repetisi Tekuk Siku yang dimulai setelah status Siap terhitung pada rekaman orang sungguhan, 0 hitungan ganda. Belum diuji di HP target.',
   },
   {
     angka: '0 video',
     isi: 'dikirim keluar perangkat; pose dihitung di browser. Telemetri bawaan pustaka MediaPipe diblokir.',
   },
   {
-    angka: '238',
+    angka: '250',
     isi: 'uji otomatis lulus, termasuk simulasi 50 repetisi dengan derau dan frame hilang.',
   },
 ];

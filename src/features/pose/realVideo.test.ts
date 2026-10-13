@@ -195,6 +195,24 @@ describe('REKAMAN NYATA: badan berputar tanpa miring (elder)', () => {
       }
     }
   });
+
+  it('elder: abduksi hampir horizontal terhitung pada target rentang 90% (resep terapis), tidak pada 100%', () => {
+    // Puncak abduksi terukur (hibrida, bawaan): kiri 86,0 derajat, kanan 83,9 derajat per loop; ambang 90 tidak
+    // pernah tercapai. 90% -> ambang efektif 81 derajat, di bawah kedua puncak dengan sisa ~3 derajat.
+    // Loop pertama: puncak abduksinya (frame 15-23) terjadi sebelum "Siap" (frame 24, masa stabil 1 s), jadi
+    // sengaja tidak dihitung: 3 dari 4 abduksi, satu per loop, tanpa hitungan ganda.
+    for (const sisi of ['kiri', 'kanan'] as const) {
+      const penuh = jalankan('elder', 'abduksi-bahu', sisi);
+      const resep = jalankan('elder', 'abduksi-bahu', sisi, { rentangPersen: 90 });
+      catat('elder', 'abduksi-bahu', sisi, 'otomatis, rentang 90%', resep, 4);
+      expect(penuh.hasil.repetisi).toBe(0);
+      expect(resep.perLoop).toEqual([0, 1, 1, 1]);
+      const terhitung = resep.hasil.repLogs.filter((l) => l.dihitung);
+      expect(terhitung.every((l) => l.sudutPuncak >= 81 && l.sudutPuncak < 90)).toBe(true);
+      // Gerakan yang mencapai rentang resep tidak dianggap "rentang kurang" dan mendapat skor rentang lebih tinggi.
+      expect(resep.hasil.skorKomponen.rentang).toBeGreaterThan(penuh.hasil.skorKomponen.rentang);
+    }
+  });
 });
 
 describe('REKAMAN NYATA: orang lain di latar (curl gym)', () => {

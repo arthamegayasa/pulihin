@@ -9,8 +9,8 @@ import { KosongDemo } from '@/components/KosongDemo';
 import { PageHeader } from '@/components/PageHeader';
 import { Toggle } from '@/components/Toggle';
 import { useToast } from '@/components/Toast';
-import { CadanganTidakValidError, exportAll, importAll, putSchedule, validasiCadangan } from '@/data/db';
-import { hapusSemuaDataLokal, resetDemoData } from '@/data/seed';
+import { CadanganTidakValidError, importAll, putSchedule, validasiCadangan } from '@/data/db';
+import { buatCadangan, hapusSemuaDataLokal, resetDemoData } from '@/data/seed';
 import { useDataPasien } from '@/features/adherence/hooks';
 import { izinNotifikasi, jamKeMenit, mintaIzinNotifikasi } from '@/features/adherence/reminders';
 import { todayISO } from '@/lib/date';
@@ -60,7 +60,7 @@ export default function Pengaturan() {
 
   const ekspor = async () => {
     try {
-      const bundle = await exportAll();
+      const bundle = await buatCadangan();
       const url = URL.createObjectURL(new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' }));
       const a = document.createElement('a');
       a.href = url;
@@ -143,7 +143,7 @@ export default function Pengaturan() {
 
       <Bagian judul="Data Demo" aksi={<DemoBadge />}>
         {profiles.length === 0 && <KosongDemo />}
-        <p className="text-[0.95rem] text-teks-2">Pilih kondisi awal data contoh untuk peragaan, lalu tekan Reset Data Demo.</p>
+        <p className="text-[0.95rem] text-teks-2">Pilih kondisi awal data contoh untuk peragaan, lalu tekan Setel Ulang Data Demo.</p>
         <div className="space-y-2" role="radiogroup" aria-label="Skenario data demo">
           {SKENARIO.map((s) => (
             <PilihanTombol key={s.id} terpilih={skenario === s.id} onPilih={() => setSkenario(s.id)}>
@@ -153,17 +153,17 @@ export default function Pengaturan() {
           ))}
         </div>
         <BigButton varian="garis" ikon={<ArrowCounterClockwise size={24} weight="bold" aria-hidden />} onClick={() => setKonfirmasi({ jenis: 'reset' })}>
-          Reset Data Demo
+          Setel Ulang Data Demo
         </BigButton>
       </Bagian>
 
       <Bagian judul="Cadangan Data">
-        <p className="text-[0.95rem] text-teks-2">Simpan atau pulihkan semua data di ponsel ini sebagai berkas JSON.</p>
+        <p className="text-[0.95rem] text-teks-2">Simpan semua data di ponsel ini sebagai berkas cadangan, atau pulihkan dari berkas cadangan.</p>
         <BigButton varian="garis" ikon={<DownloadSimple size={24} weight="bold" aria-hidden />} onClick={() => void ekspor()}>
-          Ekspor Data (JSON)
+          Simpan cadangan (berkas .json)
         </BigButton>
         <BigButton varian="garis" ikon={<UploadSimple size={24} weight="bold" aria-hidden />} onClick={() => fileRef.current?.click()}>
-          Impor Data (JSON)
+          Pulihkan dari cadangan
         </BigButton>
         <input
           ref={fileRef}
@@ -204,8 +204,8 @@ export default function Pengaturan() {
 
       <ConfirmDialog
         buka={konfirmasi?.jenis === 'reset'}
-        judul="Reset Data Demo?"
-        labelYa="Ya, Reset Data Demo"
+        judul="Setel ulang data demo?"
+        labelYa="Ya, Setel Ulang"
         sibuk={sibuk}
         onBatal={() => setKonfirmasi(null)}
         onYa={() => void jalankan(() => resetDemoData(skenario), 'Data demo sudah disetel ulang.')}

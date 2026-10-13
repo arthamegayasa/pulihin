@@ -12,14 +12,14 @@ import {
   WarningCircle,
 } from '@phosphor-icons/react';
 import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import { BigButton, BigLink } from '@/components/BigButton';
 import { addRepLogs, deleteSession, putSession } from '@/data/db';
 import { PENJELASAN_GALAT_KAMERA } from '@/features/pose/camera';
 import { getExercise } from '@/features/pose/exerciseDefinitions';
 import { angkaKeKata, daftarTitik } from '@/features/pose/labels';
 import { sisiLawan } from '@/features/pose/landmarks';
-import { bacaSisi, bacaTarget, urlDetail } from '@/features/pose/sesiParams';
+import { adaKonfirmasiKeselamatan, bacaRentang, bacaSisi, bacaTarget, urlDetail } from '@/features/pose/sesiParams';
 import { createTracker } from '@/features/pose/tracker';
 import type { ExerciseDefinition, ExerciseTracker, KoreksiAktif, PoseFrame, TrackerResult, TrackerSnapshot } from '@/features/pose/types';
 import { usePoseCamera } from '@/features/pose/usePoseCamera';
@@ -34,7 +34,13 @@ import type { Session, Sisi } from '@/types';
 
 const PESAN_TERLALU_CEPAT = { judul: 'Gerakan tadi belum terhitung.', sub: 'Coba sekali lagi, pelan pelan.' };
 const PESAN_RENTANG_KURANG = { judul: 'Gerakan tadi belum terhitung.', sub: 'Coba angkat sedikit lebih jauh bila mampu.' };
+/** Setelah beberapa percobaan kurang jauh: tidak lagi meminta lebih, tetapi menyemangati. */
+const PESAN_SEMAMPUNYA = { judul: 'Tidak apa-apa, angkat semampu Anda.', sub: 'Setiap percobaan tetap tercatat.' };
 const LAMA_PESAN_LEMBUT_MS = 3500;
+/** Pesan lembut (percobaan belum terhitung) tampil & diucapkan paling sering sekali per jeda ini agar tidak mengomel. */
+const JEDA_PESAN_LEMBUT_MS = 15_000;
+/** Mulai percobaan kurang jauh ke-N, pesan berganti menjadi penyemangat. */
+const BATAS_RENTANG_KURANG = 3;
 const LAMA_SIAP_MS = 1800;
 const LAMA_PERAYAAN_MS = 1800;
 /** Tawaran ganti sisi tetap tampil sebentar setelah sinyal hilang agar tidak berkedip. */
@@ -51,9 +57,16 @@ const TANPA_TITIK: readonly number[] = [];
  * sama ditimpa dengan hasil + repLogs. Hanya id sesi ini yang pernah ditulis, sehingga tab yang ditutup di
  * tengah sesi hanya meninggalkan satu catatan belum selesai dan tidak menyentuh sesi lain (AC-F1-6).
  * Berhenti sebelum repetisi pertama: catatan belum selesai DIHAPUS (bukan latihan) lalu kembali ke Detail.
+ * Keluar tanpa Berhenti (tombol/gestur Kembali, pindah rute, pagehide) setelah >= 1 repetisi: hasil DISIMPAN
+ * seperti Berhenti, tanpa berpindah halaman. Penyimpanan hanya terjadi sekali per sesi.
+ *
+ * Latihan berdiri hanya boleh dimulai dari Detail Latihan (konfirmasi berpegangan, Bab 17.2): tanpa status
+ * navigasi konfirmasi, URL langsung dialihkan ke Detail.
  */
 export default function SesiKamera() {
   const { id = '' } = useParams();
+  const { state } = useLocation();
+  const [cari] = useSearchParams();
   const def = getExercise(id);
   if (!def) {
     return (
@@ -64,11 +77,23 @@ export default function SesiKamera() {
       </main>
     );
   }
+  if (def.wajibBerpegangan && !adaKonfirmasiKeselamatan(state)) {
+    const sisi = cari.get('sisi');
+    const detail = urlDetail(
+      def.id,
+      bacaTarget(cari.get('target'), def.targetRepetisiDefault),
+      def.sisi === 'pilih' && sisi !== null ? bacaSisi(sisi, getPrefs().sisiLatihan) : undefined,
+      bacaRentang(cari.get('rentang')),
+    );
+    return <Navigate to={detail} replace />;
+  }
   return <Sesi def={def} />;
 }
 
 interface Tampilan {
   repetisi: number;
+  /** Semua siklus gerak yang tercatat, termasuk yang belum terhitung. */
+  percobaan: number;
   siap: boolean;
   tubuhTerlihat: boolean;
   koreksi: KoreksiAktif | null;
@@ -76,10 +101,11 @@ interface Tampilan {
   tawarGanti: boolean;
 }
 
-const TAMPILAN_AWAL: Tampilan = { repetisi: 0, siap: false, tubuhTerlihat: false, koreksi: null, tawarGanti: false };
+const TAMPILAN_AWAL: Tampilan = { repetisi: 0, percobaan: 0, siap: false, tubuhTerlihat: false, koreksi: null, tawarGanti: false };
 
 const samaTampilan = (a: Tampilan, b: Tampilan) =>
   a.repetisi === b.repetisi &&
+  a.percobaan === b.percobaan &&
   a.siap === b.siap &&
   a.tubuhTerlihat === b.tubuhTerlihat &&
   a.tawarGanti === b.tawarGanti &&
@@ -95,19 +121,21 @@ interface Pesan {
 
 function Sesi({ def }: { def: ExerciseDefinition }) {
   const navigate = useNavigate();
+  const { state: statusNavigasi } = useLocation();
   const [cari, setCari] = useSearchParams();
   const [awal] = useState(() => {
     const target = bacaTarget(cari.get('target'), def.targetRepetisiDefault);
     const sisi: Sisi = bacaSisi(cari.get('sisi'), getPrefs().sisiLatihan);
-    return { target, sisi, sessionId: newId('sesi') };
+    const rentang = bacaRentang(cari.get('rentang'));
+    return { target, sisi, rentang, sessionId: newId('sesi') };
   });
-  const { target, sessionId } = awal;
+  const { target, rentang, sessionId } = awal;
   const [sisi, setSisi] = useState<Sisi>(awal.sisi);
   const sisiRef = useRef(sisi);
   sisiRef.current = sisi;
 
   const trackerRef = useRef<ExerciseTracker | null>(null);
-  trackerRef.current ??= createTracker(def, { sisi: awal.sisi, targetRepetisi: target });
+  trackerRef.current ??= createTracker(def, { sisi: awal.sisi, targetRepetisi: target, rentangPersen: rentang });
 
   const [tampilan, setTampilan] = useState<Tampilan>(TAMPILAN_AWAL);
   const [pesanLembut, setPesanLembut] = useState<Pesan | null>(null);
@@ -121,8 +149,15 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
   const pengingatRef = useRef(false);
   const sisiLainTerakhirRef = useRef(Number.NEGATIVE_INFINITY);
   const tawarDiucapkanRef = useRef(false);
+  /** Waktu frame pesan lembut terakhir tampil, dan jumlah percobaan kurang jauh (Major 2: tidak mengomel). */
+  const lembutTerakhirRef = useRef(Number.NEGATIVE_INFINITY);
+  const rentangKurangRef = useRef(0);
   const dasarRef = useRef<Session | null>(null);
   const sesiAwalRef = useRef<Promise<void> | null>(null);
+  /** Penyimpanan hasil yang sedang/sudah berjalan: Berhenti, target, unmount, dan pagehide tidak menyimpan dua kali. */
+  const simpanRef = useRef<Promise<void> | null>(null);
+  /** Hasil yang disimpan saat halaman ditinggalkan (pagehide); dipakai bila halaman dipulihkan dari bfcache. */
+  const hasilPergiRef = useRef<TrackerResult | null>(null);
   const barRef = useRef<HTMLDivElement | null>(null);
   const hidupRef = useRef(true);
   const timerLembut = useRef(0);
@@ -130,21 +165,28 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
   const pilihSisi = def.sisi === 'pilih';
 
   const simpanHasil = useCallback(
-    async (hasil: TrackerResult) => {
-      await sesiAwalRef.current;
-      const dasar = dasarRef.current;
-      if (!dasar) throw new Error('Sesi belum dimulai');
-      await putSession({
-        ...dasar,
-        selesai: true,
-        selesaiAt: Date.now(),
-        skor: hasil.skor,
-        skorKomponen: hasil.skorKomponen,
-        repetisiTercapai: hasil.repetisi,
-        durasiDetik: hasil.durasiDetik,
-        saran: hasil.saran,
+    (hasil: TrackerResult): Promise<void> => {
+      simpanRef.current ??= (async () => {
+        await sesiAwalRef.current;
+        const dasar = dasarRef.current;
+        if (!dasar) throw new Error('Sesi belum dimulai');
+        await putSession({
+          ...dasar,
+          selesai: true,
+          selesaiAt: Date.now(),
+          skor: hasil.skor,
+          skorKomponen: hasil.skorKomponen,
+          repetisiTercapai: hasil.repetisi,
+          durasiDetik: hasil.durasiDetik,
+          saran: hasil.saran,
+        });
+        await addRepLogs(hasil.repLogs.map((l) => ({ ...l, sessionId })));
+      })().catch((e: unknown) => {
+        // Gagal: izinkan Coba Simpan Lagi.
+        simpanRef.current = null;
+        throw e;
       });
-      await addRepLogs(hasil.repLogs.map((l) => ({ ...l, sessionId })));
+      return simpanRef.current;
     },
     [sessionId],
   );
@@ -197,11 +239,21 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
     // (AC-F1-3), kecuali hitungan yang baru diucapkan pada frame yang sama.
     if (s.koreksiBaru && siapRef.current) speak(s.koreksiBaru.pesan, { interrupt: !s.repetisiBaru });
     if (s.percobaanTidakDihitung) {
-      const pesan = s.alasanTidakDihitung === 'rentang-kurang' ? PESAN_RENTANG_KURANG : PESAN_TERLALU_CEPAT;
-      setPesanLembut(pesan);
-      window.clearTimeout(timerLembut.current);
-      timerLembut.current = window.setTimeout(() => setPesanLembut(null), LAMA_PESAN_LEMBUT_MS);
-      speak(`${pesan.judul} ${pesan.sub}`, { interrupt: false });
+      const kurangJauh = s.alasanTidakDihitung === 'rentang-kurang';
+      if (kurangJauh) rentangKurangRef.current += 1;
+      // Paling sering sekali per jeda; koreksi dari tracker tetap berjalan sendiri seperti biasa.
+      if (t - lembutTerakhirRef.current >= JEDA_PESAN_LEMBUT_MS) {
+        lembutTerakhirRef.current = t;
+        const pesan = !kurangJauh
+          ? PESAN_TERLALU_CEPAT
+          : rentangKurangRef.current >= BATAS_RENTANG_KURANG
+            ? PESAN_SEMAMPUNYA
+            : PESAN_RENTANG_KURANG;
+        setPesanLembut(pesan);
+        window.clearTimeout(timerLembut.current);
+        timerLembut.current = window.setTimeout(() => setPesanLembut(null), LAMA_PESAN_LEMBUT_MS);
+        speak(`${pesan.judul} ${pesan.sub}`, { interrupt: false });
+      }
     }
 
     if (pilihSisi && s.sisiLainTerlihat === true) sisiLainTerakhirRef.current = t;
@@ -210,7 +262,14 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
       tawarDiucapkanRef.current = true;
       speak(pesanSisi(sisiRef.current).ucap);
     }
-    const baru: Tampilan = { repetisi: s.repetisi, siap: s.siap, tubuhTerlihat: s.tubuhTerlihat, koreksi: s.koreksi, tawarGanti };
+    const baru: Tampilan = {
+      repetisi: s.repetisi,
+      percobaan: s.percobaan,
+      siap: s.siap,
+      tubuhTerlihat: s.tubuhTerlihat,
+      koreksi: s.koreksi,
+      tawarGanti,
+    };
     setTampilan((prev) => (samaTampilan(prev, baru) ? prev : baru));
 
     if (s.repetisi >= target) {
@@ -226,7 +285,9 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
     return s.titikAktif;
   };
 
-  const kamera = usePoseCamera({ aktif: true, onFrame });
+  // Setelah hasil disimpan saat halaman ditinggalkan, kamera tidak dinyalakan lagi walau halaman dipulihkan dari bfcache.
+  const [ditinggal, setDitinggal] = useState(false);
+  const kamera = usePoseCamera({ aktif: !ditinggal, onFrame });
   kameraRef.current = kamera;
   const tahap = kamera.status.tahap;
   useWakeLock(tahap === 'berjalan');
@@ -252,26 +313,60 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
       selesai: false,
       saran: null,
       sisi: pilihSisi ? sisiRef.current : null,
+      rentangPersen: rentang,
       isDemo: false,
     };
     dasarRef.current = dasar;
     sesiAwalRef.current = putSession(dasar).catch((e: unknown) => console.error('Sesi belum tercatat', e));
     speak('Posisikan tubuh Anda di dalam bingkai.');
-  }, [tahap, sessionId, def.id, pilihSisi, target]);
+  }, [tahap, sessionId, def.id, pilihSisi, target, rentang]);
 
-  // Keluar tanpa Berhenti (tombol kembali perangkat) sebelum repetisi pertama: buang catatan kosong.
+  // Keluar tanpa Berhenti (tombol/gestur kembali, pindah rute): sebelum repetisi pertama catatan kosong dibuang;
+  // sesudahnya hasil disimpan seperti Berhenti, tanpa berpindah halaman.
   useEffect(() => {
     hidupRef.current = true;
     return () => {
       hidupRef.current = false;
       window.clearTimeout(timerLembut.current);
       window.clearTimeout(timerSiap.current);
-      const awalSesi = sesiAwalRef.current;
-      if (!selesaiRef.current && repRef.current === 0 && awalSesi) {
-        void awalSesi.then(() => deleteSession(sessionId));
+      if (selesaiRef.current) return;
+      const tracker = trackerRef.current;
+      if (tracker && repRef.current >= 1) {
+        selesaiRef.current = true;
+        cancelSpeech();
+        simpanHasil(tracker.finish(performance.now())).catch((e: unknown) => console.error('Hasil sesi gagal disimpan', e));
+        return;
       }
+      const awalSesi = sesiAwalRef.current;
+      if (awalSesi) void awalSesi.then(() => deleteSession(sessionId));
     };
-  }, [sessionId]);
+  }, [sessionId, simpanHasil]);
+
+  // Tab ditutup / halaman ditinggalkan (pagehide) setelah >= 1 repetisi: simpan hasil. Bila halaman dipulihkan dari
+  // bfcache, sesi sudah tersimpan: lanjut ke ringkasan (atau layar Coba Simpan Lagi bila penyimpanan gagal).
+  useEffect(() => {
+    const saatPergi = () => {
+      const tracker = trackerRef.current;
+      if (selesaiRef.current || !tracker || repRef.current < 1) return;
+      selesaiRef.current = true;
+      const hasil = tracker.finish(performance.now());
+      hasilPergiRef.current = hasil;
+      simpanHasil(hasil).catch((e: unknown) => console.error('Hasil sesi gagal disimpan', e));
+    };
+    const saatKembali = (e: PageTransitionEvent) => {
+      const hasil = hasilPergiRef.current;
+      if (!e.persisted || !hasil) return;
+      setDitinggal(true);
+      setAkhir({ tahap: 'menyimpan' });
+      simpanLaluRingkasan(hasil, 0);
+    };
+    window.addEventListener('pagehide', saatPergi);
+    window.addEventListener('pageshow', saatKembali);
+    return () => {
+      window.removeEventListener('pagehide', saatPergi);
+      window.removeEventListener('pageshow', saatKembali);
+    };
+  }, [simpanHasil, simpanLaluRingkasan]);
 
   const berhenti = () => {
     kamera.hentikan(); // kamera padam seketika (AC-F1-7)
@@ -286,17 +381,19 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
     }
     const awalSesi = sesiAwalRef.current;
     if (awalSesi) void awalSesi.then(() => deleteSession(sessionId)).catch((e: unknown) => console.error(e));
-    navigate(urlDetail(def.id, target, pilihSisi ? sisiRef.current : undefined), { replace: true });
+    navigate(urlDetail(def.id, target, pilihSisi ? sisiRef.current : undefined, rentang), { replace: true });
   };
 
   /** Ganti sisi sebelum repetisi pertama: tracker baru untuk sisi lain, catatan sesi & URL ikut diperbarui. */
   const gantiSisi = () => {
     if (selesaiRef.current || repRef.current > 0) return;
     const baru = sisiLawan(sisi);
-    trackerRef.current = createTracker(def, { sisi: baru, targetRepetisi: target });
+    trackerRef.current = createTracker(def, { sisi: baru, targetRepetisi: target, rentangPersen: rentang });
     siapRef.current = false;
     sisiLainTerakhirRef.current = Number.NEGATIVE_INFINITY;
     tawarDiucapkanRef.current = false;
+    lembutTerakhirRef.current = Number.NEGATIVE_INFINITY;
+    rentangKurangRef.current = 0;
     if (barRef.current) barRef.current.style.transform = 'scaleX(0)';
     setSisi(baru);
     setTampilan(TAMPILAN_AWAL);
@@ -306,7 +403,8 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
         q.set('sisi', baru);
         return q;
       },
-      { replace: true },
+      // Status konfirmasi keselamatan ikut dibawa agar sesi berdiri tidak dialihkan ke Detail.
+      { replace: true, state: statusNavigasi },
     );
     const dasar = dasarRef.current;
     if (dasar) {
@@ -326,7 +424,7 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
   const namaSisi = pilihSisi ? (sisi === 'kanan' ? 'Kanan' : 'Kiri') : null;
   const modePanduan = !tampilan.siap || tampilan.tawarGanti;
   const statusBingkai = tampilan.siap ? 'siap' : tampilan.tubuhTerlihat ? 'terlihat' : 'cari';
-  const kembaliKeDetail = urlDetail(def.id, target, pilihSisi ? sisi : undefined);
+  const kembaliKeDetail = urlDetail(def.id, target, pilihSisi ? sisi : undefined, rentang);
 
   return (
     <main className="fixed inset-0 flex flex-col bg-primer-tua text-white">
@@ -335,9 +433,10 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
         className="z-30 flex shrink-0 items-center gap-3 bg-primer-tua px-4 py-2"
         style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}
       >
-        <div className="min-w-0 flex-1">
-          <h1 className="line-clamp-2 text-[1.5rem] font-extrabold leading-[1.15]">{def.nama}</h1>
-          {namaSisi && <p className="text-[1rem] font-semibold text-white/85">Sisi {namaSisi}</p>}
+        {/* Lanskap pendek (ponsel miring): nama & sisi satu baris agar panel pesan + hitungan mendapat ruang. */}
+        <div className="min-w-0 flex-1 [@media(orientation:landscape)_and_(max-height:520px)]:flex [@media(orientation:landscape)_and_(max-height:520px)]:items-baseline [@media(orientation:landscape)_and_(max-height:520px)]:gap-3">
+          <h1 className="line-clamp-2 min-w-0 text-[1.5rem] font-extrabold leading-[1.15] [@media(orientation:landscape)_and_(max-height:520px)]:line-clamp-1">{def.nama}</h1>
+          {namaSisi && <p className="shrink-0 text-[1rem] font-semibold text-white/85">Sisi {namaSisi}</p>}
         </div>
         {!adaKendala && (
           <BigButton varian="bahaya" penuh={false} onClick={berhenti} ikon={<StopCircle size={26} weight="fill" aria-hidden />} className="shrink-0 gap-2! px-4!">
@@ -399,6 +498,7 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
             ) : (
               <PanelHitung
                 repetisi={tampilan.repetisi}
+                percobaan={tampilan.percobaan}
                 target={target}
                 barRef={barRef}
                 pesan={
@@ -553,35 +653,52 @@ function PanelPanduan({
   );
 }
 
+/**
+ * Hitungan + satu pesan. Potret: pesan tepat di atas hitungan. Lanskap tinggi (laptop): hitungan di atas, pesan
+ * di bawah. Lanskap pendek (ponsel miring, tinggi <= 520px): pesan di atas dan hitungan dipadatkan (angka tetap
+ * >= 64px) agar banner selalu utuh terlihat, termasuk saat Huruf Lebih Besar.
+ */
 function PanelHitung({
   repetisi,
+  percobaan,
   target,
   barRef,
   pesan,
 }: {
   repetisi: number;
+  percobaan: number;
   target: number;
   barRef: RefObject<HTMLDivElement | null>;
   pesan: ReactNode;
 }) {
   return (
-    <div className="flex flex-1 flex-col justify-end gap-2 px-3 pt-3 landscape:justify-start landscape:gap-4 landscape:px-5 landscape:pt-5">
-      {/* Potret: pesan tepat di atas hitungan (ruang tetap agar video tidak melompat). Lanskap: hitungan di atas, pesan di bawah. */}
-      <div className="flex min-h-[6.4rem] flex-col justify-end landscape:order-2 landscape:min-h-0 landscape:justify-start">{pesan}</div>
-      <div className="landscape:order-1">
+    <div className="flex flex-1 flex-col justify-end gap-2 px-3 pt-3 landscape:justify-start landscape:gap-4 landscape:px-5 landscape:pt-5 [@media(orientation:landscape)_and_(max-height:520px)]:gap-2 [@media(orientation:landscape)_and_(max-height:520px)]:px-3 [@media(orientation:landscape)_and_(max-height:520px)]:pt-2">
+      {/* Ruang pesan tetap di potret agar video tidak melompat saat pesan berganti. */}
+      <div className="flex min-h-[6.4rem] flex-col justify-end landscape:order-2 landscape:min-h-0 landscape:justify-start [@media(orientation:landscape)_and_(max-height:520px)]:order-1">
+        {pesan}
+      </div>
+      <div className="landscape:order-1 [@media(orientation:landscape)_and_(max-height:520px)]:order-2">
         <div className="flex items-end justify-between gap-4">
           <p className="tabular leading-none" aria-live="polite">
-            <span className="text-[4.25rem] font-extrabold text-primer landscape:lg:text-[6.5rem]">{repetisi}</span>
-            <span className="ml-2 text-[2rem] font-bold text-teks-2 landscape:lg:text-[2.6rem]">/ {target}</span>
+            <span className="text-[4.25rem] font-extrabold text-primer landscape:lg:text-[6.5rem] [@media(orientation:landscape)_and_(max-height:520px)]:text-[3.6rem]">
+              {repetisi}
+            </span>
+            <span className="ml-2 text-[2rem] font-bold text-teks-2 landscape:lg:text-[2.6rem] [@media(orientation:landscape)_and_(max-height:520px)]:text-[1.6rem]">
+              / {target}
+            </span>
             <span className="sr-only"> repetisi</span>
           </p>
-          <p className="pb-2 text-right text-[1.05rem] font-semibold text-teks-2">Repetisi</p>
+          <div className="pb-2 text-right [@media(orientation:landscape)_and_(max-height:520px)]:pb-1">
+            <p className="text-[1.05rem] font-semibold text-teks-2">Repetisi</p>
+            {/* Percobaan yang belum terhitung tetap tampil sebagai kemajuan, bukan kegagalan. */}
+            {percobaan > repetisi && <p className="tabular text-[1.05rem] font-bold leading-tight text-primer">{percobaan} percobaan</p>}
+          </div>
         </div>
-        <div className="mt-2" aria-hidden>
-          <div className="h-5 overflow-hidden rounded-full bg-primer-terang ring-1 ring-primer-garis ring-inset">
+        <div className="mt-2 [@media(orientation:landscape)_and_(max-height:520px)]:mt-1" aria-hidden>
+          <div className="h-5 overflow-hidden rounded-full bg-primer-terang ring-1 ring-primer-garis ring-inset [@media(orientation:landscape)_and_(max-height:520px)]:h-3.5">
             <div ref={barRef} className="h-full origin-left rounded-full bg-primer" style={{ transform: 'scaleX(0)' }} />
           </div>
-          <p className="mt-1 flex justify-between text-[0.95rem] font-semibold text-teks-2">
+          <p className="mt-1 flex justify-between text-[0.95rem] font-semibold text-teks-2 [@media(orientation:landscape)_and_(max-height:520px)]:hidden">
             <span>Posisi awal</span>
             <span>Puncak gerakan</span>
           </p>

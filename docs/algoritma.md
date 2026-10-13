@@ -184,7 +184,7 @@ stateDiagram-v2
 | 1 | keluar-frame | landmark kunci sisi dilatih tidak terlihat, KECUALI sisi lawan terlihat (lihat `sisiLainTerlihat`, Bagian 13) | – | > 1 s | Mundur sedikit agar tubuh terlihat penuh |
 | 2 | badan-miring | elevasi 3D garis bahu atan2(\|dy\|, √(dx² + dz²)) (tanpa 3D: kemiringan 2D); TIDAK dinilai bila badan sangat berputar: lebar bahu < 0,5 × panjang batang tubuh pada gambar | 12° | 0,5 s | Tegakkan badan, jangan miring |
 | 3 | bahu-terangkat | jarak tegak bahu–telinga sisi dilatih menyusut dibanding acuan, hanya saat NAIK/ATAS | 20% (fleksi siku), 30% (fleksi & abduksi bahu) | 0,5 s | Rilekskan bahu, turunkan bahu Anda |
-| 4 | rentang-kurang | puncak 2 percobaan berturut-turut < ambang atas − margin | 15° (8° abduksi pinggul & langkah, 4° putar badan, 2% jinjit) | peristiwa | Sedikit lagi, angkat lebih tinggi bila mampu |
+| 4 | rentang-kurang | puncak 2 percobaan berturut-turut < ambang atas **efektif** (Bagian 8a) − margin | 15° (8° abduksi pinggul & langkah, 4° putar badan, 2% jinjit) | peristiwa | Sedikit lagi, angkat lebih tinggi bila mampu |
 | 5 | tempo-cepat | 2 siklus lengkap berturut-turut lebih singkat dari tempo minimum | `tempoTargetDetik.min` | peristiwa | Perlambat gerakan Anda |
 
 Margin rentang-kurang diperkecil untuk latihan berentang sempit agar puncak "rendah" tetap di atas
@@ -248,6 +248,53 @@ kita mulai pelan-pelan, satu gerakan dulu sudah bagus."; repetisi → "Besok kit
 gerakan lagi, sedikit demi sedikit."; rentang → "Besok coba gerakkan sedikit lebih jauh, sebatas yang
 nyaman."; tempo terlalu cepat → "Besok coba bergerak lebih pelan dan teratur, sambil bernapas biasa.";
 semua komponen ≥ 85 → "Bagus sekali. Pertahankan latihan rutin seperti hari ini."
+
+## 8a. Target rentang personal (resep terapis)
+
+**Tujuan.** Pasien stroke sering belum mampu mencapai rentang penuh. Tanpa penyesuaian, setiap gerakan
+yang "hampir" tidak pernah terhitung dan pesan rentang kurang diulang terus (audit juri: `elder`
+abduksi 0/8 dalam 80 s). Terapis menetapkan **Target rentang** per latihan di Resep Program
+(100% / 90% / 80% / 70%, bawaan 100%), disimpan di `ProgramItem.rentangPersen`, dibawa lewat URL
+`?rentang=P` (hanya bila P < 100) ke `TrackerOptions.rentangPersen` dan dicatat di `Session.rentangPersen`.
+
+**Rumus** (`ambangAtasRentang` di `tracker.ts`, angka di `ATURAN_UMUM.rentangPersonal`):
+
+```
+p          = bulat(rentangPersen), dibatasi 50..100; tidak ada / tidak valid = 100
+atasEfektif = min(ambangAtas, max(ambangAtas × p / 100, ambangBawah + 3 × histeresis))
+```
+
+- Lantai `ambangBawah + 3 × histeresis`: 2 × histeresis adalah syarat state machine (pita NAIK dan
+  pita TURUN tidak tumpang tindih), 1 × sisanya menjamin ada gerakan nyata antara awal NAIK dan ATAS.
+  Tidak pernah melebihi ambang atas definisi.
+- Yang memakai `atasEfektif`: transisi NAIK → ATAS dan ATAS → TURUN, bar progres gerak, batas
+  koreksi rentang-kurang (`atasEfektif − margin`), dan komponen rentang skor
+  (`(puncak − bawah) / (atasEfektif − bawah)`), sehingga pasien yang mencapai rentang resepnya
+  mendapat skor rentang penuh. Ambang bawah, histeresis, durasi minimum 1 s, dan tempo tidak berubah.
+- Latihan berpita sempit hampir tidak terpengaruh karena lantai: abduksi bahu 90° → 81° (90%),
+  72° (80%), 63° (70%); fleksi bahu 100° → 70° (70%); ekstensi lutut 150° → 135° (90%), 120° (80%),
+  115° (70%, lantai); jinjit dan putar badan tetap 10% / 20° (lantai di atas ambang atas). Penyunting
+  resep menampilkan ambang yang benar-benar dipakai ("Dihitung bila gerakan mencapai 72°").
+
+**Bukti pada rekaman nyata `elder`** (lansia berdiri, abduksi hampir horizontal sekali per loop, 4 loop;
+`realVideo.test.ts` → "elder: abduksi hampir horizontal terhitung pada target rentang 90%"). Puncak
+terukur (sumber hibrida bawaan, setelah perataan): kiri **86,0°**, kanan **83,9°** di setiap loop.
+
+| Target rentang | Ambang efektif | Kiri terhitung | Kanan terhitung | Catatan |
+|---|---|---|---|---|
+| 100% | 90° | 0 | 0 | puncak tidak pernah mencapai 90° |
+| 95% | 85,5° | 3 | 0 | kanan (83,9°) masih di bawah |
+| **90%** | **81°** | **3** | **3** | satu per loop, tanpa hitungan ganda; skor rentang kanan 81 → 92 |
+| 80% | 72° | 3 | 3 | kanan: putaran badan (puncak 73,5°, 0,7 s) ikut lengkap → percobaan terlalu cepat, tempo 30 (90%: 100) |
+
+Loop pertama tidak terhitung pada semua target: puncak abduksinya (frame 15–23) terjadi sebelum Siap
+(frame 24, masa stabil 1 s). 90% dipilih sebagai contoh resep karena ambangnya ±3° di bawah kedua puncak
+terukur dan belum ikut menangkap gerakan lain di video. Uji sintetis (`tracker.test.ts` → "target
+rentang personal"): puncak abduksi 86° terhitung 6/6 pada 80%, 0/6 pada 100%; skor rentang 100 pada 80%;
+puncak 66° memicu rentang-kurang pada 100% (batas 75°) tetapi tidak pada 80% (batas 57°).
+
+Data demo: Pak Joko (kepatuhan sedang) punya abduksi bahu dengan target rentang 80% agar fitur terlihat
+di Dashboard Klinisi; Pak Budi tetap 100% (alur video tidak berubah).
 
 ## 9. Hasil uji SIMULASI (bukan hasil perangkat)
 
@@ -328,7 +375,8 @@ Semua angka ada di `exerciseDefinitions.ts`: ambang atas/bawah, histeresis, temp
 bertahan tiap koreksi (`koreksiUmum[].ambang`, `.tahanDetik`), serta aturan umum `ATURAN_UMUM`
 (durasi repetisi minimum, visibility, masa stabil, jendela perataan, aturan tayang, bobot skor).
 Logika tidak berisi angka ambang. Tes `tracker.test.ts` → "mengubah ambangAtas pada salinan definisi
-mengubah hitungan tanpa mengubah logika" membuktikannya.
+mengubah hitungan tanpa mengubah logika" membuktikannya. Satu-satunya penyesuaian di luar definisi adalah
+target rentang personal dari resep terapis (Bagian 8a), yang hanya menskalakan ambang atas.
 
 Menjalankan semua tes modul ini: `npx vitest run src/features/pose`.
 

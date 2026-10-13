@@ -4,8 +4,8 @@ import type { SkenarioDemo } from '@/types';
 import { buatLaporan } from '@/features/adherence/laporan';
 import { addDays, todayISO } from '@/lib/date';
 import { getPrefs, resetPrefs } from '@/lib/prefs';
-import { clearAll, getProgram, getSchedule, getSession, listProfiles, listRepLogs, listSessions, listSpeechAttempts, putProgram, putSchedule, putSession } from './db';
-import { AUTOSEED_KEY, buatDataDemo, ensureDemoData, hapusSemuaDataLokal, resetDemoData, tanggalTanamDemoUtuh } from './seed';
+import { addRepLogs, addSpeechAttempt, clearAll, getProgram, getSchedule, getSession, listProfiles, listRepLogs, listSessions, listSpeechAttempts, putProgram, putSchedule, putSession } from './db';
+import { AUTOSEED_KEY, bersihkanSesiBelumSelesai, buatCadangan, buatDataDemo, ensureDemoData, hapusSemuaDataLokal, resetDemoData, tanggalTanamDemoUtuh } from './seed';
 
 // localStorage sederhana untuk lingkungan node (prefs & penanda autoseed dibaca saat dipanggil, bukan saat impor).
 const store = new Map<string, string>();
@@ -51,6 +51,15 @@ describe('buatDataDemo', () => {
     expect(program).toMatchObject({ frekuensiPerMinggu: 7, dibuatOleh: 'Terapis (demo)' });
     expect(d.schedules.every((s) => s.jamGerak === '08:00' && s.jamAfasia === '16:00' && !s.notifikasiAktif)).toBe(true);
     expect(d.sessions.every((s) => s.isDemo && s.selesai)).toBe(true);
+    // Target rentang personal: Pak Budi rentang penuh (alur video), Pak Joko abduksi 80%.
+    expect(program.items.every((i) => i.rentangPersen === undefined)).toBe(true);
+    const joko = d.programs.find((p) => p.patientId === 'joko')!;
+    expect(joko.items.find((i) => i.latihanId === 'abduksi-bahu')?.rentangPersen).toBe(80);
+    expect(joko.items.filter((i) => i.rentangPersen !== undefined)).toHaveLength(1);
+    const sesiAbduksiJoko = d.sessions.filter((s) => s.patientId === 'joko' && s.latihanId === 'abduksi-bahu');
+    expect(sesiAbduksiJoko.length).toBeGreaterThan(0);
+    expect(sesiAbduksiJoko.every((s) => s.rentangPersen === 80)).toBe(true);
+    expect(d.sessions.filter((s) => s.patientId !== 'joko' || s.latihanId !== 'abduksi-bahu').every((s) => s.rentangPersen === undefined)).toBe(true);
   });
 
   it('riwayat 14 hari berakhir kemarin, tanpa sesi hari ini', () => {
@@ -209,10 +218,18 @@ describe('penyimpanan demo', () => {
       return (await listProfiles()).find((p) => p.id === 'budi')!.tanggalMulaiProgram;
     };
     const mulaiLama = addDays(LALU, -14);
-    // Sesi pengguna (juga yang dihentikan sebelum selesai) selalu berlabel bukan demo.
-    const sesiPengguna = { ...buatDataDemo('stagnasi', LALU).sessions[0], id: 'pengguna-1', tanggal: LALU, selesai: false, isDemo: false };
+    // Sesi pengguna (juga yang dihentikan sebelum target) selalu berlabel bukan demo.
+    const sesiPengguna = { ...buatDataDemo('stagnasi', LALU).sessions[0], id: 'pengguna-1', tanggal: LALU, selesai: true, isDemo: false };
     expect(await cek(() => putSession(sesiPengguna))).toBe(mulaiLama);
     expect((await getSession('pengguna-1'))?.isDemo).toBe(false);
+    // Sesi hari ini yang belum selesai tetapi sudah punya percobaan juga aktivitas pengguna.
+    const sesiBerjalan = { ...sesiPengguna, id: 'pengguna-2', tanggal: TODAY, selesai: false };
+    expect(
+      await cek(async () => {
+        await putSession(sesiBerjalan);
+        await addRepLogs([{ sessionId: 'pengguna-2', nomor: 1, dihitung: true, sudutPuncak: 120, durasiSiklusDetik: 3, koreksi: [] }]);
+      }),
+    ).toBe(mulaiLama);
     expect(await cek(async () => putProgram({ ...(await getProgram('budi'))!, tanggalUbah: Date.now() }))).toBe(mulaiLama);
     expect(await cek(async () => putSchedule({ ...(await getSchedule('budi'))!, jamGerak: '07:30' }))).toBe(mulaiLama);
     expect(await cek(async () => undefined)).toBe(addDays(TODAY, -14));
@@ -223,5 +240,50 @@ describe('penyimpanan demo', () => {
     const sebelum = await listSessions('budi', { hanyaSelesai: false });
     await ensureDemoData(TODAY);
     expect(await listSessions('budi', { hanyaSelesai: false })).toEqual(sebelum);
+  });
+
+  it('layar latihan yang hanya dibuka (sesi belum selesai tanpa percobaan) tidak menghentikan penyegaran demo', async () => {
+    await ensureDemoData('2026-10-10');
+    const kosong = { ...buatDataDemo('stagnasi', TODAY).sessions[0], id: 'afasia-dibuka', tanggal: TODAY, jenis: 'afasia' as const, selesai: false, isDemo: false };
+    await putSession(kosong);
+    await ensureDemoData(TODAY);
+    expect((await listProfiles()).find((p) => p.id === 'budi')!.tanggalMulaiProgram).toBe(addDays(TODAY, -14));
+    const lap = buatLaporan(await listSessions('budi'), TODAY, { schedule: await getSchedule('budi') });
+    expect(lap.redFlags.map((f) => f.judul)).toEqual(['Sudah 3 hari belum latihan']);
+  });
+
+  it('bersih-bersih: sesi belum selesai dari hari sebelumnya dihapus beserta RepLog/SpeechAttempt; hari ini dibiarkan', async () => {
+    await ensureDemoData(TODAY);
+    const dasar = { ...buatDataDemo('stagnasi', TODAY).sessions[0], selesai: false, isDemo: false };
+    await putSession({ ...dasar, id: 'lama-gerak', tanggal: addDays(TODAY, -1) });
+    await addRepLogs([{ sessionId: 'lama-gerak', nomor: 1, dihitung: true, sudutPuncak: 120, durasiSiklusDetik: 3, koreksi: [] }]);
+    await putSession({ ...dasar, id: 'lama-afasia', tanggal: addDays(TODAY, -2), jenis: 'afasia' });
+    await addSpeechAttempt({ sessionId: 'lama-afasia', kataId: 'kursi', teksHasil: '', kategoriHasil: 'benar', skor: 100, nomorPercobaan: 1, mode: 'mandiri', at: 1 });
+    await putSession({ ...dasar, id: 'hari-ini', tanggal: TODAY });
+    const selesaiSebelum = (await listSessions('budi')).length;
+
+    expect(await bersihkanSesiBelumSelesai(TODAY)).toBe(2);
+    expect(await getSession('lama-gerak')).toBeUndefined();
+    expect(await getSession('lama-afasia')).toBeUndefined();
+    expect(await listRepLogs('lama-gerak')).toEqual([]);
+    expect(await listSpeechAttempts('lama-afasia')).toEqual([]);
+    expect(await getSession('hari-ini')).toBeDefined();
+    expect((await listSessions('budi')).length).toBe(selesaiSebelum);
+
+    // Juga berjalan otomatis saat aplikasi dibuka (ensureDemoData), keesokan harinya.
+    await ensureDemoData(addDays(TODAY, 1));
+    expect(await getSession('hari-ini')).toBeUndefined();
+  });
+
+  it('berkas cadangan tidak memuat sesi yang belum selesai', async () => {
+    await ensureDemoData(TODAY);
+    const dasar = { ...buatDataDemo('stagnasi', TODAY).sessions[0], id: 'berjalan', tanggal: TODAY, selesai: false, isDemo: false };
+    await putSession(dasar);
+    await addRepLogs([{ sessionId: 'berjalan', nomor: 1, dihitung: true, sudutPuncak: 120, durasiSiklusDetik: 3, koreksi: [] }]);
+    const b = await buatCadangan();
+    expect(b.sessions.some((s) => s.id === 'berjalan' || !s.selesai)).toBe(false);
+    expect(b.repLogs.some((r) => r.sessionId === 'berjalan')).toBe(false);
+    expect(b.sessions.length).toBeGreaterThan(0);
+    expect(b.repLogs.length).toBeGreaterThan(0);
   });
 });

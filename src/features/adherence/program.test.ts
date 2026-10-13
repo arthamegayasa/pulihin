@@ -10,16 +10,19 @@ import {
   geserLatihan,
   hapusLatihan,
   latihanBerikutnya,
+  PILIHAN_RENTANG,
   repetisiCukup,
   MAKS_LATIHAN,
   programSama,
   statusProgramHariIni,
   tambahLatihan,
   teksProgresSet,
+  teksRentang,
   teksSudahDicoba,
   teksTarget,
   ubahFrekuensi,
   ubahLatihan,
+  urlLatihanProgram,
   type DraftProgram,
 } from './program';
 import { sesi } from './testUtils';
@@ -168,5 +171,40 @@ describe('penyunting resep program', () => {
       tanggalUbah: 1234,
     });
     expect(buatProgram('sari', { items: [], frekuensiPerMinggu: 7 }, 1)).toBeNull();
+  });
+
+  it('target rentang: disimpan hanya bila di bawah 100, dibatasi 50..100, ikut penjaga perubahan', () => {
+    expect(PILIHAN_RENTANG).toEqual([100, 90, 80, 70]);
+    const d80 = ubahLatihan(awal, 'fleksi-siku', { rentangPersen: 80 });
+    expect(d80.items[0]).toEqual({ latihanId: 'fleksi-siku', targetRepetisi: 10, set: 1, rentangPersen: 80 });
+    // Mengubah repetisi tidak membuang target rentang; kembali ke 100 menghapus field.
+    expect(ubahLatihan(d80, 'fleksi-siku', { targetRepetisi: 12 }).items[0].rentangPersen).toBe(80);
+    expect(ubahLatihan(d80, 'fleksi-siku', { rentangPersen: 100 }).items[0]).toEqual(awal.items[0]);
+    expect(ubahLatihan(awal, 'fleksi-siku', { rentangPersen: 20 }).items[0].rentangPersen).toBe(50);
+
+    expect(programSama(d80, awal)).toBe(false);
+    expect(programSama(ubahLatihan(d80, 'fleksi-siku', { rentangPersen: 100 }), awal)).toBe(true);
+    // Tidak diisi dan 100 setara.
+    expect(programSama({ ...awal, items: [{ ...awal.items[0], rentangPersen: 100 }] }, awal)).toBe(true);
+
+    expect(buatProgram('joko', d80, 1)?.items).toEqual([{ latihanId: 'fleksi-siku', targetRepetisi: 10, set: 1, rentangPersen: 80 }]);
+    expect(buatProgram('joko', awal, 1)?.items[0]).not.toHaveProperty('rentangPersen');
+  });
+
+  it('teks dan tautan program membawa target rentang hanya bila di bawah 100', () => {
+    expect(teksRentang({})).toBeNull();
+    expect(teksRentang({ rentangPersen: 100 })).toBeNull();
+    expect(teksRentang({ rentangPersen: 80 })).toBe('Rentang 80%');
+    expect(urlLatihanProgram({ latihanId: 'abduksi-bahu', targetRepetisi: 10 })).toBe('/app/latihan/abduksi-bahu?target=10');
+    expect(urlLatihanProgram({ latihanId: 'abduksi-bahu', targetRepetisi: 10, rentangPersen: 100 })).toBe(
+      '/app/latihan/abduksi-bahu?target=10',
+    );
+    expect(urlLatihanProgram({ latihanId: 'abduksi-bahu', targetRepetisi: 8, rentangPersen: 80 })).toBe(
+      '/app/latihan/abduksi-bahu?target=8&rentang=80',
+    );
+    // Nilai di luar batas dari data lama dibatasi, sehingga parameter URL selalu terbaca halaman sesi.
+    expect(urlLatihanProgram({ latihanId: 'fleksi-siku', targetRepetisi: 10, rentangPersen: 30 })).toBe(
+      '/app/latihan/fleksi-siku?target=10&rentang=50',
+    );
   });
 });

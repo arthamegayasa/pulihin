@@ -12,6 +12,13 @@ export const ATURAN_UMUM = {
   histeresisBawaan: 5,
   /** Siklus lebih cepat dari ini dicatat sebagai percobaan, tidak dihitung (Bab 7.2). */
   durasiRepetisiMinDetik: 1,
+  /**
+   * Target rentang personal dari resep terapis (persen ambang atas, docs/algoritma.md Bagian 8a). Ambang
+   * atas efektif tidak lebih rendah dari ambangBawah + kelipatanHisteresisMin x histeresis: 2 x histeresis
+   * adalah syarat RepCounter (pita naik dan turun tidak tumpang tindih), 1 x sisanya menjamin masih ada
+   * gerakan nyata antara awal fase NAIK dan fase ATAS.
+   */
+  rentangPersonal: { minPersen: 50, maksPersen: 100, kelipatanHisteresisMin: 3 },
   /** Landmark dengan visibility di bawah ini membuat frame diabaikan (Bab 7.1). */
   ambangVisibilitas: 0.5,
   /** Tubuh harus terlihat stabil selama ini sebelum hitungan dimulai (Bab 5.1 langkah 4). */

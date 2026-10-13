@@ -96,7 +96,7 @@ function BarisPasien({ p, today }: { p: RingkasanPasienKlinisi; today: string })
             <p className="text-[0.95rem] text-teks-2">
               {profile.usia} tahun · {profile.keterangan}
             </p>
-            <p className="text-[0.9rem] text-teks-2">
+            <p className="text-[0.95rem] text-teks-2">
               {program ? `${program.items.length} latihan, ${program.frekuensiPerMinggu} hari per minggu` : 'Belum ada resep program'}
             </p>
           </div>
@@ -123,7 +123,7 @@ function BarisPasien({ p, today }: { p: RingkasanPasienKlinisi; today: string })
               keterangan={sesiTerakhir ? `pukul ${formatJam(sesiTerakhir.selesaiAt ?? sesiTerakhir.mulaiAt)}` : undefined}
             />
             <div className="min-w-0">
-              <dt className="text-[0.85rem] font-semibold text-teks-2">Rata-rata skor 7 hari</dt>
+              <dt className="text-[0.95rem] font-semibold text-teks-2">Rata-rata skor 7 hari</dt>
               <dd className="text-[0.95rem] leading-snug">
                 {(
                   [
@@ -165,10 +165,10 @@ function BarisPasien({ p, today }: { p: RingkasanPasienKlinisi; today: string })
 function Angka({ label, nilai, keterangan, children }: { label: string; nilai: ReactNode; keterangan?: string; children?: ReactNode }) {
   return (
     <div className="min-w-0">
-      <dt className="text-[0.85rem] font-semibold text-teks-2">{label}</dt>
+      <dt className="text-[0.95rem] font-semibold text-teks-2">{label}</dt>
       <dd>
         <span className="block text-[1.15rem] font-extrabold leading-tight text-teks tabular sm:text-[1.3rem]">{nilai}</span>
-        {keterangan && <span className="block text-[0.85rem] text-teks-2">{keterangan}</span>}
+        {keterangan && <span className="block text-[0.95rem] text-teks-2">{keterangan}</span>}
         {children}
       </dd>
     </div>

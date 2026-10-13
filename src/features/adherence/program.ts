@@ -1,4 +1,7 @@
 import type { ISODate, Program, ProgramItem, Session } from '@/types';
+import { ATURAN_UMUM } from '@/features/pose/exerciseDefinitions';
+import { normalisasiRentang } from '@/features/pose/tracker';
+import { urlDetail } from '@/features/pose/sesiParams';
 import { clamp } from '@/lib/score';
 
 /**
@@ -21,6 +24,12 @@ export const BATAS_FREKUENSI: Batas = { min: 1, max: 7 };
 /** Daftar latihan hari ini harus muat tanpa menggulir di HP 6 inci (Bab 11), jadi resep dibatasi. */
 export const MAKS_LATIHAN = 5;
 export const DIBUAT_OLEH_DEMO = 'Terapis (demo)';
+/**
+ * Pilihan "Target rentang" di penyunting resep (persen ambang atas latihan, docs/algoritma.md
+ * "Target rentang personal"). 100 = rentang penuh (bawaan); nilai lebih kecil untuk pasien yang belum
+ * bisa bergerak penuh.
+ */
+export const PILIHAN_RENTANG = [100, 90, 80, 70] as const;
 
 export interface StatusItemHariIni extends ProgramItem {
   /** Sesi gerak selesai untuk latihan ini hari ini, termasuk yang dihentikan lebih awal. */
@@ -86,6 +95,20 @@ export function teksSudahDicoba(s: Pick<StatusItemHariIni, 'selesai' | 'setSeles
   return s.repetisiDicoba > 0 ? `Sudah dicoba: ${s.repetisiDicoba} dari ${s.targetRepetisi}` : 'Sudah dicoba';
 }
 
+/** "Rentang 80%" untuk butir resep dengan target rentang di bawah penuh; null bila rentang penuh. */
+export function teksRentang(item: Pick<ProgramItem, 'rentangPersen'>): string | null {
+  const p = normalisasiRentang(item.rentangPersen);
+  return p < ATURAN_UMUM.rentangPersonal.maksPersen ? `Rentang ${p}%` : null;
+}
+
+/**
+ * Tautan "Latihan Hari Ini" / "Mulai" ke Detail Latihan untuk satu butir resep: `?target=N`, ditambah
+ * `&rentang=P` bila target rentang di bawah 100.
+ */
+export function urlLatihanProgram(item: Pick<ProgramItem, 'latihanId' | 'targetRepetisi' | 'rentangPersen'>): string {
+  return urlDetail(item.latihanId, item.targetRepetisi, undefined, normalisasiRentang(item.rentangPersen));
+}
+
 /* ---------- penyunting resep (dashboard klinisi) ---------- */
 
 /** Bagian resep yang dapat disunting terapis. */
@@ -107,7 +130,12 @@ export function programSama(a: DraftProgram, b: DraftProgram): boolean {
     a.items.length === b.items.length &&
     a.items.every((x, i) => {
       const y = b.items[i];
-      return x.latihanId === y.latihanId && x.targetRepetisi === y.targetRepetisi && x.set === y.set;
+      return (
+        x.latihanId === y.latihanId &&
+        x.targetRepetisi === y.targetRepetisi &&
+        x.set === y.set &&
+        normalisasiRentang(x.rentangPersen) === normalisasiRentang(y.rentangPersen)
+      );
     })
   );
 }
@@ -124,19 +152,35 @@ export function hapusLatihan(d: DraftProgram, latihanId: string): DraftProgram {
   return { ...d, items: d.items.filter((i) => i.latihanId !== latihanId) };
 }
 
-/** Ubah target repetisi atau set satu latihan; nilai dibatasi ke rentang yang diizinkan. */
-export function ubahLatihan(d: DraftProgram, latihanId: string, ubah: Partial<Pick<ProgramItem, 'targetRepetisi' | 'set'>>): DraftProgram {
+/** Ubah target repetisi, set, atau target rentang satu latihan; nilai dibatasi ke rentang yang diizinkan. */
+export function ubahLatihan(
+  d: DraftProgram,
+  latihanId: string,
+  ubah: Partial<Pick<ProgramItem, 'targetRepetisi' | 'set' | 'rentangPersen'>>,
+): DraftProgram {
   return {
     ...d,
     items: d.items.map((i) =>
       i.latihanId !== latihanId
         ? i
-        : {
-            ...i,
-            targetRepetisi: batasi(ubah.targetRepetisi ?? i.targetRepetisi, BATAS_REPETISI),
-            set: batasi(ubah.set ?? i.set, BATAS_SET),
-          },
+        : itemResep({
+            latihanId: i.latihanId,
+            targetRepetisi: ubah.targetRepetisi ?? i.targetRepetisi,
+            set: ubah.set ?? i.set,
+            rentangPersen: ubah.rentangPersen ?? i.rentangPersen,
+          }),
     ),
+  };
+}
+
+/** Butir resep tervalidasi; `rentangPersen` hanya disimpan bila di bawah 100 (tidak ada = rentang penuh). */
+function itemResep(i: ProgramItem): ProgramItem {
+  const rentang = normalisasiRentang(i.rentangPersen);
+  return {
+    latihanId: i.latihanId,
+    targetRepetisi: batasi(i.targetRepetisi, BATAS_REPETISI),
+    set: batasi(i.set, BATAS_SET),
+    ...(rentang < ATURAN_UMUM.rentangPersonal.maksPersen ? { rentangPersen: rentang } : {}),
   };
 }
 
@@ -159,7 +203,7 @@ export function buatProgram(patientId: string, d: DraftProgram, now: number, dib
   if (d.items.length === 0) return null;
   return {
     patientId,
-    items: d.items.map((i) => ({ latihanId: i.latihanId, targetRepetisi: batasi(i.targetRepetisi, BATAS_REPETISI), set: batasi(i.set, BATAS_SET) })),
+    items: d.items.map(itemResep),
     frekuensiPerMinggu: batasi(d.frekuensiPerMinggu, BATAS_FREKUENSI),
     dibuatOleh,
     tanggalUbah: now,
