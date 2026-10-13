@@ -36,7 +36,7 @@ const BUKTI: { angka: string; isi: string }[] = [
     isi: 'dikirim keluar perangkat; pose dihitung di browser. Telemetri bawaan pustaka MediaPipe diblokir.',
   },
   {
-    angka: '250',
+    angka: '255',
     isi: 'uji otomatis lulus, termasuk simulasi 50 repetisi dengan derau dan frame hilang.',
   },
 ];

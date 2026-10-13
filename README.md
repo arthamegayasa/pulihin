@@ -146,7 +146,7 @@ Stack sesuai Bab 4 (React + Vite + TypeScript + Tailwind, MediaPipe Tasks Vision
 
 ### Uji otomatis
 
-`npm test` menjalankan seluruh uji unit, uji logika kepatuhan/red flag/seed, penilaian suara, dan **replay landmark rekaman manusia nyata** melalui tracker yang sama dengan aplikasi. Hasil terakhir (13 Okt 2026): **25 berkas uji, 250 uji lulus**; `npm run typecheck` bersih.
+`npm test` menjalankan seluruh uji unit, uji logika kepatuhan/red flag/seed, penilaian suara, dan **replay landmark rekaman manusia nyata** melalui tracker yang sama dengan aplikasi. Hasil terakhir (14 Okt 2026): **25 berkas uji, 255 uji lulus**; `npm run typecheck` bersih.
 
 ### Akurasi hitung repetisi
 
@@ -217,7 +217,7 @@ P1 selesai      : F6 [x] F7 [x]
 Akurasi repetisi: rekaman manusia nyata 14 dari 14 repetisi yang dimulai setelah status Siap (16 di klip,
                   2 sengaja tidak dihitung karena dimulai sebelum Siap), 0 ganda; perangkat target [DIISI] dari 50
 Frame rate pose : emulasi desktop GPU 21-25 fps (1 orang, CPU 1x-6x); perangkat target [DIISI] fps
-Uji otomatis    : 25 berkas, 250 uji lulus
+Uji otomatis    : 25 berkas, 255 uji lulus
 Video           : draf lokal video/out/pulihin-demo-draft.mp4 (tidak di repo; 1920x1080, 4:58, 20,8 MB; render ulang: `cd video && npm run render`):
                   adegan layar non-kamera = rekaman layar aplikasi asli; adegan dokter, pemeran, dan sesi kamera = kartu
                   placeholder yang wajib diganti rekaman manusia (Bab 14.4). Final [DIISI] setelah perekaman
