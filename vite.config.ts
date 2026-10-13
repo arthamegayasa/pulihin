@@ -30,7 +30,12 @@ export default defineConfig({
         orientation: 'portrait',
         background_color: '#FFFFFF',
         theme_color: '#0B4F4A',
-        categories: ['health', 'medical', 'lifestyle'],
+        categories: ['health', 'lifestyle'],
+        screenshots: [
+          { src: '/landing/beranda.webp', sizes: '824x1830', type: 'image/webp', form_factor: 'narrow', label: 'Beranda pasien: latihan hari ini' },
+          { src: '/landing/keluarga.webp', sizes: '824x1830', type: 'image/webp', form_factor: 'narrow', label: 'Untuk Keluarga: kepatuhan dan tanda perlu perhatian' },
+          { src: '/landing/afasia-kata.webp', sizes: '824x1830', type: 'image/webp', form_factor: 'narrow', label: 'Latihan bicara Bahasa Indonesia' },
+        ],
         icons: [
           { src: '/icons/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icons/pwa-512x512.png', sizes: '512x512', type: 'image/png' },
@@ -38,21 +43,23 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Aset MediaPipe (runtime WASM SIMD + model pose lite) ikut di-precache agar sesi kamera
-        // tetap dapat dimulai dalam mode pesawat setelah aplikasi termuat sekali (Bab 11, Ketahanan).
-        globPatterns: [
-          '**/*.{js,css,html,svg,png,webp,woff2,json}',
-          'mediapipe/wasm/vision_wasm_internal.{js,wasm}',
-          'mediapipe/models/*.task',
-        ],
-        maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
+        // Precache hanya kerangka aplikasi (~1 MB) agar landing page ringan di kuota prabayar.
+        // Aset MediaPipe (WASM ~13 MB + model 5,8 MB) masuk cache saat aplikasi dibuka (prefetch saat idle di
+        // PoseEngine) atau saat sesi pertama, lalu dilayani CacheFirst: sesi kamera tetap bisa dimulai dalam
+        // mode pesawat setelah aplikasi termuat sekali (Bab 11, Ketahanan).
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2,json}'],
+        globIgnores: ['mediapipe/**', 'landing/og.jpg'],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname.startsWith('/mediapipe/'),
             handler: 'CacheFirst',
-            options: { cacheName: 'pulihin-mediapipe', expiration: { maxEntries: 16 } },
+            options: {
+              cacheName: 'pulihin-mediapipe',
+              expiration: { maxEntries: 16 },
+              cacheableResponse: { statuses: [200] },
+            },
           },
         ],
       },

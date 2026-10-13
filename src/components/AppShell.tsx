@@ -25,16 +25,16 @@ export function AppShell() {
   return (
     <div className="min-h-[100dvh]">
       <PengingatJadwal />
-      <div className="sticky top-0 z-20 border-b border-garis/70 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
+      <div className="sticky top-0 z-20 border-b border-garis/70 bg-white">
         <div className={`mx-auto flex h-14 items-center gap-3 px-4 ${lebar}`}>
-          <Link to={berandaUntukPeran(role)} className="flex items-center gap-2" aria-label="PULIHIN, ke Beranda">
+          <Link to={berandaUntukPeran(role)} className="flex min-h-12 shrink-0 items-center gap-2" aria-label="PULIHIN, ke Beranda">
             <Logo className="h-7 w-auto" />
           </Link>
           <DemoBadge />
           <div className="flex-1" />
           <Link
             to={PATHS.pengaturan}
-            className="grid size-11 place-items-center rounded-xl text-primer hover:bg-primer-terang"
+            className="grid size-12 shrink-0 place-items-center rounded-xl text-primer hover:bg-primer-terang"
             aria-label="Pengaturan"
           >
             <GearSix size={26} weight="bold" />

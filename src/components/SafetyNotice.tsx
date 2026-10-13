@@ -11,7 +11,7 @@ export function SafetyNotice({ wajibBerpegangan = false, tambahan }: { wajibBerp
           Berhenti bila terasa nyeri, pusing, sesak, atau tidak enak badan, lalu hubungi tenaga kesehatan.
         </p>
         {wajibBerpegangan && (
-          <p className="font-semibold">Selalu berpegangan pada kursi atau meja yang kokoh selama latihan berdiri.</p>
+          <p className="font-semibold">Selalu berpegangan pada kursi atau meja yang stabil selama latihan berdiri.</p>
         )}
         {tambahan && <p>{tambahan}</p>}
       </div>
