@@ -12,6 +12,16 @@ Prototype untuk **.id Developer Day Indonesia 2026**, kategori Inclusions and Co
 | Algoritma & hasil uji gerak | [`docs/algoritma.md`](docs/algoritma.md) |
 | Paket video demo | [`docs/video/`](docs/video/) + proyek Remotion di [`video/`](video/) |
 
+### Coba dalam 2 menit (untuk juri)
+
+| Ingin melihat | Buka |
+|---|---|
+| Tampilan pasien (Pak Budi, data demo 14 hari) | https://pulihin.vercel.app/app?peran=pasien |
+| Tampilan keluarga (grafik, tanda perlu perhatian, ringkasan WhatsApp) | https://pulihin.vercel.app/app?peran=keluarga |
+| Dashboard terapis (resep program, target rentang personal) | https://pulihin.vercel.app/app?peran=terapis |
+
+Sesi kamera: dari Beranda pasien ketuk **Mulai: Tekuk Siku** lalu **Mulai dengan Kamera**; duduk 1 meter di depan kamera laptop/HP dengan bahu sampai pergelangan tangan terlihat. Semua pemrosesan terjadi di perangkat Anda. Pengaturan > Setel Ulang Data Demo mengembalikan kondisi awal.
+
 ## Isi
 
 1. [Fitur dan status](#fitur-dan-status)
@@ -35,7 +45,7 @@ Prototype untuk **.id Developer Day Indonesia 2026**, kategori Inclusions and Co
 | F3 | Terapi afasia 100 kata Bahasa Indonesia | Selesai | `src/features/speech/wordBank.ts` (100 kata, 30/25/15/15/15), `SpeechScorer.ts`, `recognizer.ts`, Mode Latihan Mandiri |
 | F4 | Pengingat dan streak | Selesai | `src/features/adherence/`, Beranda, Pengaturan (jadwal tersimpan), notifikasi PWA saat aplikasi terbuka |
 | F5 | Dashboard caregiver "Untuk Keluarga" | Selesai | `src/pages/Pendamping.tsx`, red flag non medis `redFlags.ts`, ringkasan WhatsApp |
-| F6 (P1) | Dashboard klinisi + resep program | Selesai | `src/pages/klinisi/`, resep mengubah Latihan Hari Ini pasien (diverifikasi), label Prototype |
+| F6 (P1) | Dashboard klinisi + resep program | Selesai | `src/pages/klinisi/`, resep (latihan, repetisi, set, frekuensi, **target rentang personal 70–100%**) mengubah Latihan Hari Ini pasien (diverifikasi), label Prototype |
 | F7 (P1) | Landing page | Selesai | `src/pages/Landing.tsx`, tangkapan layar asli di `public/landing/` |
 | P2 | Riwayat per sendi, offline penuh, ekspor PDF | Sebagian | Strip sudut puncak per repetisi di Ringkasan; aplikasi bekerja offline setelah dibuka sekali (PWA). Ekspor PDF tidak dikerjakan |
 
@@ -128,6 +138,9 @@ Stack sesuai Bab 4 (React + Vite + TypeScript + Tailwind, MediaPipe Tasks Vision
 | Precache service worker ringan (±1 MB), aset MediaPipe di-cache saat aplikasi dibuka | Landing page tidak memaksa unduhan 19 MB di kuota prabayar; sesi kamera tetap bisa dimulai offline setelah aplikasi dibuka sekali. |
 | Peran disimpan lokal (Pasien / Keluarga / Terapis), tanpa login | Bab 9.2: autentikasi sungguhan adalah pekerjaan pasca lomba. |
 | Satu sesi kamera = satu set | Resep program memakai repetisi × set; Beranda menampilkan "1 dari 2 set". |
+| **Target rentang personal dari terapis** (`ProgramItem.rentangPersen`, 70–100%) | Pasien stroke sering belum bisa bergerak penuh. Pada rekaman lansia nyata, abduksi bahu memuncak 84–86° (< ambang 90°): 0 repetisi pada 100%, terhitung pada 90%. Hanya ambang atas yang diskalakan, dengan batas bawah aman (ambang bawah + 3× histeresis); skor rentang dinilai terhadap target personal. `docs/algoritma.md` Bagian 8a. |
+| Pesan "belum terhitung" maksimal 1× per 15 detik, lalu berganti penyemangat | Pada uji laptop, pesan yang sama sempat terucap 29× dalam 77 detik; kini 5× dalam 80 detik, dan percobaan ditampilkan sebagai kemajuan. |
+| Keluar dari sesi (Kembali/gestur/tutup tab) dengan ≥ 1 repetisi tetap menyimpan hasil | Repetisi pasien tidak pernah hilang diam-diam; penyimpanan idempoten (tidak ganda). |
 
 ## Hasil uji
 
@@ -186,7 +199,7 @@ Pengaturan > Data Demo: pilih skenario ("Ada tanda perlu perhatian" / "Pasien ra
 Diisi pemilik produk. Nilai yang tampil di aplikasi dikumpulkan di `src/config/identitas.ts` (kosong = baris disembunyikan).
 
 - Identitas pemilik produk / narasumber klinis (nama, gelar, afiliasi), nama tim 3 orang, email & WhatsApp.
-- Domain `pulihinapp.id` (pendaftaran & DNS) dan preferensi penempatan tautan aplikasi (saat ini `/app`).
+- Domain `pulihinapp.id`: per 13 Okt 2026 belum terdaftar (DNS NXDOMAIN). Setelah didaftarkan dan diarahkan ke Vercel, ubah `urlPublik` di `src/config/identitas.ts`. Penempatan tautan aplikasi saat ini `/app`.
 - Model HP uji kelas bawah dan versi Chrome; hasil uji 50 repetisi dan fps di perangkat; tanggal uji.
 - Jam pengingat default (saat ini saran spec: 08.00 gerak, 16.00 bicara).
 - Aset animasi/video contoh gerakan bila pemilik produk punya sendiri (saat ini animasi figur bawaan).
@@ -205,7 +218,9 @@ Akurasi repetisi: rekaman manusia nyata 14 dari 14 repetisi yang dimulai setelah
                   2 sengaja tidak dihitung karena dimulai sebelum Siap), 0 ganda; perangkat target [DIISI] dari 50
 Frame rate pose : emulasi desktop GPU 21-25 fps (1 orang, CPU 1x-6x); perangkat target [DIISI] fps
 Uji otomatis    : 25 berkas, 250 uji lulus
-Video           : draf rakitan Remotion (placeholder rekaman manusia); final [DIISI] setelah perekaman
+Video           : draf video/out/pulihin-demo-draft.mp4 (1920x1080, 4:58, 20,8 MB; dirender ulang lewat `cd video && npm run render`):
+                  adegan layar non-kamera = rekaman layar aplikasi asli; adegan dokter, pemeran, dan sesi kamera = kartu
+                  placeholder yang wajib diganti rekaman manusia (Bab 14.4). Final [DIISI] setelah perekaman
 Yang belum      : uji perangkat target (AC-F1-2, AC-F1-4, AC-F3-2), rekaman manusia untuk video
 [DIISI] kosong  : lihat bagian "Isian [DIISI] yang masih kosong"
 ```
