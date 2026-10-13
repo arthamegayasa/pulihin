@@ -18,4 +18,9 @@ export interface Kata {
   kalimatContoh: string;
   /** Pemenggalan suku kata untuk petunjuk "Hampir", mis. ['kur', 'si']. */
   sukuKata: string[];
+  /**
+   * Ejaan lain yang juga diterima sebagai Benar (bentuk tidak baku yang lazim atau keluaran
+   * pengenal suara), mis. ['mie'] untuk 'mi'. Opsional.
+   */
+  varian?: string[];
 }
