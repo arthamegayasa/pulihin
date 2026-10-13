@@ -10,6 +10,7 @@ import { LABEL_POSISI, labelSendi } from '@/features/pose/labels';
 import { PhonePlacement } from '@/features/pose/PhonePlacement';
 import { prefetchAsetPose } from '@/features/pose/asetPose';
 import { preloadPoseEngine } from '@/features/pose/PoseEngine';
+import { useDataPasien } from '@/features/adherence/hooks';
 import { bacaRentang, bacaSisi, bacaTarget, RENTANG_PENUH, urlSesi, type StatusMulaiSesi } from '@/features/pose/sesiParams';
 import { getPrefs, setPrefs, usePrefs } from '@/lib/prefs';
 import { PATHS } from '@/router-paths';
@@ -25,6 +26,8 @@ export default function DetailLatihan() {
   // Konfirmasi berpegangan wajib setiap kali halaman dibuka (tidak disimpan).
   const [sudahBerpegangan, setSudahBerpegangan] = useState(false);
   const idKonfirmasi = useId();
+  // Tanpa `?rentang=` (mis. dari "Lihat semua latihan"), target rentang diambil dari program pasien aktif.
+  const { data } = useDataPasien();
 
   // Muat MediaPipe sejak layar ini dibuka agar skeleton langsung tampil saat kamera menyala (AC-F1-1).
   useEffect(() => {
@@ -52,7 +55,9 @@ export default function DetailLatihan() {
   }
 
   const target = bacaTarget(cari.get('target'), def.targetRepetisiDefault);
-  const rentang = bacaRentang(cari.get('rentang'));
+  const rentangProgram = data?.program?.items.find((i) => i.latihanId === def.id)?.rentangPersen;
+  const rentangUrl = cari.get('rentang');
+  const rentang = bacaRentang(rentangUrl ?? (rentangProgram === undefined ? null : String(rentangProgram)));
   const pilihSisi = def.sisi === 'pilih';
   const wajibPegangan = def.wajibBerpegangan;
   const bolehMulai = !wajibPegangan || sudahBerpegangan;

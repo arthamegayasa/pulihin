@@ -148,6 +148,24 @@ export async function addRepLogs(logs: RepLog[]): Promise<void> {
   notifyDataChange();
 }
 
+/**
+ * Simpan keadaan sesi terbaru beserta RepLog baru dalam SATU transaksi: sesi dan percobaannya tersimpan bersama
+ * atau tidak sama sekali. Permintaan diantrikan tanpa `await` di antaranya agar transaksi tidak tertutup di tengah
+ * jalan (mis. saat halaman ditinggalkan).
+ */
+export async function simpanProgresSesi(session: Session, repLogsBaru: RepLog[]): Promise<void> {
+  const db = await getDb();
+  const tx = db.transaction(['sessions', 'repLogs'], 'readwrite');
+  const reps = tx.objectStore('repLogs');
+  const permintaan: Promise<unknown>[] = [tx.objectStore('sessions').put(session)];
+  for (const { id: _ignored, ...rest } of repLogsBaru) {
+    void _ignored;
+    permintaan.push(reps.add(rest as RepLog));
+  }
+  await Promise.all([...permintaan, tx.done]);
+  notifyDataChange();
+}
+
 export async function listRepLogs(sessionId: string): Promise<RepLog[]> {
   const rows = await (await getDb()).getAllFromIndex('repLogs', 'by-session', sessionId);
   return rows.sort((a, b) => a.nomor - b.nomor);

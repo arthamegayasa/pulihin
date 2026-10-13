@@ -61,7 +61,7 @@ export interface Banner {
 
 const NAMA: Record<JenisSesi, string> = { gerak: 'latihan gerak', afasia: 'latihan bicara' };
 
-/** Setelah selang ini sejak jam jadwal, ajakan "Yuk ... (08.00)" diganti kalimat "sudah lewat" yang tetap mengajak. */
+/** Setelah selang ini sejak jam jadwal, ajakan "Yuk ... (08.00)" diganti ajakan satu baris "Yuk, ... hari ini". */
 export const SELANG_AJAKAN_MENIT = 60;
 
 /** Kalimat banner pengingat yang hangat, tidak menyalahkan (Bab 12.4). */
@@ -71,9 +71,7 @@ export function bannerPengingat(items: readonly ItemPengingat[], sekarang: Date)
   const jatuhTempo = items.filter((i) => i.status === 'waktunya');
   const baru = jatuhTempo.find((i) => menitSekarang - (jamKeMenit(i.jam) ?? 0) < SELANG_AJAKAN_MENIT);
   if (baru) return { nada: 'aksen', teks: `Yuk, ${NAMA[baru.jenis]} (${jamTampil(baru.jam)})` };
-  if (jatuhTempo.length > 0) {
-    return { nada: 'aksen', teks: `Jadwal ${jamTampil(jatuhTempo[0].jam)} sudah lewat. Masih bisa latihan hari ini.` };
-  }
+  if (jatuhTempo.length > 0) return { nada: 'aksen', teks: `Yuk, ${NAMA[jatuhTempo[0].jenis]} hari ini` };
   const berikut = items.find((i) => i.status === 'nanti');
   if (berikut) {
     const nama = NAMA[berikut.jenis];

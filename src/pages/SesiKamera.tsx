@@ -14,7 +14,7 @@ import {
 import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import { BigButton, BigLink } from '@/components/BigButton';
-import { addRepLogs, deleteSession, putSession } from '@/data/db';
+import { deleteSession, simpanProgresSesi } from '@/data/db';
 import { PENJELASAN_GALAT_KAMERA } from '@/features/pose/camera';
 import { getExercise } from '@/features/pose/exerciseDefinitions';
 import { angkaKeKata, daftarTitik } from '@/features/pose/labels';
@@ -53,12 +53,13 @@ const TANPA_TITIK: readonly number[] = [];
  * semua pesan berada di panel padat di LUAR gambar sehingga tidak pernah menutupi tubuh.
  * Potret: video di atas, panel di bawah. Lanskap/desktop: video besar di kiri, panel di kanan.
  *
- * Penyimpanan: catatan sesi selesai=false ditulis saat kamera mulai berjalan; saat selesai catatan yang
- * sama ditimpa dengan hasil + repLogs. Hanya id sesi ini yang pernah ditulis, sehingga tab yang ditutup di
- * tengah sesi hanya meninggalkan satu catatan belum selesai dan tidak menyentuh sesi lain (AC-F1-6).
- * Berhenti sebelum repetisi pertama: catatan belum selesai DIHAPUS (bukan latihan) lalu kembali ke Detail.
- * Keluar tanpa Berhenti (tombol/gestur Kembali, pindah rute, pagehide) setelah >= 1 repetisi: hasil DISIMPAN
- * seperti Berhenti, tanpa berpindah halaman. Penyimpanan hanya terjadi sekali per sesi.
+ * Penyimpanan: catatan sesi selesai=false ditulis saat kamera mulai berjalan. Setiap percobaan (terhitung atau
+ * belum) langsung ditulis bersama penghitung sesi terbaru dalam SATU transaksi (`simpanProgresSesi`), sehingga
+ * muat ulang/tutup tab di tengah sesi tidak menghilangkan percobaan; bersih-bersih saat aplikasi dibuka
+ * (seed.ts) menuntaskan catatan yatim itu. Hanya id sesi ini yang pernah ditulis (AC-F1-6).
+ * Sesi dengan >= 1 percobaan tidak pernah dibuang: Berhenti menyimpan lalu ke Ringkasan (juga 0 terhitung,
+ * "Sudah dicoba: 0 dari N"); keluar tanpa Berhenti (tombol/gestur Kembali, pindah rute, pagehide) menyimpan tanpa
+ * berpindah halaman. Hanya sesi tanpa percobaan sama sekali yang DIHAPUS. Penyimpanan akhir terjadi sekali per sesi.
  *
  * Latihan berdiri hanya boleh dimulai dari Detail Latihan (konfirmasi berpegangan, Bab 17.2): tanpa status
  * navigasi konfirmasi, URL langsung dialihkan ke Detail.
@@ -143,7 +144,8 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
   const [akhir, setAkhir] = useState<Akhir>(null);
 
   const selesaiRef = useRef(false);
-  const repRef = useRef(0);
+  /** Semua percobaan tercatat (terhitung atau belum). >= 1: sesi disimpan, tidak pernah dibuang diam-diam (M1). */
+  const percobaanRef = useRef(0);
   const siapRef = useRef(false);
   /** Pengingat keselamatan diucapkan sekali per sesi, pada siap pertama (tidak diulang saat ganti sisi). */
   const pengingatRef = useRef(false);
@@ -153,7 +155,12 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
   const lembutTerakhirRef = useRef(Number.NEGATIVE_INFINITY);
   const rentangKurangRef = useRef(0);
   const dasarRef = useRef<Session | null>(null);
-  const sesiAwalRef = useRef<Promise<void> | null>(null);
+  /** Hasil tracker terbaru yang harus tersimpan; null sebelum percobaan pertama. */
+  const hasilRef = useRef<TrackerResult | null>(null);
+  /** Jumlah RepLog sesi ini yang sudah tersimpan. */
+  const tertulisRef = useRef(0);
+  /** Antrean penulisan: tiap penulisan menunggu yang sebelumnya, jadi RepLog tidak ganda dan urutannya terjaga. */
+  const antrianRef = useRef<Promise<void>>(Promise.resolve());
   /** Penyimpanan hasil yang sedang/sudah berjalan: Berhenti, target, unmount, dan pagehide tidak menyimpan dua kali. */
   const simpanRef = useRef<Promise<void> | null>(null);
   /** Hasil yang disimpan saat halaman ditinggalkan (pagehide); dipakai bila halaman dipulihkan dari bfcache. */
@@ -164,32 +171,54 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
   const timerSiap = useRef(0);
   const pilihSisi = def.sisi === 'pilih';
 
-  const simpanHasil = useCallback(
-    (hasil: TrackerResult): Promise<void> => {
-      simpanRef.current ??= (async () => {
-        await sesiAwalRef.current;
+  /**
+   * Antrekan satu penulisan: catatan sesi (`dasarRef` + hasil tracker terbaru) dan RepLog yang belum tersimpan,
+   * dalam satu transaksi. Bila gagal, RepLog itu tetap dianggap belum tersimpan dan ikut penulisan berikutnya.
+   */
+  const antrekan = useCallback(
+    (selesai: boolean): Promise<void> => {
+      const tulis = antrianRef.current.then(async () => {
         const dasar = dasarRef.current;
         if (!dasar) throw new Error('Sesi belum dimulai');
-        await putSession({
-          ...dasar,
-          selesai: true,
-          selesaiAt: Date.now(),
-          skor: hasil.skor,
-          skorKomponen: hasil.skorKomponen,
-          repetisiTercapai: hasil.repetisi,
-          durasiDetik: hasil.durasiDetik,
-          saran: hasil.saran,
-        });
-        await addRepLogs(hasil.repLogs.map((l) => ({ ...l, sessionId })));
-      })().catch((e: unknown) => {
-        // Gagal: izinkan Coba Simpan Lagi.
-        simpanRef.current = null;
-        throw e;
+        const hasil = hasilRef.current;
+        const logs = hasil?.repLogs ?? [];
+        const sesi: Session = { ...dasar, selesai, selesaiAt: selesai ? Date.now() : null };
+        if (hasil) {
+          sesi.skor = hasil.skor;
+          sesi.skorKomponen = hasil.skorKomponen;
+          sesi.repetisiTercapai = hasil.repetisi;
+          sesi.durasiDetik = hasil.durasiDetik;
+          sesi.saran = hasil.saran;
+        }
+        await simpanProgresSesi(sesi, logs.slice(tertulisRef.current).map((l) => ({ ...l, sessionId })));
+        tertulisRef.current = logs.length;
       });
-      return simpanRef.current;
+      antrianRef.current = tulis.catch(() => {});
+      return tulis;
     },
     [sessionId],
   );
+
+  const simpanHasil = useCallback(
+    (hasil: TrackerResult): Promise<void> => {
+      if (!simpanRef.current) {
+        hasilRef.current = hasil;
+        simpanRef.current = antrekan(true).catch((e: unknown) => {
+          // Gagal: izinkan Coba Simpan Lagi.
+          simpanRef.current = null;
+          throw e;
+        });
+      }
+      return simpanRef.current;
+    },
+    [antrekan],
+  );
+
+  /** Buang catatan sesi tanpa percobaan (layar hanya dibuka), setelah penulisan yang masih antre. */
+  const buangSesiKosong = useCallback(() => {
+    if (!dasarRef.current) return;
+    void antrianRef.current.then(() => deleteSession(sessionId)).catch((e: unknown) => console.error(e));
+  }, [sessionId]);
 
   const simpanLaluRingkasan = useCallback(
     (hasil: TrackerResult, tunda: number) => {
@@ -230,9 +259,13 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
           : 'Tubuh terdeteksi. Siap. Silakan mulai pelan pelan.',
       );
     }
-    if (s.repetisiBaru) {
-      repRef.current = s.repetisi;
-      speak(angkaKeKata(s.repetisi));
+    if (s.repetisiBaru) speak(angkaKeKata(s.repetisi));
+    if (s.repetisiBaru || s.percobaanTidakDihitung) {
+      // Setiap percobaan (terhitung atau belum) langsung tersimpan bersama penghitung sesi (m2).
+      const hasil = tracker.finish(t);
+      hasilRef.current = hasil;
+      percobaanRef.current = hasil.repLogs.length;
+      antrekan(false).catch((e: unknown) => console.error('Percobaan belum tersimpan', e));
     }
     // Sebelum siap, petunjuk bingkai yang berbicara; koreksi baru diucapkan setelah siap (satu pesan pada satu waktu).
     // Koreksi baru (termasuk yang lebih penting dan menggeser pesan lama) langsung memotong ucapan sebelumnya
@@ -257,7 +290,7 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
     }
 
     if (pilihSisi && s.sisiLainTerlihat === true) sisiLainTerakhirRef.current = t;
-    const tawarGanti = pilihSisi && !s.siap && repRef.current === 0 && t - sisiLainTerakhirRef.current < LAMA_TAWAR_GANTI_MS;
+    const tawarGanti = pilihSisi && !s.siap && percobaanRef.current === 0 && t - sisiLainTerakhirRef.current < LAMA_TAWAR_GANTI_MS;
     if (tawarGanti && !tawarDiucapkanRef.current) {
       tawarDiucapkanRef.current = true;
       speak(pesanSisi(sisiRef.current).ucap);
@@ -317,12 +350,12 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
       isDemo: false,
     };
     dasarRef.current = dasar;
-    sesiAwalRef.current = putSession(dasar).catch((e: unknown) => console.error('Sesi belum tercatat', e));
+    antrekan(false).catch((e: unknown) => console.error('Sesi belum tercatat', e));
     speak('Posisikan tubuh Anda di dalam bingkai.');
-  }, [tahap, sessionId, def.id, pilihSisi, target, rentang]);
+  }, [tahap, sessionId, def.id, pilihSisi, target, rentang, antrekan]);
 
-  // Keluar tanpa Berhenti (tombol/gestur kembali, pindah rute): sebelum repetisi pertama catatan kosong dibuang;
-  // sesudahnya hasil disimpan seperti Berhenti, tanpa berpindah halaman.
+  // Keluar tanpa Berhenti (tombol/gestur kembali, pindah rute): tanpa percobaan catatan kosong dibuang;
+  // sesudah >= 1 percobaan hasil disimpan seperti Berhenti, tanpa berpindah halaman.
   useEffect(() => {
     hidupRef.current = true;
     return () => {
@@ -331,23 +364,22 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
       window.clearTimeout(timerSiap.current);
       if (selesaiRef.current) return;
       const tracker = trackerRef.current;
-      if (tracker && repRef.current >= 1) {
+      if (tracker && percobaanRef.current >= 1) {
         selesaiRef.current = true;
         cancelSpeech();
         simpanHasil(tracker.finish(performance.now())).catch((e: unknown) => console.error('Hasil sesi gagal disimpan', e));
         return;
       }
-      const awalSesi = sesiAwalRef.current;
-      if (awalSesi) void awalSesi.then(() => deleteSession(sessionId));
+      buangSesiKosong();
     };
-  }, [sessionId, simpanHasil]);
+  }, [simpanHasil, buangSesiKosong]);
 
-  // Tab ditutup / halaman ditinggalkan (pagehide) setelah >= 1 repetisi: simpan hasil. Bila halaman dipulihkan dari
+  // Tab ditutup / halaman ditinggalkan (pagehide) setelah >= 1 percobaan: simpan hasil. Bila halaman dipulihkan dari
   // bfcache, sesi sudah tersimpan: lanjut ke ringkasan (atau layar Coba Simpan Lagi bila penyimpanan gagal).
   useEffect(() => {
     const saatPergi = () => {
       const tracker = trackerRef.current;
-      if (selesaiRef.current || !tracker || repRef.current < 1) return;
+      if (selesaiRef.current || !tracker || percobaanRef.current < 1) return;
       selesaiRef.current = true;
       const hasil = tracker.finish(performance.now());
       hasilPergiRef.current = hasil;
@@ -374,19 +406,18 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
     if (selesaiRef.current) return;
     selesaiRef.current = true;
     const tracker = trackerRef.current;
-    if (tracker && repRef.current >= 1) {
+    if (tracker && percobaanRef.current >= 1) {
       setAkhir({ tahap: 'menyimpan' });
       simpanLaluRingkasan(tracker.finish(performance.now()), 0);
       return;
     }
-    const awalSesi = sesiAwalRef.current;
-    if (awalSesi) void awalSesi.then(() => deleteSession(sessionId)).catch((e: unknown) => console.error(e));
+    buangSesiKosong();
     navigate(urlDetail(def.id, target, pilihSisi ? sisiRef.current : undefined, rentang), { replace: true });
   };
 
-  /** Ganti sisi sebelum repetisi pertama: tracker baru untuk sisi lain, catatan sesi & URL ikut diperbarui. */
+  /** Ganti sisi sebelum percobaan pertama: tracker baru untuk sisi lain, catatan sesi & URL ikut diperbarui. */
   const gantiSisi = () => {
-    if (selesaiRef.current || repRef.current > 0) return;
+    if (selesaiRef.current || percobaanRef.current > 0) return;
     const baru = sisiLawan(sisi);
     trackerRef.current = createTracker(def, { sisi: baru, targetRepetisi: target, rentangPersen: rentang });
     siapRef.current = false;
@@ -408,11 +439,8 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
     );
     const dasar = dasarRef.current;
     if (dasar) {
-      const diperbarui = { ...dasar, sisi: baru };
-      dasarRef.current = diperbarui;
-      sesiAwalRef.current = (sesiAwalRef.current ?? Promise.resolve())
-        .then(() => putSession(diperbarui))
-        .catch((e: unknown) => console.error('Sisi sesi belum tercatat', e));
+      dasarRef.current = { ...dasar, sisi: baru };
+      antrekan(false).catch((e: unknown) => console.error('Sisi sesi belum tercatat', e));
     }
     speak(`Baik, sekarang sisi ${baru}. Posisikan tubuh Anda di dalam bingkai.`, { interrupt: true });
   };
@@ -430,19 +458,23 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
     <main className="fixed inset-0 flex flex-col bg-primer-tua text-white">
       {/* Bilah atas: nama latihan + Berhenti yang selalu terlihat selama kamera dapat menyala (AC-F1-7). */}
       <header
-        className="z-30 flex shrink-0 items-center gap-3 bg-primer-tua px-4 py-2"
+        className="z-30 flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 bg-primer-tua px-4 py-2"
         style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}
       >
-        {/* Lanskap pendek (ponsel miring): nama & sisi satu baris agar panel pesan + hitungan mendapat ruang. */}
-        <div className="min-w-0 flex-1 [@media(orientation:landscape)_and_(max-height:520px)]:flex [@media(orientation:landscape)_and_(max-height:520px)]:items-baseline [@media(orientation:landscape)_and_(max-height:520px)]:gap-3">
-          <h1 className="line-clamp-2 min-w-0 text-[1.5rem] font-extrabold leading-[1.15] [@media(orientation:landscape)_and_(max-height:520px)]:line-clamp-1">{def.nama}</h1>
-          {namaSisi && <p className="shrink-0 text-[1rem] font-semibold text-white/85">Sisi {namaSisi}</p>}
+        {/* Nama latihan tidak pernah dipotong (m5): nama panjang (> 18 huruf) sedikit diperkecil (tetap >= 1,25rem);
+            bila tidak muat di samping Berhenti (ponsel, Huruf Lebih Besar), nama memakai baris sendiri selebar layar
+            dan "Sisi" + Berhenti turun ke baris kedua. */}
+        <h1 className={`min-w-0 flex-[1_1_auto] font-extrabold leading-[1.15] break-words ${def.nama.length > 18 ? 'text-[1.25rem]' : 'text-[1.5rem]'}`}>
+          {def.nama}
+        </h1>
+        <div className="flex grow items-center justify-end gap-3">
+          {namaSisi && <p className="mr-auto shrink-0 text-[1rem] font-semibold text-white/85">Sisi {namaSisi}</p>}
+          {!adaKendala && (
+            <BigButton varian="bahaya" penuh={false} onClick={berhenti} ikon={<StopCircle size={26} weight="fill" aria-hidden />} className="shrink-0 gap-2! px-4!">
+              Berhenti
+            </BigButton>
+          )}
         </div>
-        {!adaKendala && (
-          <BigButton varian="bahaya" penuh={false} onClick={berhenti} ikon={<StopCircle size={26} weight="fill" aria-hidden />} className="shrink-0 gap-2! px-4!">
-            Berhenti
-          </BigButton>
-        )}
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col landscape:flex-row">
@@ -541,6 +573,7 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
           akhir={akhir}
           target={target}
           repetisi={tampilan.repetisi}
+          percobaan={tampilan.percobaan}
           onSimpanUlang={(h) => {
             setAkhir({ tahap: 'menyimpan' });
             simpanLaluRingkasan(h, 0);
@@ -776,11 +809,14 @@ function LayarAkhir({
   akhir,
   target,
   repetisi,
+  percobaan,
   onSimpanUlang,
 }: {
   akhir: NonNullable<Akhir>;
   target: number;
   repetisi: number;
+  /** Semua gerakan tercatat, termasuk yang belum terhitung. */
+  percobaan: number;
   onSimpanUlang: (h: TrackerResult) => void;
 }) {
   // Muncul lembut (skala + pudar); transisi otomatis mati bila gerak dikurangi (index.css).
@@ -816,7 +852,11 @@ function LayarAkhir({
         )}
         <p className="mt-2 text-[3rem] font-extrabold leading-none">{rayakan ? 'Hebat!' : 'Latihan selesai'}</p>
         <p className="text-[1.4rem] font-semibold">
-          {rayakan ? `Target ${target} kali tercapai.` : `${repetisi} dari ${target} kali tercatat.`}
+          {rayakan
+            ? `Target ${target} kali tercapai.`
+            : percobaan > repetisi
+              ? `${repetisi} dari ${target} kali terhitung, ${percobaan} percobaan tercatat.`
+              : `${repetisi} dari ${target} kali tercatat.`}
         </p>
         {rayakan && (
           <p className="tabular mt-1 rounded-full bg-white/10 px-5 py-1.5 text-[1.6rem] font-extrabold">

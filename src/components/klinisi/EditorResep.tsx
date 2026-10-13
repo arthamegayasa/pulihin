@@ -258,23 +258,30 @@ function TargetRentang({
   const ambang = def ? ambangAtasRentang(def, nilai) : null;
   // Latihan berpita sempit (mis. jinjit) punya ambang terendah; target lebih kecil tidak menurunkannya lagi.
   const terbatas = def !== undefined && ambang !== null && ambang > (def.ambangAtas * nilai) / 100;
+  // Pilihan yang ambangnya sama dengan pilihan di atasnya tidak mengubah apa pun untuk latihan ini (mis. jinjit).
+  const tanpaEfek = PILIHAN_RENTANG.map(
+    (p, idx) => def !== undefined && idx > 0 && ambangAtasRentang(def, p) === ambangAtasRentang(def, PILIHAN_RENTANG[idx - 1]),
+  );
+  const adaTanpaEfek = tanpaEfek.includes(true);
   return (
     <div>
       <p id={id} className="text-[0.95rem] font-bold text-teks-2">
         Target rentang
       </p>
       <p className="mb-1 text-[0.95rem] leading-snug text-teks-2">Untuk pasien yang belum bisa bergerak penuh.</p>
-      <div className="grid grid-cols-4 gap-1 rounded-xl bg-primer-terang p-1" role="radiogroup" aria-labelledby={id}>
-        {PILIHAN_RENTANG.map((p) => {
+      <div className="grid grid-cols-4 gap-2 rounded-xl bg-primer-terang p-1" role="radiogroup" aria-labelledby={id}>
+        {PILIHAN_RENTANG.map((p, idx) => {
           const aktif = nilai === p;
+          const mati = !aktif && tanpaEfek[idx];
           return (
             <button
               key={p}
               type="button"
               role="radio"
               aria-checked={aktif}
+              disabled={mati}
               onClick={() => onPilih(p)}
-              className={`min-h-12 rounded-lg px-1 text-[1rem] font-bold tabular ${aktif ? 'bg-primer text-white shadow-tipis' : 'text-primer hover:bg-white/70'}`}
+              className={`min-h-12 rounded-lg px-1 text-[1rem] font-bold tabular ${aktif ? 'bg-primer text-white shadow-tipis' : mati ? 'cursor-not-allowed text-teks-2 opacity-50' : 'text-primer hover:bg-white/70'}`}
             >
               {p}%
             </button>
@@ -289,6 +296,7 @@ function TargetRentang({
             {def.satuan}
           </span>
           {terbatas ? ', batas terendah untuk latihan ini.' : '.'}
+          {adaTanpaEfek && ' Pilihan redup tidak mengubah batas latihan ini.'}
         </p>
       )}
     </div>

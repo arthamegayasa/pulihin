@@ -25,7 +25,8 @@ const KOMPONEN: { kunci: keyof SkorKomponen; label: string }[] = [
 function judulHangat(s: Session): string {
   if (s.repetisiTercapai >= s.repetisiTarget) return 'Hebat, target latihan tercapai!';
   if (s.repetisiTercapai > 0) return 'Terima kasih sudah berlatih hari ini.';
-  return 'Tidak apa-apa, besok kita coba lagi.';
+  // Percobaan yang belum terhitung tetap tercatat (strip sudut puncak di bawah): hargai usahanya.
+  return 'Terima kasih sudah mencoba hari ini.';
 }
 
 /** Ringkasan sesi gerak (Bab 5.1 langkah 7, Bab 11 Ringkasan). Semua angka dibaca langsung dari catatan tersimpan. */

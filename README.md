@@ -140,7 +140,7 @@ Stack sesuai Bab 4 (React + Vite + TypeScript + Tailwind, MediaPipe Tasks Vision
 | Satu sesi kamera = satu set | Resep program memakai repetisi × set; Beranda menampilkan "1 dari 2 set". |
 | **Target rentang personal dari terapis** (`ProgramItem.rentangPersen`, 70–100%) | Pasien stroke sering belum bisa bergerak penuh. Pada rekaman lansia nyata, abduksi bahu memuncak 84–86° (< ambang 90°): 0 repetisi pada 100%, terhitung pada 90%. Hanya ambang atas yang diskalakan, dengan batas bawah aman (ambang bawah + 3× histeresis); skor rentang dinilai terhadap target personal. `docs/algoritma.md` Bagian 8a. |
 | Pesan "belum terhitung" maksimal 1× per 15 detik, lalu berganti penyemangat | Pada uji laptop, pesan yang sama sempat terucap 29× dalam 77 detik; kini 5× dalam 80 detik, dan percobaan ditampilkan sebagai kemajuan. |
-| Keluar dari sesi (Kembali/gestur/tutup tab) dengan ≥ 1 repetisi tetap menyimpan hasil | Repetisi pasien tidak pernah hilang diam-diam; penyimpanan idempoten (tidak ganda). |
+| Setiap percobaan (terhitung atau belum) langsung disimpan bersama penghitung sesi dalam satu transaksi IndexedDB; sesi dengan ≥ 1 percobaan tidak pernah dibuang | Berhenti, Kembali/gestur, pindah layar, dan tutup tab menyimpan sesi (juga 0 terhitung: "Sudah dicoba: 0 dari 8" + strip sudut puncak). Muat ulang atau aplikasi mati di tengah sesi: percobaan yang sudah terjadi tetap ada, dan saat aplikasi dibuka lagi sesi itu dituntaskan dengan skor dihitung ulang dari RepLog. Hanya sesi tanpa percobaan sama sekali yang dihapus. |
 
 ## Hasil uji
 

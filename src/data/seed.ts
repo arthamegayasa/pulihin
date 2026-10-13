@@ -1,5 +1,5 @@
 import type { ExportBundle, HasilKata, ISODate, Profile, Program, ProgramItem, RepLog, Schedule, Session, SkenarioDemo, SpeechAttempt } from '@/types';
-import { bulkPut, clearAll, deleteSession, exportAll, getProgram, getSchedule, importAll, listProfiles, listRepLogs, listSessions, listSpeechAttempts } from '@/data/db';
+import { bulkPut, clearAll, deleteSession, exportAll, getProgram, getSchedule, importAll, listProfiles, listRepLogs, listSessions, listSpeechAttempts, putSession } from '@/data/db';
 import { addDays, todayISO } from '@/lib/date';
 import { resetPrefs, setPrefs, getPrefs } from '@/lib/prefs';
 import { clamp } from '@/lib/score';
@@ -359,22 +359,103 @@ export function tanggalTanamDemoUtuh(data: Pick<DataDemo, 'profiles' | 'programs
   return resepAsli && jadwalAsli ? addDays(budi.tanggalMulaiProgram, 14) : null;
 }
 
+/** Saat modul ini dimuat (= aplikasi dibuka). Sesi yang dimulai sesudahnya sedang berjalan di halaman ini. */
+const DIBUKA_AT = Date.now();
+
+export interface HasilBersihBersih {
+  dituntaskan: number;
+  dihapus: number;
+}
+
 /**
- * Bersih-bersih saat aplikasi dibuka: sesi `selesai: false` dari hari sebelumnya (kamera ditinggal, layar latihan
- * yang hanya dibuka) dihapus beserta RepLog dan SpeechAttempt-nya. Sesi hari ini dibiarkan: mungkin masih berjalan
- * di tab lain. Mengembalikan jumlah sesi yang dihapus.
+ * Bersih-bersih saat aplikasi dibuka, sebelum halaman sesi mana pun sempat memulai sesi. Sesi `selesai: false`
+ * yang dimulai sebelum aplikasi dibuka (`mulaiAt < sejak`) adalah sisa muat ulang, tutup tab, atau layar yang
+ * ditinggal. Percobaannya sudah tersimpan satu per satu, jadi tidak ada yang dibuang diam-diam:
+ * - gerak dengan >= 1 RepLog: dituntaskan. Skor, komponen, dan saran dihitung ulang dari RepLog dengan fungsi skor
+ *   aplikasi (ambang sesuai target rentang sesi); repetisi = RepLog terhitung; durasi tercatat terakhir (sampai
+ *   percobaan terakhir) dipertahankan.
+ * - afasia dengan >= 1 SpeechAttempt: dituntaskan dengan ringkasan modul bicara; kata yang belum sempat dicoba
+ *   dihitung Belum.
+ * - tanpa percobaan (layar hanya dibuka): dihapus.
+ * Sesi yang dimulai setelah aplikasi dibuka tidak disentuh.
  */
-export async function bersihkanSesiBelumSelesai(today: ISODate = todayISO(), profiles?: Profile[]): Promise<number> {
-  let jumlah = 0;
+export async function bersihkanSesiBelumSelesai(profiles?: Profile[], sejak: number = DIBUKA_AT): Promise<HasilBersihBersih> {
+  const hasil: HasilBersihBersih = { dituntaskan: 0, dihapus: 0 };
   for (const p of profiles ?? (await listProfiles())) {
-    const lama = await listSessions(p.id, { sampai: addDays(today, -1), hanyaSelesai: false });
-    for (const s of lama) {
-      if (s.selesai) continue;
-      await deleteSession(s.id);
-      jumlah++;
+    const yatim = (await listSessions(p.id, { hanyaSelesai: false })).filter((s) => !s.selesai && s.mulaiAt < sejak);
+    for (const s of yatim) {
+      const tuntas = s.jenis === 'gerak' ? await tuntaskanGerak(s) : await tuntaskanAfasia(s);
+      if (tuntas) {
+        await putSession(tuntas);
+        hasil.dituntaskan++;
+      } else {
+        await deleteSession(s.id);
+        hasil.dihapus++;
+      }
     }
   }
-  return jumlah;
+  return hasil;
+}
+
+/** Sesi gerak yatim yang punya RepLog, sebagai sesi selesai; null bila tanpa percobaan. */
+async function tuntaskanGerak(s: Session): Promise<Session | null> {
+  const logs = await listRepLogs(s.id);
+  if (logs.length === 0) return null;
+  // Modul pose hanya dimuat bila memang ada sesi yang perlu dituntaskan (bundel awal tetap ringan).
+  const [{ getExercise }, { ambangAtasRentang }, { hitungSkor }] = await Promise.all([
+    import('@/features/pose/exerciseDefinitions'),
+    import('@/features/pose/tracker'),
+    import('@/features/pose/scoring'),
+  ]);
+  const def = s.latihanId ? getExercise(s.latihanId) : undefined;
+  // Catatan lama (sebelum penulisan per percobaan) belum menyimpan durasi: jumlah lama siklus sebagai gantinya.
+  const durasiDetik = s.durasiDetik > 0 ? s.durasiDetik : Math.round(logs.reduce((n, l) => n + l.durasiSiklusDetik, 0));
+  const tuntas: Session = {
+    ...s,
+    selesai: true,
+    selesaiAt: s.mulaiAt + durasiDetik * 1000,
+    repetisiTercapai: logs.filter((l) => l.dihitung).length,
+    durasiDetik,
+  };
+  if (def) {
+    const skor = hitungSkor({
+      repLogs: logs,
+      targetRepetisi: s.repetisiTarget,
+      ambangAtas: ambangAtasRentang(def, s.rentangPersen),
+      ambangBawah: def.ambangBawah,
+      tempoTargetDetik: def.tempoTargetDetik,
+    });
+    tuntas.skor = skor.skor;
+    tuntas.skorKomponen = skor.skorKomponen;
+    tuntas.saran = skor.saran;
+  }
+  return tuntas;
+}
+
+/** Sesi afasia yatim yang punya percobaan, sebagai sesi selesai; null bila tanpa percobaan. */
+async function tuntaskanAfasia(s: Session): Promise<Session | null> {
+  const percobaan = await listSpeechAttempts(s.id);
+  if (percobaan.length === 0) return null;
+  const [{ ringkasSesi, skorPercobaan, skorSesi }, { saranSesiAfasia }] = await Promise.all([
+    import('@/features/speech/SpeechScorer'),
+    import('@/features/speech/pesanAfasia'),
+  ]);
+  const kataIds = [...new Set(percobaan.map((a) => a.kataId))];
+  const r = ringkasSesi(kataIds, percobaan);
+  // Daftar 10 kata tidak disimpan: kata yang belum sempat dicoba dihitung Belum, seperti kata yang dilewati.
+  const belumDicoba = Math.max(0, s.repetisiTarget - kataIds.length);
+  const skorKata = [...r.perKata.map((k) => k.skor), ...Array.from({ length: belumDicoba }, () => skorPercobaan('belum', 1))];
+  const terakhir = Math.max(...percobaan.map((a) => a.at));
+  return {
+    ...s,
+    selesai: true,
+    selesaiAt: terakhir,
+    repetisiTercapai: r.benar,
+    skor: skorSesi(skorKata),
+    ringkasanAfasia: { benar: r.benar, hampir: r.hampir, belum: r.belum + belumDicoba, kataUlang: r.kataUlang },
+    durasiDetik: Math.max(1, Math.round((terakhir - s.mulaiAt) / 1000)),
+    saran: saranSesiAfasia(r),
+  };
 }
 
 /** Sesi belum selesai tanpa satu pun percobaan tercatat (layar hanya dibuka). */
@@ -386,7 +467,8 @@ async function sesiKosong(s: Session): Promise<boolean> {
 
 /**
  * Dipanggil setiap aplikasi dibuka (main.tsx).
- * - Bersih-bersih rekaman belum selesai dari hari sebelumnya (`bersihkanSesiBelumSelesai`).
+ * - Rekaman belum selesai dari sebelum aplikasi dibuka dituntaskan (ada percobaan) atau dihapus (tanpa percobaan),
+ *   lihat `bersihkanSesiBelumSelesai`.
  * - Pembukaan pertama (belum ada profil): tanam data demo, kecuali pengguna sengaja menghapus semua data.
  * - Data demo yang ditanam pada hari sebelumnya dan belum diubah pengguna ditanam ulang untuk hari ini, sehingga
  *   skenario selalu tampak sama kapan pun dibuka (mis. stagnasi tetap "3 hari belum latihan", bukan 4 atau 5).
@@ -395,7 +477,7 @@ async function sesiKosong(s: Session): Promise<boolean> {
 export function ensureDemoData(today: ISODate = todayISO()): Promise<void> {
   sedangMenanam ??= (async () => {
     const profiles = await listProfiles();
-    await bersihkanSesiBelumSelesai(today, profiles);
+    await bersihkanSesiBelumSelesai(profiles);
     if (bacaLocal(AUTOSEED_KEY) === 'off') return;
     const skenario = getPrefs().skenarioDemo;
     if (profiles.length === 0) {

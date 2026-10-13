@@ -89,7 +89,8 @@ describe('status set Latihan Hari Ini', () => {
     expect(teksSudahDicoba(dua)).toBe('Sudah dicoba: 4 dari 10');
     const sesiSelesai = [gerak('fleksi-siku', TODAY, 7), gerak('fleksi-siku', TODAY, 8), coba(4, 10)];
     expect(latihanBerikutnya(statusProgramHariIni(ITEMS, sesiSelesai, TODAY))?.latihanId).toBe('fleksi-bahu');
-    expect(teksSudahDicoba(statusProgramHariIni(ITEMS, [coba(0)], TODAY)[1])).toBe('Sudah dicoba');
+    // Percobaan tanpa repetisi terhitung (rentang gerak terbatas) tetap tampil sebagai angka, bukan dibuang.
+    expect(teksSudahDicoba(statusProgramHariIni(ITEMS, [coba(0)], TODAY)[1])).toBe('Sudah dicoba: 0 dari 10');
   });
 
   it('separuh target (dibulatkan ke atas) atau lebih sudah dihitung selesai', () => {

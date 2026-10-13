@@ -40,13 +40,13 @@ describe('pengingat hari ini', () => {
     expect(banner(semua, 17)?.nada).toBe('sukses');
   });
 
-  it('jadwal yang sudah lewat lama: tanpa "Yuk ... (08.00)" di malam hari, tetap mengajak', () => {
+  it('jadwal yang sudah lewat lama: ajakan satu baris tanpa jam, tetap mengajak', () => {
     const kosong = statusHari([], TODAY);
-    expect(banner(kosong, 9)).toEqual({ nada: 'aksen', teks: 'Jadwal 08.00 sudah lewat. Masih bisa latihan hari ini.' });
+    expect(banner(kosong, 9)).toEqual({ nada: 'aksen', teks: 'Yuk, latihan gerak hari ini' });
     // Jadwal yang baru jatuh tempo didahulukan daripada jadwal pagi yang terlewat.
     expect(banner(kosong, 16, 10)?.teks).toBe('Yuk, latihan bicara (16.00)');
-    expect(banner(kosong, 21)?.teks).toBe('Jadwal 08.00 sudah lewat. Masih bisa latihan hari ini.');
-    expect(banner(statusHari([sesi(TODAY)], TODAY), 21)?.teks).toBe('Jadwal 16.00 sudah lewat. Masih bisa latihan hari ini.');
+    expect(banner(kosong, 21)?.teks).toBe('Yuk, latihan gerak hari ini');
+    expect(banner(statusHari([sesi(TODAY)], TODAY), 21)?.teks).toBe('Yuk, latihan bicara hari ini');
   });
 
   it('jamKeMenit memvalidasi format', () => {

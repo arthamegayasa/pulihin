@@ -87,12 +87,13 @@ export function teksProgresSet(s: Pick<StatusItemHariIni, 'set' | 'setSelesai' |
 }
 
 /**
- * Kalimat hangat untuk latihan yang sudah dicoba tetapi belum tuntas: "Sudah dicoba: 3 dari 10".
- * Null bila latihan selesai, belum dicoba, atau sudah ada set tuntas (pakai teksProgresSet).
+ * Kalimat hangat untuk latihan yang sudah dicoba tetapi belum tuntas: "Sudah dicoba: 3 dari 10" (juga "0 dari 8"
+ * bila percobaannya belum ada yang terhitung). Null bila latihan selesai, belum dicoba, atau sudah ada set tuntas
+ * (pakai teksProgresSet).
  */
 export function teksSudahDicoba(s: Pick<StatusItemHariIni, 'selesai' | 'setSelesai' | 'repetisiDicoba' | 'targetRepetisi'>): string | null {
   if (s.selesai || s.setSelesai > 0 || s.repetisiDicoba === null) return null;
-  return s.repetisiDicoba > 0 ? `Sudah dicoba: ${s.repetisiDicoba} dari ${s.targetRepetisi}` : 'Sudah dicoba';
+  return `Sudah dicoba: ${s.repetisiDicoba} dari ${s.targetRepetisi}`;
 }
 
 /** "Rentang 80%" untuk butir resep dengan target rentang di bawah penuh; null bila rentang penuh. */
