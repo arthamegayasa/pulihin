@@ -21,7 +21,7 @@ const FAKTA: { Ikon: Icon; nama: string; isi: string }[] = [
   {
     Ikon: WifiSlash,
     nama: 'PWA offline',
-    isi: 'Dapat dipasang di layar utama. Model pose ikut tersimpan, jadi sesi kamera tetap berjalan tanpa internet setelah dibuka sekali.',
+    isi: 'Dapat dipasang di layar utama. Model pose disimpan saat Beranda pasien dibuka, jadi sesi kamera tetap berjalan tanpa internet sesudahnya.',
   },
 ];
 

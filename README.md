@@ -20,7 +20,7 @@ Prototype untuk **.id Developer Day Indonesia 2026**, kategori Inclusions and Co
 | Tampilan keluarga (grafik, tanda perlu perhatian, ringkasan WhatsApp) | https://pulihin.vercel.app/app?peran=keluarga |
 | Dashboard terapis (resep program, target rentang personal) | https://pulihin.vercel.app/app?peran=terapis |
 
-Sesi kamera: dari Beranda pasien ketuk **Mulai: Tekuk Siku** lalu **Mulai dengan Kamera**; duduk 1 meter di depan kamera laptop/HP dengan bahu sampai pergelangan tangan terlihat. Semua pemrosesan terjadi di perangkat Anda. Pengaturan > Setel Ulang Data Demo mengembalikan kondisi awal.
+Sesi kamera: dari Beranda pasien ketuk **Mulai: Tekuk Siku** lalu **Mulai dengan Kamera**; duduk sekitar 1 meter di depan kamera laptop/HP sehingga kepala sampai pinggul terlihat. Semua pemrosesan terjadi di perangkat Anda. Pengaturan > Setel Ulang Data Demo mengembalikan kondisi awal.
 
 ## Isi
 
@@ -41,7 +41,7 @@ Sesi kamera: dari Beranda pasien ketuk **Mulai: Tekuk Siku** lalu **Mulai dengan
 | Kode | Modul | Status | Bukti utama |
 |---|---|---|---|
 | F1 | Latihan gerak berbasis kamera | Selesai | `src/features/pose/` (PoseEngine, tracker, RepCounter, FormChecker), `src/pages/SesiKamera.tsx`, uji `src/features/pose/*.test.ts` termasuk replay rekaman manusia nyata |
-| F2 | Pustaka 10 latihan sebagai data | Selesai | `src/features/pose/exerciseDefinitions.ts`, uji `exerciseDefinitions.test.ts` (ambang di data mengubah hitungan tanpa mengubah logika) |
+| F2 | Pustaka 10 latihan sebagai data | Selesai | `src/features/pose/exerciseDefinitions.ts` (uji `exerciseDefinitions.test.ts`); uji "mengubah ambang di definisi mengubah hitungan tanpa mengubah logika" di `tracker.test.ts` |
 | F3 | Terapi afasia 100 kata Bahasa Indonesia | Selesai | `src/features/speech/wordBank.ts` (100 kata, 30/25/15/15/15), `SpeechScorer.ts`, `recognizer.ts`, Mode Latihan Mandiri |
 | F4 | Pengingat dan streak | Selesai | `src/features/adherence/`, Beranda, Pengaturan (jadwal tersimpan), notifikasi PWA saat aplikasi terbuka |
 | F5 | Dashboard caregiver "Untuk Keluarga" | Selesai | `src/pages/Pendamping.tsx`, red flag non medis `redFlags.ts`, ringkasan WhatsApp |
@@ -72,7 +72,7 @@ Hosting statis **Vercel** (proyek `pulihin`), terhubung ke repo GitHub: setiap p
 
 - rewrite SPA ke `index.html` (tautan dalam seperti `/app/beranda` aman dibuka langsung),
 - header keamanan: `Content-Security-Policy: connect-src 'self'` (tidak ada koneksi ke server lain), `Permissions-Policy: camera=(self), microphone=(self)`,
-- cache panjang untuk `/assets/*` (nama ber-hash) dan `/mediapipe/*`.
+- cache panjang untuk `/assets/*` (nama ber-hash, 1 tahun) dan cache 7 hari untuk `/mediapipe/*`.
 
 Deploy manual: `vercel deploy --prod`.
 
@@ -128,14 +128,14 @@ Stack sesuai Bab 4 (React + Vite + TypeScript + Tailwind, MediaPipe Tasks Vision
 
 | Keputusan | Alasan dan bukti |
 |---|---|
-| **Pose Landmarker Lite** (bukan Full/Heavy) | Bab 17.4: dahulukan HP kelas bawah. Model 5,8 MB, inferensi desktop GPU ±15 ms. |
-| **Sudut hibrida 2D/3D per latihan** (`sumberSudut` di definisi) | Uji rekaman manusia nyata: landmark dunia 3D MediaPipe memampatkan fleksi siku dari depan menjadi 45–105° sehingga ambang spec 120°/30° tidak pernah tercapai (0 repetisi); 2D memberi 2–20° istirahat dan 160–178° puncak. Hibrida memakai 2D saat segmen tungkai sejajar bidang gambar dan beralih halus ke 3D hanya saat segmen mengarah ke kamera. Rincian: `docs/algoritma.md` Bagian 3 dan 13. |
+| **Pose Landmarker Lite** (bukan Full/Heavy) | Bab 17.4: dahulukan HP kelas bawah. Model 5,8 MB; inferensi 15–19 ms di produksi (desktop GPU, deteksi 2 orang). |
+| **Sudut hibrida 2D/3D per latihan** (`sumberSudut` di definisi) | Uji rekaman manusia nyata: landmark dunia 3D MediaPipe memampatkan fleksi siku dari depan (istirahat 22–29°, puncak hanya 101–115°) sehingga ambang spec 120°/30° tidak pernah tercapai (0 repetisi); 2D bersih di titik ekstrem (istirahat 2–20°, puncak 158–178°). Hibrida memakai 2D saat segmen tungkai sejajar bidang gambar dan beralih halus ke 3D hanya saat segmen mengarah ke kamera. Rincian: `docs/algoritma.md` Bagian 3 dan 13. |
 | **Kemiringan badan dari kemiringan 3D garis bahu**, dilewati saat badan berputar > ±50° | Versi 2D memunculkan "Tegakkan badan" palsu berulang pada pandangan serong (foreshortening). Setelah perbaikan: 0 koreksi palsu pada 4 video nyata, kemiringan nyata 18° tetap terdeteksi. |
-| **Deteksi 2 orang, pilih pasien utama** (torso terbesar + dekat tengah, lengket antar frame), turun otomatis ke 1 orang bila fps < 15 | Pada video uji dengan manekin di latar, kandidat pertama MediaPipe adalah manekin pada 287/325 frame; pemilih utama memilih orang yang benar 325/325. Di rumah, anggota keluarga sering berdiri di belakang pasien. |
+| **Deteksi 2 orang, pilih pasien utama** (torso terbesar + dekat tengah, lengket antar frame), turun otomatis ke 1 orang bila inferensi > 60 ms atau fps < 15 karena inferensi selama 3 detik | Pada video uji dengan manekin di latar, kandidat pertama MediaPipe adalah manekin pada 287/325 frame; pemilih utama memilih orang yang benar 325/325. Di rumah, anggota keluarga sering berdiri di belakang pasien. |
 | Ambang sudut tetap angka Bab 6 | Tidak ada bukti ambang tak tercapai untuk gerakan penuh; semua ambang ada di data dan dapat diubah terapis/pengembang tanpa mengubah logika. |
 | Grafik SVG buatan sendiri (bukan Recharts) | Diizinkan Bab 4; nol dependensi tambahan, ringan di HP kelas bawah, tabel tersembunyi untuk pembaca layar. |
 | Font Plus Jakarta Sans (OFL, disajikan sendiri) | Huruf sans bersih yang dirancang di Indonesia; satu berkas variabel. |
-| Precache service worker ringan (±1 MB), aset MediaPipe di-cache saat aplikasi dibuka | Landing page tidak memaksa unduhan 19 MB di kuota prabayar; sesi kamera tetap bisa dimulai offline setelah aplikasi dibuka sekali. |
+| Precache service worker ringan (±1,4 MB), aset MediaPipe di-cache saat Beranda pasien atau Detail Latihan dibuka | Landing, layar keluarga, dan layar terapis tidak memaksa unduhan 19 MB di kuota prabayar; sesi kamera tetap bisa dimulai offline setelah Beranda pasien dibuka sekali (terukur: cache terisi ±1–3 s di desktop). |
 | Peran disimpan lokal (Pasien / Keluarga / Terapis), tanpa login | Bab 9.2: autentikasi sungguhan adalah pekerjaan pasca lomba. |
 | Satu sesi kamera = satu set | Resep program memakai repetisi × set; Beranda menampilkan "1 dari 2 set". |
 | **Target rentang personal dari terapis** (`ProgramItem.rentangPersen`, 70–100%) | Pasien stroke sering belum bisa bergerak penuh. Pada rekaman lansia nyata, abduksi bahu memuncak 84–86° (< ambang 90°): 0 repetisi pada 100%, terhitung pada 90%. Hanya ambang atas yang diskalakan, dengan batas bawah aman (ambang bawah + 3× histeresis); skor rentang dinilai terhadap target personal. `docs/algoritma.md` Bagian 8a. |
@@ -163,11 +163,11 @@ Semua angka di bawah adalah **emulasi desktop** (laptop Ryzen 7 5800H, Chrome 14
 | Ukuran | GPU delegate | CPU delegate (bila GPU gagal) |
 |---|---|---|
 | Frame rate pemrosesan, 1 orang, CPU 1× / 4× / 6× | 25 / 24 / 21 fps | 25 / 7 / 3 fps |
-| AC-F1-1 kerangka pertama (model dihangatkan di Detail Latihan), CPU 1×–6× | 159–399 ms | 207–982 ms |
+| AC-F1-1 kerangka pertama (model dihangatkan di Detail Latihan), CPU 1×–6× | 159–399 ms | 207–265 ms (1×) · 446–592 ms (4×, gagal sebagian) · 564–982 ms (6×, gagal) |
 | AC-F1-3 koreksi tampil setelah kondisi bertahan 0,5 s, live | 72–257 ms | 633 ms (4×) · 1 135 ms (6×, gagal) |
 | AC-F1-4 di HP Android kelas bawah acuan | **[DIISI]**: model HP & versi Chrome ditentukan pemilik produk | |
 
-Bacaan jujur: dengan GPU, target 15 fps dan latensi terpenuhi dengan cadangan; ponsel yang delegasi GPU-nya gagal kemungkinan **tidak** memenuhi AC-F1-4. Karena itu mesin mulai dengan deteksi 2 orang lalu otomatis turun ke 1 orang bila fps < 15 selama 3 detik (`kebijakanOrang.ts`, diuji), dan hitungan repetisi sudah terbukti tetap tepat pada 12 fps (replay rekaman nyata).
+Bacaan jujur: dengan GPU, target 15 fps dan latensi terpenuhi dengan cadangan; ponsel yang delegasi GPU-nya gagal kemungkinan **tidak** memenuhi AC-F1-4, dan AC-F1-1 tanpa pemanasan model (4,2 s) atau pada CPU 4×–6× (> 500 ms) **gagal**. Karena itu model dihangatkan di Detail Latihan, dan mesin mulai dengan deteksi 2 orang lalu otomatis turun ke 1 orang bila inferensi menjadi penghambat (> 60 ms, atau fps < 15 karena inferensi, selama 3 detik; `kebijakanOrang.ts`, diuji). Hitungan repetisi terbukti tetap tepat pada 12 fps (replay rekaman nyata).
 
 ## Checklist Bab 11 (lembar uji 100 perilaku)
 
@@ -192,7 +192,7 @@ Status per baris. ✅ = lolos dan diverifikasi otomatis/di browser desktop denga
 
 Pembukaan pertama menanam data demo 14 hari (deterministik, relatif terhadap hari ini): **Pak Budi** (58 th, stroke 3 bulan lalu; skenario "ada tanda perlu perhatian": 3 hari terakhir tanpa latihan), **Bu Sari** (rajin), **Pak Joko** (kepatuhan sedang). Semua berlabel Demo.
 
-Pengaturan > Data Demo: pilih skenario ("Ada tanda perlu perhatian" / "Pasien rajin"), **Reset Data Demo**, **Ekspor/Impor JSON** (cadangan untuk perekaman video; berkas rusak ditolak tanpa mengubah data), **Hapus Semua Data Lokal**. Mode Uji algoritma: `/app/uji` (halaman internal, tidak ada di menu pasien).
+Pengaturan > Data Demo: pilih skenario ("Ada tanda perlu perhatian" / "Pasien rajin"), **Setel Ulang Data Demo**, **Simpan cadangan (berkas .json)** / **Pulihkan dari cadangan** (dipakai saat perekaman video; berkas rusak ditolak tanpa mengubah data), **Hapus Semua Data Lokal**. Mode Uji algoritma: `/app/uji` (halaman internal, tidak ada di menu pasien).
 
 ## Isian [DIISI] yang masih kosong
 
@@ -218,7 +218,7 @@ Akurasi repetisi: rekaman manusia nyata 14 dari 14 repetisi yang dimulai setelah
                   2 sengaja tidak dihitung karena dimulai sebelum Siap), 0 ganda; perangkat target [DIISI] dari 50
 Frame rate pose : emulasi desktop GPU 21-25 fps (1 orang, CPU 1x-6x); perangkat target [DIISI] fps
 Uji otomatis    : 25 berkas, 250 uji lulus
-Video           : draf video/out/pulihin-demo-draft.mp4 (1920x1080, 4:58, 20,8 MB; dirender ulang lewat `cd video && npm run render`):
+Video           : draf lokal video/out/pulihin-demo-draft.mp4 (tidak di repo; 1920x1080, 4:58, 20,8 MB; render ulang: `cd video && npm run render`):
                   adegan layar non-kamera = rekaman layar aplikasi asli; adegan dokter, pemeran, dan sesi kamera = kartu
                   placeholder yang wajib diganti rekaman manusia (Bab 14.4). Final [DIISI] setelah perekaman
 Yang belum      : uji perangkat target (AC-F1-2, AC-F1-4, AC-F3-2), rekaman manusia untuk video

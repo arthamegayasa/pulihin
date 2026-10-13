@@ -111,7 +111,7 @@ Status per README.md, bagian "Fitur dan status":
 - **F3 Terapi afasia 100 kata Bahasa Indonesia** (`src/features/speech/wordBank.ts`). Kata dibagi ke lima kategori: benda di rumah 30, makanan dan minuman 25, keluarga dan orang 15, anggota tubuh 15, kebutuhan harian 15. Setiap kata punya gambar, pemenggalan suku kata, dan kalimat contoh. Pengenalan suara memakai Web Speech API `id-ID`. Ada juga **Mode Latihan Mandiri**: pendamping menilai dengan tombol Sudah Benar atau Ulangi, tanpa pengenalan suara.
 - **F4 Pengingat dan streak**: jadwal, kalender kepatuhan, dan hari beruntun.
 - **F5 Tampilan "Untuk Keluarga"**: status hari ini, grafik 7 hari, dan tren skor. Ada juga 4 aturan *red flag non medis* (`src/features/adherence/redFlags.ts`), misalnya "3 hari belum latihan". Ringkasan mingguan dapat disalin ke WhatsApp.
-- **F6 Dashboard klinisi dan resep program (P1)**: terapis menyusun latihan, target repetisi, set, dan jadwal. Resep langsung mengubah daftar "Latihan Hari Ini" pasien. Perilaku ini sudah diverifikasi.
+- **F6 Dashboard klinisi dan resep program (P1)**: terapis menyusun latihan, target repetisi, set, hari latihan per minggu, dan **target rentang personal** (100/90/80/70% ambang atas, untuk pasien yang belum bisa bergerak penuh). Resep langsung mengubah daftar "Latihan Hari Ini" pasien. Perilaku ini sudah diverifikasi.
 - **F7 Landing page** dengan tangkapan layar asli.
 
 ### 2.2 Mengapa khas Indonesia dan sulit ditiru produk global
@@ -128,7 +128,7 @@ Status per README.md, bagian "Fitur dan status":
    - Tidak perlu memasang aplikasi dari toko aplikasi. Cukup buka tautan di Chrome.
    - Pada 2024, **68,65%** penduduk Indonesia memiliki telepon seluler dan **72,78%** mengakses internet ([S12][s12]).
    - Android menguasai **79,16%** pangsa sistem operasi seluler di Indonesia, diukur dari tayangan halaman pada September 2026 ([S13][s13]).
-   - **[Ukur internal]** Precache service worker ±1 MB. Aset pose ±19 MB baru diunduh saat aplikasi dibuka, sehingga landing page tidak menghabiskan kuota prabayar. Sesi kamera tetap bisa berjalan luring setelah aplikasi dibuka sekali (README.md, tabel keputusan teknis).
+   - **[Ukur internal]** Precache service worker ±1,4 MB. Aset pose ±19 MB baru diunduh saat Beranda pasien atau Detail Latihan dibuka (bukan di landing, layar keluarga, atau layar terapis), sehingga kuota prabayar tidak terkuras. Sesi kamera tetap bisa berjalan luring setelah Beranda pasien dibuka sekali (README.md, tabel keputusan teknis).
 4. **Privasi di perangkat.**
    - Video tidak pernah meninggalkan ponsel. Tidak ada analitik pihak ketiga dan tidak ada akun.
    - UU 27/2022 menggolongkan "data dan informasi kesehatan" dan "data biometrik" sebagai data pribadi yang bersifat spesifik (Pasal 4 ayat 2) ([S14][s14]). Pemrosesan di perangkat memperkecil data sensitif yang perlu dikelola sejak awal.
@@ -222,7 +222,7 @@ Sumber: README.md (bagian Arsitektur dan privasi, Keputusan teknis, Hasil uji) d
 - Pose memakai MediaPipe Pose Landmarker **Lite** (float16, model 5,8 MB). Model ini menghasilkan 33 landmark tubuh 3D dan dioptimalkan untuk aplikasi kebugaran real time di perangkat ([S22][s22]). Inferensi berjalan di browser dengan WASM dan GPU/CPU.
 - Aset model disajikan dari domain sendiri dengan SHA-256 terkunci (`scripts/mediapipe-models.lock.json`).
 - Penghitung repetisi adalah state machine sudut sendi BAWAH → NAIK → ATAS → TURUN dengan histeresis dan perataan 4 frame. Ada 5 aturan koreksi form (docs/algoritma.md Bagian 5–7).
-- Sudut dihitung **hibrida 2D/3D** per latihan. Pada rekaman nyata dari depan, sudut 3D MediaPipe memampatkan fleksi siku menjadi 45–105°, sehingga hitungan 3D murni menghasilkan **0 repetisi**. Hibrida memakai 2D saat segmen tubuh sejajar bidang gambar (README.md, docs/algoritma.md Bagian 3 dan 13).
+- Sudut dihitung **hibrida 2D/3D** per latihan. Pada rekaman nyata dari depan, sudut 3D MediaPipe memampatkan fleksi siku (istirahat 22–29°, puncak hanya 101–115°), sehingga hitungan 3D murni menghasilkan **0 repetisi**; 2D bersih di titik ekstrem (2–20° dan 158–178°). Hibrida memakai 2D saat segmen tubuh sejajar bidang gambar (README.md, docs/algoritma.md Bagian 3 dan 13).
 - Pemilih pasien utama dibuat karena anggota keluarga sering berdiri di belakang pasien. Pada video uji dengan manekin di latar, kandidat pertama MediaPipe adalah manekin pada **287/325** frame. Pemilih PULIHIN memilih orang yang benar pada **325/325** frame (docs/algoritma.md Bagian 13).
 
 **Privasi yang dibuktikan, bukan hanya dijanjikan**
@@ -249,7 +249,7 @@ Sumber: README.md (bagian Arsitektur dan privasi, Keputusan teknis, Hasil uji) d
 - Emulasi dengan CPU diperlambat (docs/algoritma.md Bagian 14.2):
   - Dengan delegasi GPU, mode 1 orang bertahan **≥ 21 fps** sampai pelambatan CPU 6×. Pelambatan CPU tidak memperlambat GPU, jadi angka ini terlalu optimistis dibanding GPU ponsel murah.
   - Dengan delegasi CPU saja, pada pelambatan 4× ke atas hasilnya hanya **3–7 fps**. Ponsel tanpa delegasi GPU yang berfungsi kemungkinan tidak memenuhi target ≥ 15 fps.
-- Waktu sampai kerangka pertama tampil (AC-F1-1, target < 500 ms, model sudah dihangatkan): **171–298 ms** pada CPU 1× dengan GPU, dan **564–982 ms** pada CPU 6× dengan delegasi CPU paksa. Tanpa pemanasan model: **4.222 ms** (docs/algoritma.md Bagian 14.3).
+- Waktu sampai kerangka pertama tampil (AC-F1-1, target < 500 ms, model sudah dihangatkan): **159–399 ms** dengan GPU pada CPU 1×–6× (lulus); dengan delegasi CPU paksa **446–592 ms** pada CPU 4× dan **564–982 ms** pada CPU 6× (**gagal**). Tanpa pemanasan model: **4.222 ms** (**gagal**; karena itu model dihangatkan di Detail Latihan) (docs/algoritma.md Bagian 14.3).
 - Latensi koreksi (AC-F1-3, target < 700 ms setelah kondisi salah bertahan 0,5 s):
   - putar ulang tracker: median **141–296 ms** pada 12–30 fps;
   - live emulasi: maksimum **72 ms** (CPU 1×, GPU) sampai **1.135 ms** (CPU 6×, delegasi CPU). Kondisi terakhir **gagal** memenuhi target.
@@ -262,7 +262,7 @@ Sumber: README.md (bagian Arsitektur dan privasi, Keputusan teknis, Hasil uji) d
 
 - Definisi latihan (`exerciseDefinitions.ts`) dan bank kata (`wordBank.ts`) adalah objek TypeScript murni tanpa ketergantungan UI (README.md, spec Bab 4.2).
 
-> **Kalimat usulan:** "Seluruh penilaian gerak berjalan di ponsel. Kami juga memblokir telemetri bawaan pustaka pose sehingga tidak ada data yang keluar selama sesi kamera. Pada rekaman manusia nyata, PULIHIN menghitung 14 dari 14 repetisi tekuk siku tanpa hitungan ganda. Angka kinerja yang kami laporkan masih berasal dari emulasi desktop. Uji di HP Android kelas bawah adalah langkah berikutnya, dan kami tidak menyebutnya selesai sebelum dilakukan."
+> **Kalimat usulan:** "Seluruh penilaian gerak berjalan di ponsel. Kami juga memblokir telemetri bawaan pustaka pose sehingga tidak ada data yang keluar selama sesi kamera. Pada rekaman manusia nyata, PULIHIN menghitung 14 dari 14 repetisi tekuk siku yang dimulai setelah status Siap, tanpa hitungan ganda. Angka kinerja yang kami laporkan masih berasal dari emulasi desktop. Uji di HP Android kelas bawah adalah langkah berikutnya, dan kami tidak menyebutnya selesai sebelum dilakukan."
 
 ---
 

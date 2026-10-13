@@ -20,8 +20,8 @@ PULIHIN – Pendamping Rehabilitasi Stroke di Rumah | .id Developer Day Indonesi
 PULIHIN adalah prototype aplikasi web pendamping rehabilitasi stroke di rumah: kamera ponsel biasa menghitung repetisi latihan dan memberi koreksi gerakan dengan suara Bahasa Indonesia, diproses langsung di perangkat. Keluarga dapat melihat kepatuhan dan tren skor minggu ini, dan pasien dengan afasia dapat berlatih menyebut kata sehari-hari dalam Bahasa Indonesia.
 
 Kategori lomba: .id Developer Day Indonesia 2026 - Health and Wellbeing
-Situs: https://pulihinapp.id
-Coba prototype: https://pulihinapp.id/app
+Situs: https://pulihinapp.id (alamat aktif sementara sebelum domain diarahkan: https://pulihin.vercel.app)
+Coba prototype: https://pulihinapp.id/app (sementara: https://pulihin.vercel.app/app)
 
 Penafian: PULIHIN adalah prototype untuk kompetisi, bukan alat kesehatan teregulasi, bukan alat diagnosis, dan bukan penentu terapi. Program latihan untuk pasien sungguhan harus ditetapkan atau disetujui klinisi yang merawat.
 Peragaan oleh pemeran, bukan pasien sungguhan. "Pak Budi, 58 tahun" adalah nama samaran, dan seluruh data yang tampil adalah data demo.

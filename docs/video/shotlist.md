@@ -30,8 +30,8 @@ Acuan: Bab 11.1, 14, 15, 16 spesifikasi. Tabel bertanda OTOMATIS dibuat dari `vi
 - [ ] Ponsel uji: baterai di atas 80%, penyimpanan kosong minimal 5 GB.
 - [ ] Mode **Jangan Ganggu** aktif di semua ponsel yang merekam atau terekam (Bab 14.3). Hapus semua notifikasi di bilah status.
 - [ ] Tidak ada nomor telepon, email pribadi, kontak, atau foto pribadi yang mungkin muncul di layar.
-- [ ] Buka aplikasi di `pulihinapp.id/app` (disarankan dari ikon PWA yang terpasang agar tampil layar penuh tanpa bilah alamat).
-- [ ] Pengaturan → **Ekspor JSON** data lokal sebagai cadangan, lalu **Reset Data Demo** ke skenario bawaan (ada red flag "Minggu ini sempat 3 hari berturut-turut tanpa latihan"). Ulangi reset sebelum setiap pengambilan ulang alur penuh.
+- [ ] Buka aplikasi di `pulihinapp.id/app` (sementara, sebelum DNS aktif: `pulihin.vercel.app/app`; disarankan dari ikon PWA yang terpasang agar tampil layar penuh tanpa bilah alamat).
+- [ ] Pengaturan → **Simpan cadangan (berkas .json)** data lokal, lalu **Setel Ulang Data Demo** ke skenario bawaan (ada tanda "Sudah 3 hari belum latihan"; setelah sesi hari ini menjadi "Minggu ini sempat 3 hari berturut-turut tanpa latihan"). Ulangi setel ulang sebelum setiap pengambilan ulang alur penuh.
 - [ ] Peran aktif: pasien Pak Budi; Beranda menampilkan **Latihan Hari Ini** dengan Tekuk Siku sebagai latihan pertama yang belum selesai.
 - [ ] Suara aplikasi aktif dan volume media ponsel cukup keras (pesan koreksi diucapkan aplikasi).
 - [ ] Jangan memakai mode pesawat saat merekam Latihan Bicara: pada sebagian browser pengenalan suara memakai layanan cloud penyedia browser (Bab 17.3).
@@ -114,7 +114,7 @@ Catatan adegan koreksi (1:30–2:10): adegan terpenting sesudah pembuka. Rekam b
 
 - **Pose estimation gagal karena cahaya:** pindahkan ponsel lebih dekat (tetap 0,8–1,2 m untuk duduk), tambah lampu dari depan, dan gunakan latihan duduk nomor 2, **Tekuk Siku**, sebagai latihan utama (paling toleran terhadap cahaya dan ruang sempit).
 - **Koreksi tidak muncul:** ulangi pengambilan; pemeran mengangkat bahu lebih jelas dan pelan. Jangan mengganti dengan teks tempelan.
-- **Data demo berubah atau rusak:** Pengaturan → Reset Data Demo, atau impor JSON yang diekspor sebelum merekam.
+- **Data demo berubah atau rusak:** Pengaturan → Setel Ulang Data Demo, atau Pulihkan dari cadangan (berkas .json yang disimpan sebelum merekam).
 - **Pengenalan kata gagal (bising/jaringan):** pindah ke ruangan lebih tenang, pastikan ada koneksi, ulangi. Mode cadangan boleh direkam sebagai bukti tambahan, tetapi momen "Benar" di 3:30–4:00 harus berasal dari hasil penilaian asli.
 - **Potongan gagal di tengah:** tutup dengan rekaman layar cadangan tanpa suara.
 - **Dashboard Terapis (P1) tidak dipakai:** ubah `ADEGAN_TERAPIS` di `video/src/timeline.ts` menjadi `'streak'`, rekam `layar-06-streak.mp4`, lalu jalankan `npm run srt`.

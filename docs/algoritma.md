@@ -252,7 +252,7 @@ semua komponen ≥ 85 → "Bagus sekali. Pertahankan latihan rutin seperti hari 
 ## 8a. Target rentang personal (resep terapis)
 
 **Tujuan.** Pasien stroke sering belum mampu mencapai rentang penuh. Tanpa penyesuaian, setiap gerakan
-yang "hampir" tidak pernah terhitung dan pesan rentang kurang diulang terus (audit juri: `elder`
+yang "hampir" tidak pernah terhitung dan pesan rentang kurang diulang terus (uji laptop: `elder`
 abduksi 0/8 dalam 80 s). Terapis menetapkan **Target rentang** per latihan di Resep Program
 (100% / 90% / 80% / 70%, bawaan 100%), disimpan di `ProgramItem.rentangPersen`, dibawa lewat URL
 `?rentang=P` (hanya bila P < 100) ke `TrackerOptions.rentangPersen` dan dicatat di `Session.rentangPersen`.
@@ -449,7 +449,7 @@ gambar penuh): **rentang 3D bergantung pada pembingkaian**, salah satu alasan 3D
 Pada `seated` kiri, 2D saja mencatat 2 "percobaan" palsu berpuncak 53–56° akibat derau di tengah gerak;
 hibrida 0.
 
-**Uji E2E aplikasi** (`D:/Temp/pulihin-test/e2e-camera.mjs`, dev server, halaman `/app/sesi`):
+**Uji E2E aplikasi** (skrip lokal `e2e-camera.mjs` di luar repo, kamera palsu Chrome, dev server, halaman `/app/sesi`):
 
 | Perintah | Hasil |
 |---|---|
@@ -457,7 +457,7 @@ hibrida 0.
 | `curl2.y4m fleksi-siku kiri 30` | Siap 2 s; 10 repetisi pada ±6–30 s (selang 2,7 s), "Target 10 kali tercapai" pada 30 s; tanpa "Tegakkan badan" |
 | `curl.y4m fleksi-siku kiri 10` | kerangka menempel pada pria (tangkapan layar `sesi-8s.png`), manekin tidak ditandai |
 
-Satu putaran E2E sebelumnya terganggu muat-ulang Vite (agen lain menyunting berkas) dan tidak dipakai.
+Satu putaran E2E sebelumnya terganggu muat-ulang server pengembangan saat berkas sedang disunting dan tidak dipakai.
 
 **Keputusan 2D/3D dengan angka.** Untuk tekuk siku, 3D tidak pernah melewati 120°/30° pada kedua
 pandangan gambar penuh (puncak 101–115°, istirahat 22–29°); 2D dan hibrida melewati keduanya dengan
@@ -536,8 +536,8 @@ Laptop Ryzen 7 5800H + GPU laptop, Chrome for Testing 147 headless, build produk
 Mode Uji, kamera palsu (`--use-file-for-fake-video-capture`, klip 24 fps, jadi fps maksimum ±25),
 CPU diperlambat dengan CDP `Emulation.setCPUThrottlingRate`. Pelambatan CPU **tidak memperlambat GPU**,
 jadi baris GPU terlalu optimistis dibanding GPU ponsel murah; baris CPU paksa (`/app/uji?cpu=1`) mewakili
-ponsel yang delegasi GPU-nya gagal. Median 11 detik (detik 5–16), `fleksi-siku`, sisi kiri. Skrip:
-`D:/Temp/pulihin-test/pl2-perf.mjs`, `pl2-batch.mjs` (di luar repo).
+ponsel yang delegasi GPU-nya gagal. Median 11 detik (detik 5–16), `fleksi-siku`, sisi kiri. Diukur dengan
+skrip lokal `pl2-perf.mjs` dan `pl2-batch.mjs` (di luar repo).
 
 | Klip | CPU | Delegasi | 2 orang: fps / inferensi | 1 orang: fps / inferensi |
 |---|---|---|---|---|
@@ -614,23 +614,23 @@ bila pasien menekan Mulai sebelum model selesai dimuat, kerangka pertama tertund
 ### 14.4 Sesi kamera luring setelah aplikasi dibuka sekali
 
 Service worker hanya mem-precache kerangka aplikasi (termasuk chunk JS `@mediapipe/tasks-vision`).
-`prefetchAsetPose()` (`asetPose.ts`, dipanggil sekali dari `AppShell`) menunggu browser senggang
+`prefetchAsetPose()` (`asetPose.ts`, dipanggil dari Beranda saat peran pasien dan dari Detail Latihan) menunggu browser senggang
 (`requestIdleCallback`, cadangan `setTimeout` 3 s), dilewati bila Penghemat Data aktif atau jaringan
 2G/slow-2G, menunggu SW mengendalikan halaman, lalu mengunduh **varian WASM yang sama dengan yang akan
 dipilih `FilesetResolver`** (cek SIMD milik pustaka itu sendiri) + model, berurutan. Unduhan melewati
 runtime cache CacheFirst `pulihin-mediapipe` (`vite.config.ts`). Bila ketiganya sudah ada di cache,
 pustaka tidak diimpor sama sekali.
 
-Uji (`D:/Temp/pulihin-test/pl2-offline.mjs`, build produksi + `vite preview` 127.0.0.1, profil Chrome
+Uji (skrip lokal `pl2-offline.mjs` di luar repo, build produksi + `vite preview` 127.0.0.1, profil Chrome
 baru, kamera palsu `curl2`):
 
-1. Buka `/app` sekali (tanpa membuka latihan). Dalam 2,8 s cache berisi
+1. Buka aplikasi sekali sebagai pasien (tanpa membuka latihan). Dalam 1–3 s cache berisi
    `vision_wasm_internal.js` (0,34 MB), `vision_wasm_internal.wasm` (13,0 MB, varian SIMD) dan
    `pose_landmarker_lite.task` (5,78 MB).
 2. Server dimatikan dan CDP `Network.emulateNetworkConditions` offline untuk halaman dan service worker
    (`navigator.onLine = false`).
 3. Buka `/app/sesi/fleksi-siku`: "Tubuh terdeteksi" pada 2 s, Siap pada 3 s, 6/10 repetisi pada 20 s,
-   tidak ada request gagal (tangkapan `review/pl2-offline-sesi.png`).
+   tidak ada request gagal.
 
 Temuan selama uji: MediaPipe memuat skrip loader dengan `<script crossorigin="anonymous">` yang
 mengirim header `Origin`, sedangkan `fetch()` prefetch tidak. Server yang menjawab `Vary: Origin`
