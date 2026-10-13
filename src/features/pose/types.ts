@@ -24,8 +24,19 @@ export type SendiTarget = 'bahu' | 'siku' | 'lutut' | 'pinggul' | 'pergelangan-k
 
 /** Cara mengubah pose menjadi satu angka yang dihitung state machine repetisi. */
 export type Metrik =
-  /** Sudut di titik b dari vektor b->a dan b->c, derajat. `fleksi` = 180 - sudut (0 saat lurus). */
-  | { jenis: 'sudut'; a: NamaTitik; b: NamaTitik; c: NamaTitik; ubah?: 'fleksi' }
+  /**
+   * Sudut di titik b dari vektor b->a dan b->c, derajat. `fleksi` = 180 - sudut (0 saat lurus);
+   * `selisih-90` = sudut - 90 (mis. abduksi pinggul terhadap garis panggul).
+   * `aSisiLawan`: titik a diambil dari sisi berlawanan (mis. pinggul lawan untuk garis panggul).
+   */
+  | {
+      jenis: 'sudut';
+      a: NamaTitik;
+      b: NamaTitik;
+      c: NamaTitik;
+      ubah?: 'fleksi' | 'selisih-90';
+      aSisiLawan?: boolean;
+    }
   /** Kenaikan titik relatif posisi awal, dalam persen lebar bahu. */
   | { jenis: 'kenaikan'; titik: NamaTitik }
   /** Jarak dua titik dalam persen lebar bahu (menggapai). */
@@ -51,6 +62,8 @@ export interface KoreksiDefinisi {
   pesan: string;
   /** Ambang khusus koreksi, mis. derajat kemiringan bahu. */
   ambang?: number;
+  /** Lama kondisi harus bertahan (detik) sebelum pesan boleh tampil; bawaan per id koreksi. */
+  tahanDetik?: number;
 }
 
 export interface ExerciseDefinition {
@@ -143,6 +156,8 @@ export interface TrackerSnapshot {
   titikAktif: number[];
   /** Nilai mentah untuk Mode Uji: sudut per sendi, state, dsb. */
   debug: Record<string, number | string | boolean>;
+  /** Alasan percobaan tidak dihitung pada frame `percobaanTidakDihitung`; null pada frame lain. */
+  alasanTidakDihitung?: 'terlalu-cepat' | 'rentang-kurang' | null;
 }
 
 export interface TrackerResult {
@@ -162,6 +177,10 @@ export interface TrackerResult {
 export interface TrackerOptions {
   sisi: Sisi;
   targetRepetisi: number;
+  /** 'otomatis' (bawaan) = sudut 3D dari worldLandmarks bila ada, selain itu 2D; '2d' = paksa 2D (Mode Uji). */
+  modeSudut?: 'otomatis' | '2d';
+  /** Jendela moving average dalam frame (3..5, bawaan 4). */
+  jendelaRata?: number;
 }
 
 export interface ExerciseTracker {

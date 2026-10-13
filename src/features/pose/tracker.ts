@@ -1,11 +1,286 @@
-import type { ExerciseDefinition, ExerciseTracker, TrackerOptions } from './types';
+import type { RepLog, Sisi } from '@/types';
+import {
+  basisFrame,
+  jarakTelingaBahu,
+  kemiringanBahu,
+  PengumpulBaseline,
+  RataBergerak,
+  SENDI_DEBUG,
+  sudutSendi,
+  ukurMetrik,
+  type Baseline,
+  type BasisKoordinat,
+  type MetrikDasar,
+} from './AngleCalculator';
+import { ATURAN_UMUM } from './exerciseDefinitions';
+import { FormChecker } from './FormChecker';
+import { indeksTitik, indeksTitikKunci, JUMLAH_LANDMARK, semuaTerlihat, sisiDipantau } from './landmarks';
+import { progresNilai, RepCounter, type PeristiwaSiklus } from './RepCounter';
+import { hitungSkor } from './scoring';
+import type {
+  ExerciseDefinition,
+  ExerciseTracker,
+  PoseFrame,
+  TrackerOptions,
+  TrackerResult,
+  TrackerSnapshot,
+} from './types';
 
 /**
- * KONTRAK: createTracker merangkai AngleCalculator, RepCounter, FormChecker, dan skor sesi.
- * Implementasi oleh agen PoseCore.
+ * createTracker merangkai AngleCalculator, RepCounter, FormChecker, dan skor sesi.
+ *
+ * Saluran (kanal) hitung:
+ * - sisi 'pilih'                : satu kanal untuk sisi pilihan pasien.
+ * - sisi 'keduanya'             : satu kanal; nilai = rata-rata sisi kiri & kanan yang terlihat
+ *                                 (rotasi-bahu tidak bersisi).
+ * - metrik 'bergantian' (marching): dua kanal (kiri, kanan) dengan state machine masing-masing.
+ *   Setiap angkatan yang lengkap di salah satu sisi = 1 repetisi; urutan kiri/kanan tidak
+ *   diwajibkan, sehingga target 10 = total 10 angkatan lutut (sekitar 5 per sisi).
  */
+
+type KunciKanal = Sisi | 'tunggal';
+
+interface Kanal {
+  kunci: KunciKanal;
+  sisiUkur: Sisi[];
+  rata: RataBergerak;
+  counter: RepCounter;
+  mentah: number | null;
+  nilai: number | null;
+  /** id koreksi yang tampil sejak siklus kanal ini sebelumnya selesai. */
+  koreksiSiklus: Set<string>;
+}
+
+type LogTanpaId = Omit<RepLog, 'id' | 'sessionId'>;
+
+const bulat = (n: number, desimal: number) => {
+  const f = 10 ** desimal;
+  return Math.round(n * f) / f;
+};
+
 export function createTracker(def: ExerciseDefinition, opts: TrackerOptions): ExerciseTracker {
-  void def;
-  void opts;
-  throw new Error('createTracker belum diimplementasikan');
+  const vis = ATURAN_UMUM.ambangVisibilitas;
+  const jendela = Math.round(
+    Math.min(
+      ATURAN_UMUM.jendelaRataMaks,
+      Math.max(ATURAN_UMUM.jendelaRataMin, opts.jendelaRata ?? ATURAN_UMUM.jendelaRataBawaan),
+    ),
+  );
+  const izinkan3D = opts.modeSudut !== '2d';
+  const bergantian = def.metrik.jenis === 'bergantian';
+  const metrik: MetrikDasar = def.metrik.jenis === 'bergantian' ? def.metrik.per : def.metrik;
+  const konfig = {
+    ambangAtas: def.ambangAtas,
+    ambangBawah: def.ambangBawah,
+    histeresis: def.histeresis ?? ATURAN_UMUM.histeresisBawaan,
+    durasiMinDetik: ATURAN_UMUM.durasiRepetisiMinDetik,
+  };
+  const sisiPantau = sisiDipantau(def, opts.sisi);
+  const titikAktif = indeksTitikKunci(def, opts.sisi);
+
+  const buatKanal = (kunci: KunciKanal, sisiUkur: Sisi[]): Kanal => ({
+    kunci,
+    sisiUkur,
+    rata: new RataBergerak(jendela),
+    counter: new RepCounter(konfig),
+    mentah: null,
+    nilai: null,
+    koreksiSiklus: new Set(),
+  });
+  const kanal: Kanal[] = bergantian
+    ? [buatKanal('kiri', ['kiri']), buatKanal('kanan', ['kanan'])]
+    : [buatKanal('tunggal', metrik.jenis === 'rotasi-bahu' ? [opts.sisi] : sisiPantau)];
+
+  const indeksY = metrik.jenis === 'kenaikan' ? sisiPantau.map((s) => indeksTitik(metrik.titik, s)) : [];
+  const pengumpul = new PengumpulBaseline(indeksY, vis);
+  const form = new FormChecker(def);
+  const rataMiring = new RataBergerak(jendela);
+  const rataSusut = new RataBergerak(jendela);
+  const rataDebug: Record<string, RataBergerak> = {};
+
+  let tMulai: number | null = null;
+  let siap = false;
+  let stabilSejak: number | null = null;
+  let terakhirTerlihat: number | null = null;
+  let baseline: Baseline | null = null;
+  let progresTerakhir = 0;
+  const repLogs: LogTanpaId[] = [];
+
+  const ratakanDebug = (kunci: string, nilai: number | null): number | string => {
+    if (nilai === null) return '-';
+    rataDebug[kunci] ??= new RataBergerak(jendela);
+    return bulat(rataDebug[kunci].tambah(nilai), 1);
+  };
+
+  function perbaruiSiap(frame: PoseFrame | null, t: number, tubuhTerlihat: boolean): void {
+    if (siap) return;
+    if (tubuhTerlihat && frame) {
+      if (stabilSejak === null) {
+        stabilSejak = t;
+        pengumpul.reset();
+      }
+      terakhirTerlihat = t;
+      pengumpul.tambah(frame);
+      if (t - stabilSejak >= ATURAN_UMUM.stabilSiapDetik * 1000) {
+        siap = true;
+        baseline = pengumpul.hasil();
+      }
+    } else if (
+      stabilSejak !== null &&
+      (terakhirTerlihat === null || t - terakhirTerlihat > ATURAN_UMUM.toleransiCelahDetik * 1000)
+    ) {
+      stabilSejak = null;
+    }
+  }
+
+  function susutBahuTelinga(frame: PoseFrame): number | null {
+    if (!baseline) return null;
+    let maks: number | null = null;
+    for (const s of sisiPantau) {
+      const awal = baseline.telingaBahu[s];
+      const kini = jarakTelingaBahu(frame, s, vis);
+      if (awal === null || kini === null || !(awal > 0)) continue;
+      const susut = ((awal - kini) / awal) * 100;
+      maks = maks === null ? susut : Math.max(maks, susut);
+    }
+    return maks;
+  }
+
+  function update(frame: PoseFrame | null, t: number): TrackerSnapshot {
+    tMulai ??= t;
+    const f = frame !== null && frame.landmarks.length >= JUMLAH_LANDMARK ? frame : null;
+    const tubuhTerlihat = f !== null && semuaTerlihat(f.landmarks, titikAktif, vis);
+    perbaruiSiap(f, t, tubuhTerlihat);
+
+    let basis: BasisKoordinat | null = f ? basisFrame(f, izinkan3D) : null;
+    const siklus: Array<{ kanal: Kanal; p: PeristiwaSiklus }> = [];
+    for (const k of kanal) {
+      k.mentah = null;
+      k.nilai = null;
+      if (!f) continue;
+      let jumlah = 0;
+      let n = 0;
+      for (const s of k.sisiUkur) {
+        const h = ukurMetrik(metrik, f, s, izinkan3D, baseline, vis);
+        if (!h) continue;
+        jumlah += h.nilai;
+        n += 1;
+        basis = h.basis;
+      }
+      if (n === 0) continue;
+      k.mentah = jumlah / n;
+      k.nilai = k.rata.tambah(k.mentah);
+      if (siap) {
+        const p = k.counter.update(k.nilai, t);
+        if (p) siklus.push({ kanal: k, p });
+      }
+    }
+
+    // Kanal yang ditampilkan: yang sedang bergerak, selain itu yang nilainya paling tinggi.
+    const aktif =
+      kanal.find((k) => k.counter.fase !== 'BAWAH') ??
+      kanal.reduce((a, b) => ((b.nilai ?? -Infinity) > (a.nilai ?? -Infinity) ? b : a));
+    if (aktif.nilai !== null) progresTerakhir = progresNilai(aktif.nilai, def.ambangBawah, def.ambangAtas);
+
+    const miringMentah = f ? kemiringanBahu(f, vis) : null;
+    const miring = miringMentah === null ? null : rataMiring.tambah(miringMentah);
+    const susutMentah = f && siap ? susutBahuTelinga(f) : null;
+    const susut = susutMentah === null ? null : rataSusut.tambah(susutMentah);
+
+    const hasilForm = form.update({
+      t,
+      tubuhTerlihat,
+      siap,
+      sedangNaik: kanal.some((k) => k.counter.fase === 'NAIK' || k.counter.fase === 'ATAS'),
+      kemiringanBahu: miring,
+      susutBahuTelinga: susut,
+      siklus: siklus.map((s) => s.p),
+    });
+    const koreksiTampil = hasilForm.koreksi;
+    if (koreksiTampil) for (const k of kanal) k.koreksiSiklus.add(koreksiTampil.id);
+
+    let alasanTidakDihitung: TrackerSnapshot['alasanTidakDihitung'] = null;
+    for (const { kanal: k, p } of siklus) {
+      repLogs.push({
+        nomor: repLogs.length + 1,
+        dihitung: p.dihitung,
+        sudutPuncak: bulat(p.puncak, 1),
+        durasiSiklusDetik: bulat(p.durasiDetik, 2),
+        koreksi: [...k.koreksiSiklus],
+      });
+      k.koreksiSiklus.clear();
+      if (!p.dihitung && alasanTidakDihitung === null) {
+        alasanTidakDihitung = p.jenis === 'terlalu-cepat' ? 'terlalu-cepat' : 'rentang-kurang';
+      }
+    }
+
+    const debug: Record<string, number | string | boolean> = {
+      fase: aktif.counter.fase,
+      siap,
+      bersenjata: aktif.counter.bersenjata,
+      mode: basis === null ? '-' : basis === '3d' ? '3D' : '2D',
+      'nilai.mentah': aktif.mentah === null ? '-' : bulat(aktif.mentah, 1),
+      'nilai.rata': aktif.nilai === null ? '-' : bulat(aktif.nilai, 1),
+      'miring.bahu': miring === null ? '-' : bulat(miring, 1),
+      'susut.bahuTelinga': susut === null ? '-' : bulat(susut, 1),
+    };
+    if (bergantian) {
+      for (const k of kanal) {
+        debug[`fase.${k.kunci}`] = k.counter.fase;
+        debug[`nilai.${k.kunci}`] = k.nilai === null ? '-' : bulat(k.nilai, 1);
+      }
+    }
+    const basisDebug = f ? basisFrame(f, izinkan3D) : '2d';
+    for (const sendi of SENDI_DEBUG) {
+      for (const s of ['kiri', 'kanan'] as const) {
+        const kunci = `sudut.${sendi.sendi}.${s}`;
+        const sudut = f
+          ? sudutSendi(f, indeksTitik(sendi.a, s), indeksTitik(sendi.b, s), indeksTitik(sendi.c, s), basisDebug, vis)
+          : null;
+        const nilai = sudut === null ? null : sendi.fleksi ? 180 - sudut : sudut;
+        debug[kunci] = nilai === null ? '-' : bulat(nilai, 1);
+        debug[`${kunci}.rata`] = ratakanDebug(kunci, nilai);
+      }
+    }
+
+    return {
+      fase: aktif.counter.fase,
+      repetisi: kanal.reduce((s, k) => s + k.counter.repetisi, 0),
+      percobaan: kanal.reduce((s, k) => s + k.counter.percobaan, 0),
+      nilai: aktif.nilai,
+      satuan: def.satuan,
+      progres: progresTerakhir,
+      tubuhTerlihat,
+      siap,
+      koreksi: koreksiTampil,
+      koreksiBaru: hasilForm.koreksiBaru,
+      repetisiBaru: siklus.some((s) => s.p.dihitung),
+      percobaanTidakDihitung: alasanTidakDihitung !== null,
+      alasanTidakDihitung,
+      titikAktif,
+      debug,
+    };
+  }
+
+  function finish(t: number): TrackerResult {
+    const { skor, skorKomponen, saran } = hitungSkor({
+      repLogs,
+      targetRepetisi: opts.targetRepetisi,
+      ambangAtas: def.ambangAtas,
+      ambangBawah: def.ambangBawah,
+      tempoTargetDetik: def.tempoTargetDetik,
+    });
+    return {
+      repetisi: kanal.reduce((s, k) => s + k.counter.repetisi, 0),
+      percobaan: kanal.reduce((s, k) => s + k.counter.percobaan, 0),
+      durasiDetik: Math.max(0, Math.round((t - (tMulai ?? t)) / 1000)),
+      repLogs: repLogs.map((l) => ({ ...l, koreksi: [...l.koreksi] })),
+      skor,
+      skorKomponen,
+      saran,
+      koreksiTerhitung: { ...form.terhitung },
+    };
+  }
+
+  return { update, finish };
 }
