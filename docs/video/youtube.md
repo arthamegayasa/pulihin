@@ -3,7 +3,7 @@
 Visibilitas: **Unlisted** (Bab 14). Berkas: `video/out/pulihin-demo-final.mp4` (tanpa subtitle tertanam; unggah `docs/video/subtitle-en.srt` sebagai CC) atau `video/out/pulihin-demo-final-en.mp4` (subtitle Inggris tertanam).
 
 <!-- OTOMATIS:DURASI -->
-Durasi: **4:03** (243,3 dtk, dari `npm run srt`).
+Durasi: **4:03** (243,6 dtk, dari `npm run srt`).
 <!-- /OTOMATIS:DURASI -->
 
 ## Judul
@@ -41,8 +41,8 @@ Bab video:
 0:00 Masalah klinis
 0:33 Satu gerakan kecil
 1:19 Satu sesi utuh
-2:10 Keluarga dan afasia
-3:07 Terapis dan penutup
+2:11 Keluarga dan afasia
+3:08 Terapis dan penutup
 
 Subtitle Bahasa Inggris tersedia (CC).
 ```

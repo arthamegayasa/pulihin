@@ -38,34 +38,34 @@ export const DURASI_AUDIO: Record<string, number> = {
 
 export const SESI_META: SesiMeta | null = {
   "fps": 30,
-  "durasiDetik": 46.654,
+  "durasiDetik": 48.81,
   "berkas": {
     "layar": "layar-02-sesi-tekuk-siku.mp4",
     "lebar": "kamera-sesi-lebar.mp4"
   },
-  "siapDetik": 4.906,
+  "siapDetik": 7.036,
   "repetisiDetik": [
-    11.04,
-    14.339,
-    17.641,
-    20.939,
-    24.242,
-    27.541,
-    30.904,
-    34.145,
-    37.444,
-    40.742
+    13.233,
+    16.531,
+    19.831,
+    23.131,
+    26.434,
+    29.733,
+    33.09,
+    36.331,
+    39.633,
+    42.936
   ],
   "koreksi": [
     {
       "teks": "Rilekskan bahu, turunkan bahu Anda",
-      "mulaiDetik": 29.842,
-      "selesaiDetik": 31.339
+      "mulaiDetik": 32.333,
+      "selesaiDetik": 33.831
     }
   ],
-  "selesaiDetik": 40.742,
-  "ringkasanDetik": 42.591,
+  "selesaiDetik": 42.936,
+  "ringkasanDetik": 44.789,
   "ketukanDetik": [
-    3.408
+    5.003
   ]
 };

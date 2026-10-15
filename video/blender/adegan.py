@@ -73,7 +73,7 @@ def bahan_kayu(nama, hex_a, hex_b, skala=(1.0, 12.0, 1.0)):
     out = nt.nodes.new("ShaderNodeOutputMaterial")
     p = nt.nodes.new("ShaderNodeBsdfPrincipled")
     p.inputs["Roughness"].default_value = 0.55
-    p.inputs["Coat Weight"].default_value = 0.08
+    p.inputs["Coat Weight"].default_value = 0.0
     tc = nt.nodes.new("ShaderNodeTexCoord")
     mp = nt.nodes.new("ShaderNodeMapping")
     mp.inputs["Scale"].default_value = skala
@@ -333,12 +333,31 @@ def perabot_tambahan(kol, kayu):
               bahan_tanah_liat(f"BufetBuku{i}", warna[i], kasar=0.7, sss=0.0), kol, miring=0.003, rot=(0, 0, math.radians((3, -2, 5)[i])))
     kotak("BingkaiDepan", (0.7, 0.02, 0.5), (-0.75, -2.84, 1.55), bahan_tanah_liat("BingkaiDepan", "#E4DDD0", kasar=0.6, sss=0.0), kol, miring=0.006)
     kotak("BingkaiDepanIsi", (0.6, 0.01, 0.4), (-0.75, -2.83, 1.55), bahan_tanah_liat("BingkaiDepanIsi", "#B9805A", kasar=0.8, sss=0.0), kol)
-    tanaman(Vector((0.8, -2.55, 0.0)), kol, skala=1.35, nama="TanamanTinggi")
+    tanaman(Vector((1.2, -2.6, 0.0)), kol, skala=1.15, nama="TanamanTinggi")
     kotak("Rak", (0.22, 0.9, 0.025), (-2.04, -0.9, 1.25), kayu, kol, miring=0.004)
     for i in range(6):
         tinggi_b = 0.17 + 0.03 * ((i * 7) % 3)
         kotak(f"RakBuku{i}", (0.16, 0.035, tinggi_b), (-2.05, -1.22 + i * 0.045, 1.2625 + tinggi_b / 2),
               bahan_tanah_liat(f"RakBuku{i}", ("#2F6A64", "#E8DCC4", "#B9805A", "#C9D8D4", "#6E655E", "#0B4F4A")[i], kasar=0.7, sss=0.0), kol, miring=0.003)
+
+
+def buku(nama, w, d, t, pusat, sudut, warna, kol):
+    """Buku tergeletak: sampul atas/bawah sedikit lebih lebar dari blok halaman krem (tepi halaman terlihat
+    di tiga sisi), punggung membulat di sisi -X. Semua bagian berawalan `nama` (shot kertas menyembunyikannya)."""
+    from mathutils import Matrix
+
+    rot = Matrix.Rotation(sudut, 4, "Z")
+    sampul = bahan_tanah_liat(nama + ".Sampul", warna, kasar=0.6, sss=0.0)
+    halaman = bahan_tanah_liat("HalamanBuku", "#EFE6D2", kasar=0.85, sss=0.0)
+    tebal_s = 0.0025
+    bagian = (
+        (".Halaman", (w - 0.008, d - 0.008, t - 2 * tebal_s), (0.003, 0, 0), halaman, 0.001),
+        (".Atas", (w, d, tebal_s), (0, 0, t / 2 - tebal_s / 2), sampul, 0.001),
+        (".Bawah", (w, d, tebal_s), (0, 0, -t / 2 + tebal_s / 2), sampul, 0.001),
+        (".Punggung", (0.008, d, t), (-w / 2 + 0.004, 0, 0), sampul, min(0.0039, t / 2 - 0.0005)),
+    )
+    for akhir, ukuran, geser, bahan, miring in bagian:
+        kotak(nama + akhir, ukuran, pusat + rot @ Vector(geser), bahan, kol, miring=miring, rot=(0, 0, sudut))
 
 
 def karpet(kol, pusat=Vector((0.0, -0.47, 0.0))):
@@ -388,9 +407,8 @@ def bangun_ruang(ponsel=PONSEL_POS, balik=False):
     for i, (w, t) in enumerate(((0.24, 0.035), (0.22, 0.028), (0.2, 0.03), (0.18, 0.025))):
         if z + t > bawah_ponsel - 0.03:
             break
-        kotak(f"Buku{i}", (w, 0.16, t), mj + Vector((0.01 * (i % 2), 0.02, z + t / 2)),
-              bahan_tanah_liat(f"Buku{i}", warna_buku[i], kasar=0.7, sss=0.0), kol, miring=0.003,
-              rot=(0, 0, math.radians((-3, 2, -1, 4)[i])))
+        buku(f"Buku{i}", w, 0.16, t, mj + Vector((0.008 * (-1) ** i, 0.02 + 0.006 * (i % 3 - 1), z + t / 2)),
+             math.radians((-4, 3, -2, 5)[i]), warna_buku[i], kol)
         z += t
     # Dudukan ponsel sederhana (tanah liat teal tua): alas + bibir di depan layar + sandaran di belakang.
     teal = bahan_tanah_liat("Dudukan", BRAND["primer"], kasar=0.5, sss=0.0)
@@ -451,6 +469,14 @@ def bangun_ponsel(kol, bahan_layar=None, pos=PONSEL_POS, balik=False):
     """Ponsel tegak di dudukan. Biasanya layar menghadap karakter (+Y) seperti saat latihan, kamera depan
     di atas layar; `balik` memutar ponsel sehingga layar menghadap -Y (penonton)."""
     badan = kotak("Ponsel.Badan", PONSEL_UKURAN, pos, bahan_tanah_liat("PonselBadan", "#1E2426", kasar=0.35, sss=0.0), kol, miring=0.006)
+    # Punggung ponsel: modul kamera membulat dengan dua lensa, agar terbaca sebagai ponsel dari depan.
+    sb = -1.0 if balik else 1.0
+    punggung = pos.y - (PONSEL_UKURAN[1] / 2 + 0.0012) * sb
+    modul = kotak("Ponsel.ModulKamera", (0.024, 0.0026, 0.038), Vector((pos.x - 0.019 * sb, punggung, pos.z + PONSEL_UKURAN[2] / 2 - 0.03)),
+                  bahan_tanah_liat("PonselModul", "#2A3134", kasar=0.3, sss=0.0), kol, miring=0.006)
+    for j, dz in enumerate((0.009, -0.009)):
+        silinder(f"Ponsel.Lensa{j}", 0.0065, 0.003, modul.location + Vector((0, -0.0015 * sb, dz)),
+                 bahan_tanah_liat("PonselLensa", "#0C0F10", kasar=0.08, sss=0.0), kol, verts=24, rot=(math.radians(90), 0, 0), miring=0.001)
     s = -1.0 if balik else 1.0
     bpy.ops.mesh.primitive_plane_add(size=1, location=pos + Vector((0, (PONSEL_UKURAN[1] / 2 + 0.0004) * s, 0)),
                                      rotation=(math.radians(90), 0, math.radians(0 if balik else 180)))

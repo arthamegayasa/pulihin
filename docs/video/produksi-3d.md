@@ -38,13 +38,13 @@ Unduh paket aset dari `https://files.makehumancommunity.org/asset_packs/makehuma
 | Berkas | Isi |
 |---|---|
 | `video/blender/karakter.py` | membangun Pak Budi dengan MPFB (laki-laki ~58 th, perut sedikit, wajah tenang: kelopak sedikit turun, sudut bibir sedikit naik), rig, pakaian, bahan tanah liat, rambut pahat -> `video/blender/karakter.blend` |
-| `video/blender/bahan.py` | bahan tanah liat, pemetaan bahan pakaian per pulau UV, lengan pendek, kulit tersembunyi di bawah celana, rambut |
-| `video/blender/pose.py` | pose duduk (rotasi delta ruang armature -> `matrix_basis`), `JadwalSesi` (diam 5 dtk, 10 repetisi x 3,3 dtk: naik 1,4 / tahan 0,35 / turun 1,25 / istirahat 0,3; repetisi 7 bahu kanan terangkat 26° + kepala miring 5°) |
-| `video/blender/adegan.py` | ruang, cahaya jendela kiri depan, kamera POV ponsel, bahan layar video |
-| `video/blender/render_sesi.py` | render POV kamera depan ponsel 480x480 -> `out/sesi-pov.y4m` |
-| `video/blender/render_lebar.py` | shot sinematik: `sesi`, `afasia`, `kertas`, `ragu`, `penutup` |
+| `video/blender/bahan.py` | bahan tanah liat, pemetaan bahan pakaian per pulau UV, lengan pendek, kulit tersembunyi di bawah celana, rambut pendek beruban (salt-and-pepper): kulit kepala dipotong tiga bidang, tebal maks ±8 mm, tepi memudar lewat alfa bernoise (atribut `garis`) dengan pelipis sedikit mundur, warna helai gelap/abu/terang dari noise memanjang, pelipis lebih abu, guratan sisir (bump) |
+| `video/blender/pose.py` | pose duduk (rotasi delta ruang armature -> `matrix_basis`), `JadwalSesi` (diam 5 dtk, 10 repetisi x 3,3 dtk: naik 1,4 / tahan 0,35 / turun 1,25 / istirahat 0,3; repetisi 7 bahu kanan terangkat 24° + kepala miring 5°), tangan menggenggam longgar (`jari` 1,1) |
+| `video/blender/adegan.py` | ruang (lantai papan kontras rendah, karpet anyam, dinding bergradasi, jendela bertirai di kiri karakter, bufet + bingkai + tanaman tinggi di dinding depan, rak di dinding belakang/kanan, buku bertepi halaman, ponsel dengan modul kamera di punggung), cahaya (kunci jendela kiri depan, matahari tipis, isi sejuk, dua pinggir, sapuan dinding, fast-GI/AO; 48 sampel untuk shot lebar), kamera POV ponsel, bahan layar video |
+| `video/blender/render_sesi.py` | render POV kamera depan ponsel 480x480 -> `out/sesi-pov.y4m` (+ `sesi-pov.jadwal.json`) |
+| `video/blender/render_lebar.py` | shot sinematik: `sesi` (dua sudut A/B dengan potongan dari `sesi-meta.json`), `afasia`, `kertas`, `ragu`, `penutup` |
 | `video/blender/buat-kertas.mjs` | tekstur lembar "Program Latihan di Rumah" -> `out/kertas-program.png` |
-| `video/scripts/rekam-sesi-3d.mjs` | rekaman layar aplikasi asli dengan POV sebagai kamera palsu -> layar-02 + `sesi-meta.json` |
+| `video/scripts/rekam-sesi-3d.mjs` | rekaman layar aplikasi asli dengan POV sebagai kamera palsu -> layar-02 + `sesi-meta.json` (`--ketuk=5` detik ketukan "Mulai dengan Kamera", `--meta-saja`) |
 
 Render dan rekaman ada di `video/blender/out/` (di-gitignore).
 
@@ -55,15 +55,16 @@ B=D:/Tools/blender/blender.exe
 $B -b -P video/blender/karakter.py
 $B -b video/blender/karakter.blend -P video/blender/render_sesi.py -- --kamera pov --jumlah 10 --rep-bahu 7 --diam 5 --ekor 8 --keluar video/blender/out/sesi-pov
 cd video && node scripts/rekam-sesi-3d.mjs && cd ..          # keluar kode 0 = Siap, 10/10, koreksi bahu, tanpa koreksi lain
-$B -b video/blender/karakter.blend -P video/blender/render_lebar.py -- --shot sesi
+$B -b video/blender/karakter.blend -P video/blender/render_lebar.py -- --shot sesi   # 48 sampel EEVEE (default render_lebar)
 ffmpeg -sseof -0.5 -i video/out/footage-asli/layar-03-ringkasan-beranda.mp4 -frames:v 1 video/blender/out/beranda-asli-setelah.png
 node video/blender/buat-kertas.mjs
 for s in afasia kertas ragu penutup; do $B -b video/blender/karakter.blend -P video/blender/render_lebar.py -- --shot $s; done
 ```
 
-Lalu enkode untuk Remotion (yuv420p rentang terbatas, keyframe tiap 1 dtk, faststart), contoh:
-`ffmpeg -i video/blender/out/<slot>.mp4 -vf scale=1280:720 -c:v libx264 -crf 18 -pix_fmt yuv420p -color_range tv -g 30 -keyint_min 30 -sc_threshold 0 -movflags +faststart -an video/public/footage/<slot>.mp4`
-(rekaman ponsel 720x1600 dibuat langsung oleh `rekam-sesi-3d.mjs`).
+Lalu enkode untuk Remotion (yuv420p rentang terbatas, keyframe tiap 1 dtk, faststart):
+`ffmpeg -i video/blender/out/<slot>.mp4 -c:v libx264 -crf 18 -pix_fmt yuv420p -color_range tv -g 30 -keyint_min 30 -sc_threshold 0 -movflags +faststart -an video/public/footage/<slot>.mp4`
+(sesi/afasia 1280x720, kertas/ragu/penutup 1920x1080 sesuai render; rekaman ponsel 720x1600 dibuat langsung
+oleh `rekam-sesi-3d.mjs`). Waktu render di laptop ini: POV 1380 frame ±11 mnt, `sesi` 1464 frame ±51 mnt.
 
 ## Catatan teknis
 
@@ -76,23 +77,31 @@ Lalu enkode untuk Remotion (yuv420p rentang terbatas, keyframe tiap 1 dtk, fasts
   layar-02 asli.
 - Semua waktu di `sesi-meta.json` dibaca dari perubahan teks layar aplikasi selama perekaman (dicatat tiap
   50 ms), bukan dari rencana animasi.
+- `kamera-sesi-lebar` berganti sudut lewat penanda kamera (`timeline_markers`), hanya di batas repetisi
+  (saat hitungan aplikasi berganti) dan saat pesan koreksi asli muncul, dibaca dari `sesi-meta.json`:
+  sudut A (3/4 depan, kepala sampai lutut, punggung ponsel + dudukan di latar depan, f/2) sampai hitungan 4;
+  sudut B (di belakang-kanan karakter ke layar ponsel, lensa 100 mm, rekaman layar-02 asli terbaca) dari
+  hitungan 4 sampai 6 ("5 / 10"); A dari hitungan 6 (bahu terangkat di repetisi 7); B saat pesan koreksi
+  muncul sampai hitungan 8; A dari hitungan 8 sampai Ringkasan. Kedua kamera bergeser sangat pelan.
+- Ketukan "Mulai dengan Kamera" di detik 5 rekaman (`--ketuk`), sehingga "Siap" baru muncul setelah ±7 dtk.
 
 ## Hasil yang benar-benar dihitung aplikasi
 
 Log mentah: `video/blender/out/rekam-sesi-3d.json` (perubahan teks layar tiap 50 ms); ringkasan:
 `video/blender/out/sesi-meta.json`.
 
-Perekaman 15 Okt 2026 (aplikasi produksi, `sesi-meta.json`, detik di dalam `layar-02`):
+Perekaman 15 Okt 2026, tampilan premium (aplikasi produksi, `sesi-meta.json`, detik di dalam `layar-02`,
+durasi 48,81 dtk):
 
 | Peristiwa di layar aplikasi | Detik |
 |---|---|
-| Ketuk "Mulai dengan Kamera" | 3,408 |
-| Kamera (render POV) mulai | 3,643 |
-| "Siap! Silakan mulai pelan pelan." | 4,906 |
-| Hitungan 1 … 10 | 11,040 · 14,339 · 17,641 · 20,939 · 24,242 · 27,541 · 30,904 · 34,145 · 37,444 · 40,742 |
-| "Rilekskan bahu, turunkan bahu Anda" (repetisi 7, satu-satunya koreksi) | 29,842 – 31,339 |
-| "Hebat! Target 10 kali tercapai." | 40,742 |
-| Halaman Ringkasan (skor 100, 10/10, 37 dtk) | 42,591 |
+| Ketuk "Mulai dengan Kamera" | 5,003 |
+| Kamera (render POV) mulai | 5,830 |
+| "Siap! Silakan mulai pelan pelan." | 7,036 |
+| Hitungan 1 … 10 | 13,233 · 16,531 · 19,831 · 23,131 · 26,434 · 29,733 · 33,090 · 36,331 · 39,633 · 42,936 |
+| "Rilekskan bahu, turunkan bahu Anda" (repetisi 7, satu-satunya koreksi) | 32,333 – 33,831 |
+| "Hebat! Target 10 kali tercapai." | 42,936 |
+| Halaman Ringkasan (skor 100, 10/10, 37 dtk) | 44,789 |
 
 Tidak ada koreksi lain ("Perlambat gerakan", "Tegakkan badan", "Mundur sedikit", "Sedikit lagi") selama
 sesi. `node scripts/rekam-sesi-3d.mjs` keluar dengan kode 0 hanya bila semua syarat ini terpenuhi.

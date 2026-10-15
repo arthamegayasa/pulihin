@@ -84,147 +84,147 @@ angle: a full bend, then straighten again.
 Look at the count: five out of ten.
 
 19
-00:01:19,673 --> 00:01:21,319
+00:01:20,034 --> 00:01:21,680
 Now the shoulder hikes up.
 
 20
-00:01:21,669 --> 00:01:24,960
+00:01:22,030 --> 00:01:25,321
 [App voice] Relax your shoulder,
 lower your shoulder.
 
 21
-00:01:25,460 --> 00:01:30,319
+00:01:25,821 --> 00:01:30,680
 The app corrects right away, by voice
 and in large text, in Indonesian.
 
 22
-00:01:31,819 --> 00:01:34,326
+00:01:32,180 --> 00:01:34,687
 So it is not just counting:
 it guards how each
 
 23
-00:01:34,366 --> 00:01:37,357
+00:01:34,727 --> 00:01:37,718
 movement is done, all the
 way to the tenth repetition.
 
 24
-00:01:38,857 --> 00:01:41,370
+00:01:39,218 --> 00:01:41,731
 At the end of the session there is a score
 
 25
-00:01:41,410 --> 00:01:44,226
+00:01:41,771 --> 00:01:44,587
 and a simple summary:
 repetitions and duration.
 
 26
-00:01:44,266 --> 00:01:47,974
+00:01:44,627 --> 00:01:48,335
 The labels are easy to read,
 from Needs Support to Very Good.
 
 27
-00:01:52,357 --> 00:01:54,780
+00:01:52,718 --> 00:01:55,141
 There is one tip for the next session.
 
 28
-00:01:54,820 --> 00:01:59,227
+00:01:55,181 --> 00:01:59,588
 This summary is not a diagnosis,
 and that disclaimer always appears.
 
 29
-00:02:01,357 --> 00:02:05,753
+00:02:01,718 --> 00:02:06,114
 Back on the home screen, Elbow Flexion
 is marked done, with its score.
 
 30
-00:02:05,793 --> 00:02:09,089
+00:02:06,154 --> 00:02:09,450
 The exercise is recorded,
 and the family can see it.
 
 31
-00:02:11,357 --> 00:02:13,365
+00:02:11,718 --> 00:02:13,726
 The family no longer has to guess.
 
 32
-00:02:13,405 --> 00:02:16,918
+00:02:13,766 --> 00:02:17,279
 The For Family page shows a flag
 when exercise has stopped,
 
 33
-00:02:16,958 --> 00:02:20,030
+00:02:17,319 --> 00:02:20,391
 today's status, and a chart
 of the last seven days.
 
 34
-00:02:25,857 --> 00:02:28,020
+00:02:26,218 --> 00:02:28,381
 The 14-day score trend is there too.
 
 35
-00:02:28,060 --> 00:02:32,832
+00:02:28,421 --> 00:02:33,193
 The weekly summary can be copied with
 one tap, ready to send to the therapist.
 
 36
-00:02:38,857 --> 00:02:41,914
+00:02:39,218 --> 00:02:42,275
 For patients with speech
 difficulties, or aphasia,
 
 37
-00:02:41,954 --> 00:02:46,537
+00:02:42,315 --> 00:02:46,898
 there is Speech Practice in Indonesian,
 with words used at home every day.
 
 38
-00:02:50,857 --> 00:02:54,540
+00:02:51,218 --> 00:02:54,901
 The example word can be heard first,
 then the word is spoken.
 
 39
-00:02:55,040 --> 00:02:58,499
+00:02:55,401 --> 00:02:58,860
 In Self-Practice Mode,
 the companion scores
 
 40
-00:02:58,539 --> 00:03:01,184
+00:02:58,900 --> 00:03:01,545
 with one tap: Correct, or Repeat.
 
 41
-00:03:01,224 --> 00:03:02,851
+00:03:01,585 --> 00:03:03,212
 The result is saved.
 
 42
-00:03:08,357 --> 00:03:11,636
+00:03:08,718 --> 00:03:11,997
 On the Therapist Dashboard,
 the therapist can set the programme
 
 43
-00:03:11,676 --> 00:03:14,574
+00:03:12,037 --> 00:03:14,935
 and follow progress without
 waiting for the next visit.
 
 44
-00:03:19,357 --> 00:03:22,125
+00:03:19,718 --> 00:03:22,486
 In this prototype,
 the programme the therapist saves
 
 45
-00:03:22,165 --> 00:03:24,973
+00:03:22,526 --> 00:03:25,334
 becomes Today's Exercises on
 that patient's profile.
 
 46
-00:03:33,857 --> 00:03:36,124
+00:03:34,218 --> 00:03:36,485
 PULIHIN does not replace the therapist.
 
 47
-00:03:36,164 --> 00:03:40,779
+00:03:36,525 --> 00:03:41,140
 It helps make sure that what the therapist
 teaches is truly practised at home.
 
 48
-00:03:41,279 --> 00:03:45,908
+00:03:41,640 --> 00:03:46,269
 This is still a competition prototype,
 not a regulated medical device.
 
 49
-00:03:45,948 --> 00:03:48,149
+00:03:46,309 --> 00:03:48,510
 Try it now at pulihin.vercel.app.

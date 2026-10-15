@@ -1,9 +1,27 @@
 {
-  "dipindai": "2026-10-15T01:53:00.548Z",
+  "dipindai": "2026-10-15T05:30:46.778Z",
   "footage": {
+    "broll-kertas-program.mp4": {
+      "bytes": 3642996,
+      "durasi": 10,
+      "lebar": 1920,
+      "tinggi": 1080
+    },
+    "broll-pemeran-ragu.mp4": {
+      "bytes": 3943142,
+      "durasi": 11,
+      "lebar": 1920,
+      "tinggi": 1080
+    },
+    "kamera-afasia-lebar.mp4": {
+      "bytes": 3597788,
+      "durasi": 22,
+      "lebar": 1280,
+      "tinggi": 720
+    },
     "kamera-sesi-lebar.mp4": {
-      "bytes": 8588306,
-      "durasi": 46.667,
+      "bytes": 7373963,
+      "durasi": 48.8,
       "lebar": 1280,
       "tinggi": 720
     },
@@ -14,8 +32,8 @@
       "tinggi": 1600
     },
     "layar-02-sesi-tekuk-siku.mp4": {
-      "bytes": 7388695,
-      "durasi": 46.666,
+      "bytes": 7630594,
+      "durasi": 48.8,
       "lebar": 720,
       "tinggi": 1600
     },
@@ -42,6 +60,12 @@
       "durasi": 26,
       "lebar": 1280,
       "tinggi": 720
+    },
+    "penutup-3d.mp4": {
+      "bytes": 9005043,
+      "durasi": 27,
+      "lebar": 1920,
+      "tinggi": 1080
     }
   },
   "audio": {
