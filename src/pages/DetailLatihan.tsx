@@ -4,7 +4,6 @@ import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { BigButton, BigLink } from '@/components/BigButton';
 import { PageHeader } from '@/components/PageHeader';
 import { SafetyNotice } from '@/components/SafetyNotice';
-import { ExerciseDemo } from '@/features/pose/ExerciseDemo';
 import { getExercise } from '@/features/pose/exerciseDefinitions';
 import { LABEL_POSISI, labelSendi } from '@/features/pose/labels';
 import { PhonePlacement } from '@/features/pose/PhonePlacement';
@@ -72,18 +71,13 @@ export default function DetailLatihan() {
       {/* Pilihan sisi di atas contoh gerakan: terlihat di layar pertama (tidak tertutup bilah Mulai) dan contoh langsung mengikuti. */}
       {pilihSisi && <PilihSisi nilai={sisiLatihan} onPilih={(s) => setPrefs({ sisiLatihan: s })} />}
 
-      {def.animasiAtauVideo === 'bawaan' ? (
-        <ExerciseDemo exerciseId={def.id} nama={def.nama} sisi={pilihSisi ? sisiLatihan : undefined} tempoDetik={def.tempoTargetDetik} />
-      ) : (
-        <VideoPeraga
-          key={def.id}
-          exerciseId={def.id}
-          nama={def.nama}
-          basePath={def.animasiAtauVideo}
-          sisi={pilihSisi ? sisiLatihan : undefined}
-          tempoDetik={def.tempoTargetDetik}
-        />
-      )}
+      <VideoPeraga
+        key={def.id}
+        nama={def.nama}
+        basePath={def.animasiAtauVideo}
+        sisi={pilihSisi ? sisiLatihan : undefined}
+        tempoDetik={def.tempoTargetDetik}
+      />
 
       {/* Dua kolom bila muat (lebar >= 17rem: huruf normal di layar 360px); Huruf Lebih Besar: bertumpuk agar kata tidak terpotong. */}
       <div className="@container">

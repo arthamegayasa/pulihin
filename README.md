@@ -41,7 +41,7 @@ Sesi kamera: dari Beranda pasien ketuk **Mulai: Tekuk Siku** lalu **Mulai dengan
 | Kode | Modul | Status | Bukti utama |
 |---|---|---|---|
 | F1 | Latihan gerak berbasis kamera | Selesai | `src/features/pose/` (PoseEngine, tracker, RepCounter, FormChecker), `src/pages/SesiKamera.tsx`, uji `src/features/pose/*.test.ts` termasuk replay rekaman manusia nyata |
-| F2 | Pustaka 10 latihan sebagai data | Selesai | `src/features/pose/exerciseDefinitions.ts` (uji `exerciseDefinitions.test.ts`); uji "mengubah ambang di definisi mengubah hitungan tanpa mengubah logika" di `tracker.test.ts` |
+| F2 | Pustaka 10 latihan sebagai data + video peraga 3D | Selesai | `src/features/pose/exerciseDefinitions.ts` (uji `exerciseDefinitions.test.ts`); uji "mengubah ambang di definisi mengubah hitungan tanpa mengubah logika" di `tracker.test.ts`. Panduan visual: 10 video peraga 3D gaya klinis (otot yang bekerja menyala, cincin di sendi target) di `public/peraga/` (±2,6 MB total termasuk poster, 175–375 KB video per latihan), komponen `VideoPeraga.tsx` (sisi kiri dicerminkan, tombol Jeda, poster saat gerak dikurangi/Penghemat Data, bisa diputar luring), sumber Blender di `peraga3d/` |
 | F3 | Terapi afasia 100 kata Bahasa Indonesia | Selesai | `src/features/speech/wordBank.ts` (100 kata, 30/25/15/15/15), `SpeechScorer.ts`, `recognizer.ts`, Mode Latihan Mandiri |
 | F4 | Pengingat dan streak | Selesai | `src/features/adherence/`, Beranda, Pengaturan (jadwal tersimpan), notifikasi PWA saat aplikasi terbuka |
 | F5 | Dashboard caregiver "Untuk Keluarga" | Selesai | `src/pages/Pendamping.tsx`, red flag non medis `redFlags.ts`, ringkasan WhatsApp |
@@ -202,7 +202,7 @@ Diisi pemilik produk. Nilai yang tampil di aplikasi dikumpulkan di `src/config/i
 - Domain `pulihinapp.id`: per 13 Okt 2026 belum terdaftar (DNS NXDOMAIN). Setelah didaftarkan dan diarahkan ke Vercel, ubah `urlPublik` di `src/config/identitas.ts`. Penempatan tautan aplikasi saat ini `/app`.
 - Model HP uji kelas bawah dan versi Chrome; hasil uji 50 repetisi dan fps di perangkat; tanggal uji.
 - Jam pengingat default (saat ini saran spec: 08.00 gerak, 16.00 bicara).
-- Aset animasi/video contoh gerakan bila pemilik produk punya sendiri (saat ini animasi figur bawaan).
+- Video peraga dari terapis sendiri bila pemilik produk ingin mengganti video peraga 3D bawaan (`public/peraga/`, dibuat dari `peraga3d/`).
 - Tautan YouTube video demo (video tanpa rekaman manusia: karakter 3D + narasi sintetis, lihat `docs/video/README.md`).
 
 ## Laporan serah terima (Bab 19.4)

@@ -110,16 +110,22 @@ def bahan_kulit(bagian="kulit"):
     P = Pohon(m)
     kepala = P.attr("kulit_kepala")
     otot = P.attr("otot")
+    otot_b = P.attr("otot_b")
     kuat = P.attr("kuat_otot", "OBJECT")
+    kuat_b = P.attr("kuat_otot_b", "OBJECT")
     dasar = {"kulit": "#A3B2BE", "bibir": "#94A2AE", "kuku": "#B5C1CA"}[bagian]
     # Tepi fresnel lebih terang: kesan resin bening, siluet terbaca di atas latar.
     warna = P.campur(srgb(dasar), srgb("#E4EEF3"), P.math("MULTIPLY", P.fresnel(0.3, 2.4), 0.45))
     # Kulit kepala di bawah rambut = warna rambut, celah antarhelai tidak tampak putih.
     warna = P.campur(warna, srgb("#66737D"), P.math("POWER", kepala.outputs["Fac"], 0.7))
     # Masker diperkuat (x1,5, dibatasi 1) agar wilayah yang tipis/landai (mis. deltoid) tetap menyala penuh.
+    # Dua kanal (otot / otot_b) dengan kekuatan masing-masing; kanal b kosong pada latihan satu fase.
     m_ = P.math("POWER", P.math("MULTIPLY", otot.outputs["Fac"], 1.5, clamp=True), 0.8)
+    m_b = P.math("POWER", P.math("MULTIPLY", otot_b.outputs["Fac"], 1.5, clamp=True), 0.8)
     k = P.math("MULTIPLY_ADD", kuat.outputs["Fac"], 0.97, 0.03)
-    nyala = P.math("MULTIPLY", m_, k)
+    k_b = P.math("MULTIPLY_ADD", kuat_b.outputs["Fac"], 0.97, 0.03)
+    nyala = P.math("ADD", P.math("MULTIPLY", m_, k), P.math("MULTIPLY", m_b, k_b))
+    m_ = P.math("MAXIMUM", m_, m_b)
     # Wilayah otot sedikit bersemu saat istirahat (terbaca), penuh oranye saat kontraksi.
     warna = P.campur(warna, srgb(ORANYE), P.math("MULTIPLY_ADD", nyala, 0.85, P.math("MULTIPLY", m_, 0.06)), "MIX")
     b = P.bsdf(**{"Roughness": 0.42, "Subsurface Weight": 0.35, "Subsurface Scale": 0.03,
@@ -266,7 +272,9 @@ def lampu(nama, lokasi, target, energi, warna=(1, 1, 1), ukuran=1.0, sebar=None)
 
 
 def tata_cahaya(azimut_kamera):
-    pusat = Vector((-0.05, -0.1, 0.8))
+    # Titik bidik cahaya dari adegan (posisi: duduk/berdiri): `pusat_cahaya` = dada, `bahu_cahaya` = garis bahu.
+    sc = bpy.context.scene
+    pusat = Vector(sc["pusat_cahaya"])
 
     def kutub(az_deg, elev_deg, jarak, p=pusat):
         a, e = math.radians(az_deg), math.radians(elev_deg)
@@ -278,7 +286,7 @@ def tata_cahaya(azimut_kamera):
     lampu("Isi", kutub(cam + 50, 8, 3.6), pusat, 20, (0.93, 0.97, 1.0), 3.6)
     # Dua cahaya pinggir dari belakang, hampir mendatar dengan sebaran sempit: menyorot tepi siluet tanpa menerangi
     # latar atau lantai di depan figur.
-    bahu = Vector((-0.05, 0.0, 1.0))
+    bahu = Vector(sc["bahu_cahaya"])
     lampu("PinggirA", kutub(cam + 150, 12, 2.4, bahu), bahu + Vector((0, 0, 0.15)), 120, (0.95, 1.0, 1.0), 0.6, 30)
     lampu("PinggirB", kutub(cam - 150, 16, 2.4, bahu), bahu + Vector((0, 0, 0.15)), 105, (1.0, 1.0, 1.0), 0.6, 30)
     # Cahaya atas lembut: bayangan kontak di bawah kursi dan sepatu (figur "menapak" lantai).
@@ -417,10 +425,13 @@ def terapkan(sampel=SAMPEL):
     o["Rambut"].data.materials.clear()
     o["Rambut"].data.materials.append(bahan_rambut())
     kayu = bahan_kayu()
-    for ob in bpy.data.collections["Kursi"].objects:
+    for ob in bpy.data.collections["Perabot"].objects:
         ob.material_slots[0].material = kayu
     o["Cyc"].material_slots[0].material = bahan_cyc()
-    o["Cincin"].material_slots[0].material = bahan_cincin()
+    cincin = bahan_cincin()
+    for ob in o:
+        if ob.name.startswith("Cincin"):
+            ob.material_slots[0].material = cincin
 
     tata_cahaya(bpy.context.scene["azimut_kamera"])
     dunia()

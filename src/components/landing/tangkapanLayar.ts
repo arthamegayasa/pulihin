@@ -35,7 +35,7 @@ export const LAYAR = {
   },
   detail: {
     src: '/landing/detail-latihan.webp',
-    alt: 'Tangkapan layar Detail Latihan "Angkat Lengan ke Depan": gambar posisi mulai dan puncak, target 10 kali, pilihan sisi, dan tombol Mulai dengan Kamera.',
+    alt: 'Tangkapan layar Detail Latihan "Angkat Lengan ke Depan": video peraga 3D dengan otot bahu yang bekerja ditandai oranye, pilihan sisi, dan tombol Mulai dengan Kamera.',
     ...UKURAN,
   },
   klinisi: {

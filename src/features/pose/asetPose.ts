@@ -86,13 +86,13 @@ async function unduhKeCache(cache: Cache, url: string): Promise<void> {
   if (pembaca) while (!(await pembaca.read()).done);
 }
 
-/** Video + kedua poster untuk tiap latihan program pasien aktif yang sudah memakai video peraga. */
+/** Video + kedua poster untuk tiap latihan program pasien aktif. */
 async function unduhPeragaProgram(): Promise<void> {
   const program = await getProgram(getPrefs().activePatientId);
   const basis = new Set<string>();
   for (const item of program?.items ?? []) {
     const aset = getExercise(item.latihanId)?.animasiAtauVideo;
-    if (aset !== undefined && aset !== 'bawaan') basis.add(aset);
+    if (aset !== undefined) basis.add(aset);
   }
   if (basis.size === 0) return;
   const cache = await caches.open(CACHE_PERAGA);

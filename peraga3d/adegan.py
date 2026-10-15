@@ -77,13 +77,32 @@ def silinder_miring(nama, a, b, r_a, r_b):
     return o
 
 
-def buat_kursi(dudukan_z, y_belakang, y_depan, setengah_lebar, sandaran_y):
-    """Kursi kayu modern: dudukan membulat, empat kaki meruncing sedikit terbuka, sandaran melengkung."""
+def ke_perabot(bagian):
+    """Pindahkan objek ke koleksi "Perabot" (bahan kayu diberikan tampilan.py)."""
+    perabot = bpy.data.collections.get("Perabot")
+    if perabot is None:
+        perabot = bpy.data.collections.new("Perabot")
+        bpy.context.scene.collection.children.link(perabot)
+    kayu = bpy.data.materials.get("Kayu") or bpy.data.materials.new("Kayu")
+    for o in bagian:
+        for c in o.users_collection:
+            c.objects.unlink(o)
+        perabot.objects.link(o)
+        o.data.materials.clear()
+        o.data.materials.append(kayu)
+    return bagian
+
+
+def buat_kursi(dudukan_z, y_belakang, y_depan, setengah_lebar, sandaran_y, papan=(0.34, 0.13), rel_z=None):
+    """Kursi kayu modern: dudukan membulat, empat kaki meruncing sedikit terbuka, sandaran melengkung
+    (`papan` = (tinggi pusat di atas dudukan, tinggi papan)). `rel_z`: tiang naik sampai ketinggian ini dan
+    ditutup rel bulat melintang (pegangan untuk latihan berdiri)."""
     bagian = []
     tebal = 0.032
     cy = (y_belakang + y_depan) / 2
     d = y_belakang - y_depan
     bagian.append(kotak("Kursi.dudukan", (2 * setengah_lebar, d, tebal), (0, cy, dudukan_z - tebal / 2), bevel=0.012, seg=4))
+    puncak = rel_z if rel_z is not None else dudukan_z + 0.43
     for sx in (-1, 1):
         for sy, yy in ((-1, y_depan + 0.035), (1, y_belakang - 0.035)):
             x = sx * (setengah_lebar - 0.035)
@@ -91,9 +110,12 @@ def buat_kursi(dudukan_z, y_belakang, y_depan, setengah_lebar, sandaran_y):
             bawah = (x + sx * 0.025, yy + sy * 0.03, 0.0)
             bagian.append(silinder_miring(f"Kursi.kaki.{sx}{sy}", atas, bawah, 0.017, 0.012))
         x = sx * (setengah_lebar - 0.04)  # tiang sandaran melanjutkan kaki belakang
-        bagian.append(silinder_miring(f"Kursi.tiang.{sx}", (x, sandaran_y + 0.061, dudukan_z + 0.43), (x, y_belakang - 0.035, dudukan_z - tebal), 0.015, 0.017))
+        bagian.append(silinder_miring(f"Kursi.tiang.{sx}", (x, sandaran_y + 0.061, puncak), (x, y_belakang - 0.035, dudukan_z - tebal), 0.015, 0.017))
+    if rel_z is not None:
+        ujung = setengah_lebar - 0.04 + 0.018
+        bagian.append(silinder_miring("Kursi.rel", (-ujung, sandaran_y + 0.061, rel_z), (ujung, sandaran_y + 0.061, rel_z), 0.016, 0.016))
     # sandaran: papan melengkung (silinder terpotong) setinggi punggung bawah-tengah
-    bpy.ops.mesh.primitive_cylinder_add(vertices=96, radius=0.62, depth=0.13, location=(0, sandaran_y + 0.62 + 0.004, dudukan_z + 0.34))
+    bpy.ops.mesh.primitive_cylinder_add(vertices=96, radius=0.62, depth=papan[1], location=(0, sandaran_y + 0.62 + 0.004, dudukan_z + papan[0]))
     s = bpy.context.active_object
     s.name = "Kursi.sandaran"
     bm = bmesh.new()
@@ -109,16 +131,20 @@ def buat_kursi(dudukan_z, y_belakang, y_depan, setengah_lebar, sandaran_y):
     bv.segments = 3
     bpy.ops.object.shade_smooth()
     bagian.append(s)
-    kursi = bpy.data.collections.new("Kursi")
-    bpy.context.scene.collection.children.link(kursi)
-    kayu = bpy.data.materials.get("Kayu") or bpy.data.materials.new("Kayu")
-    for o in bagian:
-        for c in o.users_collection:
-            c.objects.unlink(o)
-        kursi.objects.link(o)
-        o.data.materials.clear()
-        o.data.materials.append(kayu)
-    return bagian
+    return ke_perabot(bagian)
+
+
+def buat_meja(tepi_y, tinggi, lebar=0.9, dalam=0.56):
+    """Meja kayu kokoh di depan karakter (tepi dekat di `tepi_y`, meja memanjang ke -Y). Kaki depan mundur
+    ±0,2 m dari tepi agar tidak menutupi lutut dari kamera samping."""
+    tebal = 0.036
+    bagian = [kotak("Meja.atas", (lebar, dalam, tebal), (0, tepi_y - dalam / 2, tinggi - tebal / 2), bevel=0.008, seg=4)]
+    for sx in (-1, 1):
+        x = sx * (lebar / 2 - 0.07)
+        for yy in (tepi_y - 0.21, tepi_y - dalam + 0.07):
+            bagian.append(kotak(f"Meja.kaki.{sx}{yy:.2f}", (0.05, 0.05, tinggi - tebal), (x, yy, (tinggi - tebal) / 2), bevel=0.004))
+        bagian.append(kotak(f"Meja.apron.{sx}", (0.025, dalam - 0.28, 0.08), (x, tepi_y - 0.14 - (dalam - 0.28) / 2, tinggi - tebal - 0.04), bevel=0.003))
+    return ke_perabot(bagian)
 
 
 def buat_cyc(azimut, jarak_dinding=2.6, r=1.3):
@@ -148,9 +174,17 @@ def buat_cyc(azimut, jarak_dinding=2.6, r=1.3):
 # ---------------- posisi ----------------
 
 
+def atur_cahaya(bahu_z):
+    """Titik bidik cahaya tampilan.py: dada (`pusat_cahaya`) dan garis bahu (`bahu_cahaya`) pada tinggi bahu figur."""
+    sc = bpy.context.scene
+    sc["pusat_cahaya"] = (-0.05, -0.1, bahu_z - 0.2)
+    sc["bahu_cahaya"] = (-0.05, 0.0, bahu_z)
+
+
 def siapkan_duduk(anim, L, rig, baju, sepatu):
     """Duduk tegak di kursi: tinggi panggul dari kontak sepatu-lantai (kaki menapak, tidak tergelincir karena
     tungkai FK statis), kursi dari bentuk celana, target tangan istirahat di permukaan paha."""
+    atur_cahaya(1.0)
     anim.turun = -0.30
     anim.terapkan(0.0)
     vs, _ = evaluasi(sepatu)
@@ -163,7 +197,8 @@ def siapkan_duduk(anim, L, rig, baju, sepatu):
     dudukan_z = min(v.z for v in bawah_pantat) + 0.006
     y_belakang = max(v.y for v in bawah_pantat) + 0.035
     punggung = [v for v in vs if abs(v.x) < 0.12 and dudukan_z + 0.2 < v.z < dudukan_z + 0.42]
-    sandaran_y = max(v.y for v in punggung) + 0.012
+    # `CELAH_SANDARAN` (opsional, m): jarak punggung ke sandaran (latihan yang duduk tegak tanpa bersandar).
+    sandaran_y = max(v.y for v in punggung) + getattr(L, "CELAH_SANDARAN", 0.012)
     print(f"[adegan] turun {anim.turun:.3f}  dudukan z {dudukan_z:.3f}  belakang y {y_belakang:.3f}  sandaran y {sandaran_y:.3f}")
 
     # Tangan istirahat: pergelangan di atas paha ±40 % dari panggul ke lutut (dari permukaan celana).
@@ -180,7 +215,121 @@ def siapkan_duduk(anim, L, rig, baju, sepatu):
     buat_kursi(dudukan_z, y_belakang, lutut.y + 0.07, 0.205, sandaran_y)
 
 
-POSISI = {"duduk": siapkan_duduk}
+def sol_tanpa_betis(sepatu, anim):
+    """Bobot sepatu MakeHuman memberi tulang betis ±20-30 % di sol bawah pangkal jari, sehingga sol ikut terangkat
+    saat tumit naik (jinjit) dan ujung kaki tampak melayang. Untuk posisi berdiri: bobot betis di depan pergelangan
+    kaki dipindah ke tulang kaki (memudar 3-7 cm di depan pergelangan); tumit & pergelangan tidak berubah."""
+    g = {vg.name: vg for vg in sepatu.vertex_groups}
+    for sisi in ("l", "r"):
+        A = anim.p.rest[f"foot_{sisi}"].translation
+        betis, kaki = g[f"calf_{sisi}"], g[f"foot_{sisi}"]
+        for v in sepatu.data.vertices:
+            if (v.co.x > 0) != (sisi == "l"):
+                continue
+            s = min(1.0, max(0.0, (A.y - 0.03 - v.co.y) / 0.04))
+            wb = next((e.weight for e in v.groups if e.group == betis.index), 0.0)
+            if s <= 0.0 or wb <= 0.0:
+                continue
+            wk = next((e.weight for e in v.groups if e.group == kaki.index), 0.0)
+            pindah = wb * s * s * (3 - 2 * s)
+            betis.add([v.index], wb - pindah, "REPLACE")
+            kaki.add([v.index], wk + pindah, "REPLACE")
+
+
+def tapak_lantai(anim, sepatu, ikut_panggul=True):
+    """Kunci kedua telapak (IK tungkai) sehingga sol sepatu tepat menyentuh lantai pada t = 0. `ikut_panggul`:
+    panggul ikut naik/turun (1 mm lebih rendah: lutut sedikit lunak, cadangan jangkauan IK untuk goyang postural)."""
+    sol_tanpa_betis(sepatu, anim)
+    for s in ("l", "r"):
+        anim.tapakkan(s)
+    anim.terapkan(0.0)
+    dz = -min(v.z for v in evaluasi(sepatu)[0]) + 0.002
+    for s in ("l", "r"):
+        anim.tapakkan(s, (0.0, 0.0, dz))
+    if ikut_panggul:
+        anim.panggul = anim.panggul + Vector((0.0, 0.0, dz - 0.001))
+    anim.terapkan(0.0)
+    print(f"[adegan] telapak menapak: geser {dz:+.4f} m")
+
+
+def siapkan_berdiri(anim, L, rig, baju, sepatu):
+    """Berdiri di belakang kursi, kedua tangan menggenggam rel sandaran (IK terkunci sepanjang siklus), telapak
+    terkunci di lantai. Rel setinggi 0,94 m; jarak kursi dipilih sehingga siku menekuk ±50° saat berdiri tegak
+    (cadangan jangkauan untuk jinjit / pergeseran panggul tanpa lengan terkunci lurus)."""
+    tapak_lantai(anim, sepatu)
+    p = anim.p.pos
+    a, b = anim.p.panjang["upperarm_l"], anim.p.panjang["lowerarm_l"]
+    rel_z, x_tangan, r_rel = 0.94, 0.12, 0.016
+    # Buku jari (pangkal jari tengah) tepat melewati puncak rel; telapak menutup puncak rel, jari dililitkan ke sisi
+    # jauh oleh operasi genggam. Pergelangan = buku jari mundur sepanjang tangan searah jari.
+    panjang_tangan = (anim.p.rest["middle_01_l"].translation - anim.p.rest["hand_l"].translation).length
+    d = math.sqrt(a * a + b * b + 2 * a * b * math.cos(math.radians(50)))
+    bahu = p["upperarm_l"].translation
+    jari = {s: Vector((-0.08 * x, -0.97, -0.24)).normalized() for s, x in (("l", 1), ("r", -1))}
+    ke_pergelangan = Vector((0.0, -0.006, r_rel + 0.024)) - jari["l"] * panjang_tangan
+    ke_pergelangan.x = 0.0
+    w_z = rel_z + ke_pergelangan.z
+    dy = math.sqrt(d * d - (bahu.x - x_tangan) ** 2 - (bahu.z - w_z) ** 2)
+    rel_y = bahu.y - dy - ke_pergelangan.y
+    for sisi in L.TANGAN_ISTIRAHAT:
+        x = 1 if sisi == "l" else -1
+        rel = {"pusat": Vector((0.0, rel_y, rel_z)), "sumbu": Vector((1.0, 0.0, 0.0)), "jari_jari": r_rel + 0.0135}
+        anim.tangan_istirahat[sisi] = (Vector((x * x_tangan, rel_y, rel_z)) + ke_pergelangan,
+                                      Vector((0.0, 0.24, -0.97)), jari[sisi],
+                                      {"genggam": rel, "kutub": (0.5 * x, 0.8, -0.35)})
+    buat_kursi(0.47, rel_y + 0.02, rel_y + 0.02 - 0.42, 0.22, rel_y - 0.061, papan=(0.25, 0.10), rel_z=rel_z)
+    atur_cahaya(bahu.z)
+    print(f"[adegan] berdiri: rel sandaran y {rel_y:.3f} z {rel_z:.3f}, bahu z {bahu.z:.3f}")
+
+
+def siapkan_duduk_berdiri(anim, L, rig, baju, sepatu):
+    """Duduk di tepi kursi (t = 0), telapak terkunci di lantai; `tubuh()` latihan menggerakkan panggul relatif
+    terhadap telapak (anim.kaki). Kursi dari bentuk celana saat duduk (bokong di sepertiga depan dudukan); meja
+    kokoh di depan dengan tinggi & jarak dicari sehingga kedua tangan tetap bertumpu sepanjang siklus (lengan tidak
+    pernah terkunci lurus, siku tidak terlipat berlebihan)."""
+    tapak_lantai(anim, sepatu, ikut_panggul=False)
+    vs, _ = evaluasi(baju)
+    paha = anim.p.pos["thigh_l"].translation.copy()
+    y_depan = paha.y - 0.12
+    bawah = [v for v in vs if abs(v.x) < 0.2 and v.y > y_depan and v.z < paha.z]
+    dudukan_z = min(v.z for v in bawah) + 0.004
+    y_belakang = y_depan + 0.43
+    buat_kursi(dudukan_z, y_belakang, y_depan, 0.205, y_belakang - 0.08)
+
+    # Lintasan bahu sepanjang siklus (lengan belum dipasang: tidak memengaruhi bahu).
+    a, b = anim.p.panjang["upperarm_l"], anim.p.panjang["lowerarm_l"]
+    lintasan = []
+    for i in range(0, gerak.JUMLAH_FRAME, 2):
+        anim.terapkan(i / gerak.FPS)
+        lintasan.append({s: anim.p.pos[f"upperarm_{s}"].translation.copy() for s in ("l", "r")})
+    # Meja terendah (0,84-1,00 m) yang terjangkau sepanjang siklus tanpa lengan terkunci lurus (<= 96,5 % panjang
+    # lengan) dan tanpa siku terlipat berlebihan saat condong (jarak bahu-pergelangan >= 0,25 m, siku <= ±110°);
+    # bila tidak ada, jarak minimum terbesar.
+    x_tangan, batas, lipat = 0.19, 0.965 * (a + b), 0.25
+    terbaik = None
+    for tinggi in [0.84 + 0.01 * k for k in range(17)]:
+        for k in range(70):
+            w = Vector((0.0, 0.10 - 0.01 * k, tinggi + 0.036))
+            jarak = [(Vector((x * x_tangan, w.y, w.z)) - L_[s]).length for L_ in lintasan for s, x in (("l", 1), ("r", -1))]
+            if max(jarak) <= batas and (terbaik is None or min(jarak) > terbaik[0]):
+                terbaik = (min(jarak), max(jarak), tinggi, w)
+        if terbaik is not None and terbaik[0] >= lipat:
+            break
+    if terbaik is None:
+        raise RuntimeError("duduk-berdiri: tidak ada posisi meja yang terjangkau sepanjang siklus")
+    dmin, dmax, tinggi, w = terbaik
+    for sisi, x in (("l", 1), ("r", -1)):
+        anim.tangan_istirahat[sisi] = (Vector((x * x_tangan, w.y, w.z + 0.006)), Vector((-0.12 * x, 0.0, -1.0)),
+                                      Vector((-0.12 * x, -1.0, 0.0)).normalized(),
+                                      {"miring": 0.0, "tekuk": -0.05, "ibu": -0.6, "kutub": (0.85 * x, 0.35, -0.4)})
+    buat_meja(w.y + 0.032, tinggi)
+    z_bahu = [L_["l"].z for L_ in lintasan]
+    atur_cahaya(0.4 * min(z_bahu) + 0.6 * max(z_bahu))
+    print(f"[adegan] duduk-berdiri: dudukan z {dudukan_z:.3f} depan y {y_depan:.3f}; meja tinggi {tinggi:.2f} "
+          f"tepi y {w.y + 0.032:.3f}; jarak bahu-pergelangan {dmin:.3f}..{dmax:.3f} (maks {a + b:.3f})")
+
+
+POSISI = {"duduk": siapkan_duduk, "berdiri": siapkan_berdiri, "duduk-berdiri": siapkan_duduk_berdiri}
 
 
 # ---------------- kamera ----------------
@@ -245,27 +394,33 @@ def kamera_tinjau(sc, nama, target, arah, jarak, lensa):
 # ---------------- cincin sendi ----------------
 
 
-def buat_cincin(anim, C):
-    """Cincin tipis di sisi sendi target, sumbu = sumbu gerak sendi; properti `kuat` (pendar) dan `kuat_otot`
-    di badan dikunci per frame mengikuti kontraksi."""
-    bpy.ops.mesh.primitive_torus_add(major_radius=C["jari"], minor_radius=0.0026, major_segments=96, minor_segments=10)
-    cincin = bpy.context.active_object
-    cincin.name = "Cincin"
-    cincin.rotation_mode = "QUATERNION"
-    cincin.data.materials.append(bpy.data.materials.get("Cincin") or bpy.data.materials.new("Cincin"))
+def buat_cincin(anim, daftar):
+    """Cincin tipis di sisi tiap sendi target (`daftar` = CINCIN latihan), sumbu = sumbu gerak sendi; properti
+    `kuat` (pendar, mengikuti kanal cincin `"kanal"` a/b) dan `kuat_otot`/`kuat_otot_b` di badan dikunci per frame."""
     body = bpy.data.objects["Badan"]
-    for frame, sendi, sumbu, kuat in anim.rekam:
-        cincin.location = sendi + sumbu * C["geser"]
-        cincin.rotation_quaternion = Vector((0, 0, 1)).rotation_difference(sumbu)
-        cincin.keyframe_insert("location", frame=frame)
-        cincin.keyframe_insert("rotation_quaternion", frame=frame)
-        cincin["kuat"] = kuat
-        cincin.keyframe_insert('["kuat"]', frame=frame)
-        body["kuat_otot"] = kuat
+    semua = []
+    for i, C in enumerate(daftar):
+        bpy.ops.mesh.primitive_torus_add(major_radius=C["jari"], minor_radius=0.0026, major_segments=96, minor_segments=10)
+        cincin = bpy.context.active_object
+        cincin.name = "Cincin" if i == 0 else f"Cincin.{i + 1}"
+        cincin.rotation_mode = "QUATERNION"
+        cincin.data.materials.append(bpy.data.materials.get("Cincin") or bpy.data.materials.new("Cincin"))
+        kanal = 1 if C.get("kanal", "a") == "b" else 0
+        for frame, sendi, sumbu, kuat in anim.rekam:
+            cincin.location = sendi[i] + sumbu[i] * C["geser"]
+            cincin.rotation_quaternion = Vector((0, 0, 1)).rotation_difference(sumbu[i])
+            cincin.keyframe_insert("location", frame=frame)
+            cincin.keyframe_insert("rotation_quaternion", frame=frame)
+            cincin["kuat"] = kuat[kanal]
+            cincin.keyframe_insert('["kuat"]', frame=frame)
+        semua.append(cincin)
+    for frame, _, _, kuat in anim.rekam:
+        body["kuat_otot"], body["kuat_otot_b"] = kuat
         body.keyframe_insert('["kuat_otot"]', frame=frame)
-    for o in (cincin, body):
+        body.keyframe_insert('["kuat_otot_b"]', frame=frame)
+    for o in semua + [body]:
         gerak.siklus_linear(o)
-    return cincin
+    return semua
 
 
 def ikat_ulang_kulit():
@@ -320,7 +475,7 @@ def main():
 
     cam, arah = pasang_kamera(sc, L.KAMERA, sampel)
     sc.frame_set(f_puncak)
-    sendi = rig.matrix_world @ anim.rekam[f_puncak - gerak.FRAME_MULAI][1]
+    sendi = rig.matrix_world @ anim.rekam[f_puncak - gerak.FRAME_MULAI][1][0]
     fokus = bpy.data.objects.new("Fokus", None)
     sc.collection.objects.link(fokus)
     fokus.location = sendi

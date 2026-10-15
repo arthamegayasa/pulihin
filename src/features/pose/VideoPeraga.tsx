@@ -3,7 +3,6 @@ import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties }
 import { BigButton } from '@/components/BigButton';
 import type { Sisi } from '@/types';
 import { asetPeraga, hematData } from './asetPose';
-import { ExerciseDemo } from './ExerciseDemo';
 
 /**
  * Contoh gerakan berupa video peraga 3D (satu siklus, sisi kanan anatomis; sisi kiri dicerminkan).
@@ -14,11 +13,11 @@ import { ExerciseDemo } from './ExerciseDemo';
  *   ≤ 400 KB, tersimpan sebagai jawaban 200 sehingga bisa diputar luring.
  * - prefers-reduced-motion atau Penghemat Data/2G: tidak diputar otomatis; dua poster (Mulai, Puncak) dengan
  *   tombol "Putar contoh".
- * - Video gagal (luring tanpa cache, berkas rusak): dua poster. Poster juga gagal: figur 2D `ExerciseDemo`.
+ * - Video gagal (luring tanpa cache, berkas rusak): dua poster. Poster juga gagal: kartu teks yang mengarahkan
+ *   ke langkah "Cara melakukan" di halaman yang sama.
  */
 
 export interface VideoPeragaProps {
-  exerciseId: string;
   nama: string;
   /** Path dasar aset (`ExerciseDefinition.animasiAtauVideo`, mis. '/peraga/fleksi-bahu'). */
   basePath: string;
@@ -41,7 +40,7 @@ function langgananHalaman(cb: () => void) {
   return () => document.removeEventListener('visibilitychange', cb);
 }
 
-export function VideoPeraga({ exerciseId, nama, basePath, sisi, tempoDetik }: VideoPeragaProps) {
+export function VideoPeraga({ nama, basePath, sisi, tempoDetik }: VideoPeragaProps) {
   const aset = asetPeraga(basePath);
   const gerakDikurangi = useSyncExternalStore(langgananGerak, () => window.matchMedia(MQ_GERAK).matches, () => false);
   const halamanTampil = useSyncExternalStore(langgananHalaman, () => document.visibilityState === 'visible', () => true);
@@ -118,12 +117,22 @@ export function VideoPeraga({ exerciseId, nama, basePath, sisi, tempoDetik }: Vi
   const cermin: CSSProperties | undefined = sisi === 'kiri' ? { transform: 'scaleX(-1)' } : undefined;
   const label = sisi ? `Contoh gerakan ${nama}, sisi ${sisi}` : `Contoh gerakan ${nama}`;
   const judul = sisi ? `Contoh gerakan, sisi ${sisi}` : 'Contoh gerakan';
-  // Satu repetisi = tempo tengah, dibatasi 2..6 detik (sama dengan ExerciseDemo).
+  // Satu repetisi = tempo tengah, dibatasi 2..6 detik (sama dengan panjang siklus video, peraga3d/buat.mjs).
   const tempo = tempoDetik ? Math.min(6, Math.max(2, (tempoDetik.min + tempoDetik.max) / 2)) : 3;
   const tempoTeks = (Math.round(tempo * 2) / 2).toLocaleString('id-ID');
 
   if (!modusVideo) {
-    if (posterRusak) return <ExerciseDemo exerciseId={exerciseId} nama={nama} sisi={sisi} tempoDetik={tempoDetik} />;
+    if (posterRusak) {
+      return (
+        <figure className="rounded-kartu bg-primer-terang p-4" role="note">
+          <p className="font-bold text-primer">{judul}</p>
+          <p className="mt-1 text-teks-2">
+            Contoh gerakan belum bisa dimuat tanpa internet. Ikuti langkah di bawah, pelan pelan, sekitar {tempoTeks} detik tiap
+            gerakan.
+          </p>
+        </figure>
+      );
+    }
     return (
       <figure className="rounded-kartu bg-primer-terang p-2">
         <p className="px-1 text-[0.95rem] font-bold leading-tight text-primer">{judul}</p>

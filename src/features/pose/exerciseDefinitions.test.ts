@@ -32,8 +32,8 @@ describe('pustaka 10 latihan (Bab 6)', () => {
     for (const e of EXERCISES) {
       expect(e.targetRepetisiDefault).toBe(e.id === 'duduk-berdiri' ? 5 : 10);
       if (e.posisi !== 'duduk') expect(e.wajibBerpegangan).toBe(true);
-      // Figur bawaan, atau video peraga 3D dengan path dasar tetap per id (public/peraga/<id>.mp4 + poster).
-      expect(['bawaan', `/peraga/${e.id}`]).toContain(e.animasiAtauVideo);
+      // Video peraga 3D dengan path dasar tetap per id (public/peraga/<id>.mp4 + dua poster).
+      expect(e.animasiAtauVideo).toBe(`/peraga/${e.id}`);
     }
     expect(getExercise('fleksi-siku')!.metrik).toEqual({ jenis: 'sudut', a: 'bahu', b: 'siku', c: 'pergelangan', ubah: 'fleksi' });
     expect(getExercise('langkah-duduk')!.metrik.jenis).toBe('bergantian');

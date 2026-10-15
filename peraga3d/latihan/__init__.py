@@ -44,6 +44,8 @@ def muat(id_latihan):
         raise ValueError(f"{id_latihan}: KUNCI harus mulai di fraksi 0 dan berakhir di 1 dengan nilai sama (loop)")
     if any(b[0] <= a[0] for a, b in zip(k, k[1:])):
         raise ValueError(f"{id_latihan}: fraksi KUNCI harus naik")
+    if isinstance(mod.CINCIN, dict):
+        mod.CINCIN = [mod.CINCIN]  # satu cincin boleh ditulis sebagai dict
     mn, mx = tempo_target(id_latihan)
     mod.TEMPO = (mn, mx)
     mod.SIKLUS = siklus_dari_tempo(mn, mx)

@@ -10,7 +10,9 @@ tiap wilayah adalah pita sepanjang satu tulang x sektor sudut di sekitar sumbuny
    "lebar": 55.0,                         # lebar sektor (derajat, 1 sigma Gauss)
    "jari": 0.08}                          # jarak maksimum dari sumbu tulang (m)
 
-Beberapa wilayah digabung dengan maksimum. Atribut objek `kuat_otot` (dikunci per frame) mengatur nyala.
+Beberapa wilayah digabung dengan maksimum. Atribut objek `kuat_otot` (dikunci per frame) mengatur nyala. Wilayah
+dengan `"kanal": "b"` masuk atribut `otot_b` yang dinyalakan `kuat_otot_b` (otot kedua dengan fase sendiri, mis.
+tungkai kanan lalu kiri dalam satu siklus).
 Pakaian di atas otot mendapat atribut `jendela` (0..1) sehingga bahan dibuat tembus di sana, dan kulit di bawahnya
 tidak dihapus oleh modifier Mask pakaian.
 """
@@ -63,11 +65,14 @@ def masker(body, rig, wilayah):
 
 
 def terapkan(body, baju, rig, wilayah, jangkau_kain=0.04, jangkau_kulit=0.065):
-    """Tulis atribut `otot` (badan) dan `jendela` (baju), lalu ganti grup Mask pakaian agar kulit di bawah lengan
-    baju dan di bawah jendela tetap ada. Mengembalikan jumlah titik otot aktif (> 0,05)."""
-    nilai = masker(body, rig, wilayah)
-    at = body.data.attributes.get("otot") or body.data.attributes.new("otot", "FLOAT", "POINT")
-    at.data.foreach_set("value", nilai)
+    """Tulis atribut `otot` dan `otot_b` (badan; wilayah dengan `"kanal": "b"` masuk `otot_b`, dinyalakan oleh
+    `kuat_otot_b` -> dua otot dengan fase kontraksi berbeda) dan `jendela` (baju), lalu ganti grup Mask pakaian agar
+    kulit di bawah lengan baju dan di bawah jendela tetap ada. Mengembalikan jumlah titik otot aktif (> 0,05)."""
+    per_kanal = {k: masker(body, rig, [w for w in wilayah if w.get("kanal", "a") == k]) for k in ("a", "b")}
+    for k, nama in (("a", "otot"), ("b", "otot_b")):
+        at = body.data.attributes.get(nama) or body.data.attributes.new(nama, "FLOAT", "POINT")
+        at.data.foreach_set("value", per_kanal[k])
+    nilai = [max(a, b) for a, b in zip(per_kanal["a"], per_kanal["b"])]
 
     aktif = [(i, m) for i, m in enumerate(nilai) if m > 0.02]
     if not aktif:
@@ -116,11 +121,12 @@ def pusat_otot(body):
     dg = bpy.context.evaluated_depsgraph_get()
     ev = body.evaluated_get(dg)
     me = ev.to_mesh()
-    at = me.attributes["otot"]
+    a, b = me.attributes["otot"], me.attributes["otot_b"]
     tot, jum = Vector(), 0.0
-    for v, a in zip(me.vertices, at.data):
-        if a.value > 0.3:
-            tot += (ev.matrix_world @ v.co) * a.value
-            jum += a.value
+    for v, ka, kb in zip(me.vertices, a.data, b.data):
+        m = max(ka.value, kb.value)
+        if m > 0.3:
+            tot += (ev.matrix_world @ v.co) * m
+            jum += m
     ev.to_mesh_clear()
     return tot / jum
