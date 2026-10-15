@@ -1,6 +1,6 @@
 import type React from 'react';
 import { AbsoluteFill } from 'remotion';
-import type { SlotRekaman } from '../timeline.ts';
+import { DARI_BLENDER, OTOMATIS, type SlotRekaman } from '../timeline.ts';
 import { FONT, WARNA } from '../theme.ts';
 
 /**
@@ -12,9 +12,9 @@ import { FONT, WARNA } from '../theme.ts';
 export type TataPlaceholder = 'layar' | 'desktop' | 'penuh' | 'split';
 
 const JUDUL: Record<SlotRekaman['jenis'], string> = {
-  kamera: 'Rekam dengan kamera (manusia)',
-  layar: 'Rekam layar ponsel',
-  desktop: 'Rekam layar desktop',
+  render3d: 'Render 3D (karakter, Blender)',
+  layar: 'Rekaman layar aplikasi',
+  desktop: 'Rekaman layar desktop',
 };
 
 /**
@@ -36,12 +36,11 @@ export const Placeholder: React.FC<{ slot: SlotRekaman; detik: number; tata: Tat
         : tata === 'penuh'
           ? { left: 1120, right: 100, top: 0, bottom: 0, justifyContent: 'center' }
           : { left: 120, width: 760, top: 300 };
-  const cara =
-    slot.jenis === 'kamera'
-      ? 'Wajib direkam manusia (Bab 14.4). Dilarang avatar AI, wajah atau suara sintetis, dan rekaman stok.'
-      : slot.otomatis
-        ? 'Draf: npm run rekam-layar. Final boleh diganti rekaman layar ponsel asli.'
-        : 'Rekam di ponsel uji saat sesi nyata bersama pemeran (perekam layar Android, 1080x2400).';
+  const cara = DARI_BLENDER[slot.berkas]
+    ? 'Dibuat agen Blender3D (video/blender, rekam-sesi-3d.mjs). Isi layar aplikasi wajib dari aplikasi asli.'
+    : OTOMATIS[slot.berkas]
+      ? 'Buat dengan: npm run rekam-layar (aplikasi produksi asli).'
+      : 'Rekaman layar aplikasi asli.';
   return (
     <AbsoluteFill style={{ backgroundColor: WARNA.latar, fontFamily: FONT, color: WARNA.teks }}>
       <div
@@ -74,7 +73,7 @@ export const Placeholder: React.FC<{ slot: SlotRekaman; detik: number; tata: Tat
             fontSize: huruf(23),
             fontWeight: 650,
             lineHeight: 1.4,
-            color: slot.jenis === 'kamera' ? WARNA.aksen : WARNA.primer,
+            color: WARNA.primer,
           }}
         >
           {cara}
@@ -90,7 +89,7 @@ export const Placeholder: React.FC<{ slot: SlotRekaman; detik: number; tata: Tat
           Simpan sebagai public/footage/{slot.berkas}
         </div>
         <div style={{ fontSize: huruf(23), fontWeight: 600, color: WARNA.primer }}>
-          Bagian ini {Math.round(detik)} dtk, diambil mulai detik {slot.mulaiDi} dari berkas
+          Bagian ini {Math.round(detik)} dtk, diambil mulai detik {slot.mulaiDi.toFixed(1)} dari berkas
         </div>
       </div>
     </AbsoluteFill>

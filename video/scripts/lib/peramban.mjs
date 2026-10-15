@@ -384,22 +384,23 @@ export const imporSesiDemo = async (page, base, jalurSalinan) => {
   const target = item?.targetRepetisi ?? def.targetRepetisiDefault;
   const id = `demo-video-budi-${hariIni}-fleksi-siku`;
 
-  // Sepuluh repetisi terhitung + dua percobaan setengah gerak; koreksi bahu pada repetisi ke-7
-  // (sama dengan cerita video). Sudut dalam derajat fleksi siku, durasi siklus dalam detik.
+  // Sama dengan sesi kamera 3D yang benar-benar direkam (video/blender/out/sesi-meta.json; Ringkasan
+  // aplikasi di layar-02: skor 100, 10/10, 37 detik): sepuluh repetisi terhitung berirama ±3,3 dtk,
+  // satu koreksi bahu pada repetisi ke-7. Sudut dalam derajat fleksi siku, durasi siklus dalam detik.
   const RENCANA = [
-    { sudut: 126, durasi: 3.1 },
-    { sudut: 131, durasi: 3.4 },
-    { sudut: 94, durasi: 2.2, dihitung: false, koreksi: ['rentang-kurang'] },
-    { sudut: 128, durasi: 2.9 },
-    { sudut: 133, durasi: 3.6 },
-    { sudut: 124, durasi: 2.6 },
-    { sudut: 129, durasi: 4.4 },
-    { sudut: 122, durasi: 3.8, koreksi: ['bahu-terangkat'] },
-    { sudut: 130, durasi: 3.2 },
-    { sudut: 101, durasi: 2.4, dihitung: false, koreksi: ['rentang-kurang'] },
-    { sudut: 127, durasi: 4.6 },
-    { sudut: 125, durasi: 3.3 },
+    { sudut: 127, durasi: 3.3 },
+    { sudut: 130, durasi: 3.3 },
+    { sudut: 126, durasi: 3.3 },
+    { sudut: 131, durasi: 3.3 },
+    { sudut: 128, durasi: 3.3 },
+    { sudut: 129, durasi: 3.4 },
+    { sudut: 124, durasi: 3.3, koreksi: ['bahu-terangkat'] },
+    { sudut: 130, durasi: 3.3 },
+    { sudut: 127, durasi: 3.3 },
+    { sudut: 129, durasi: 3.3 },
   ];
+  /** Durasi sesi yang tampil di Ringkasan sesi 3D asli. */
+  const DURASI_SESI_DETIK = 37;
   const repLogs = RENCANA.map((r, i) => ({
     sessionId: id,
     nomor: i + 1,
@@ -416,7 +417,7 @@ export const imporSesiDemo = async (page, base, jalurSalinan) => {
     ambangBawah: def.ambangBawah,
     tempoTargetDetik: def.tempoTargetDetik,
   });
-  const durasiDetik = Math.round(14 + RENCANA.reduce((s, r) => s + r.durasi + 1.6, 0));
+  const durasiDetik = DURASI_SESI_DETIK;
   const sesi = {
     id,
     patientId: 'budi',

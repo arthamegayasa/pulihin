@@ -1,418 +1,466 @@
 # Naskah Narasi Final Video Demo PULIHIN
 
-> Berkas ini DIBUAT OTOMATIS dari `video/src/timeline.ts` oleh `npm run srt` (di folder `video/`). Jangan disunting langsung: ubah teks atau timecode di `timeline.ts`, lalu jalankan ulang.
+> DIBUAT OTOMATIS dari `video/src/timeline.ts` oleh `npm run srt` (folder `video/`). Jangan disunting langsung: ubah teks di `timeline.ts`, lalu jalankan `npm run narasi && npm run scan && npm run srt`.
 
-- Durasi: 4:58 (batas 5:00), 23 adegan, 30 fps, 1920x1080.
-- **Jumlah kata narasi: 379 kata** (batas 650). Dokter 72 kata, Narator 307 kata. Baris "Suara aplikasi" tidak dihitung karena berasal dari rekaman aplikasi.
-- Tempo rata-rata: 1,88 kata per detik bicara (113 kata per menit), sengaja tenang untuk penonton medis dan memberi ruang bagi suara aplikasi.
-- Adegan 4:00–4:25 memakai varian **klinisi** (`ADEGAN_TERAPIS` di timeline.ts: `klinisi` bila dashboard klinisi P1 selesai, `streak` bila belum).
+- Durasi: 4:03,3 (batas 5:00), 23 adegan, 30 fps, 1920x1080.
+- **Jumlah kata narasi: 351 kata** (batas 650). Baris "Suara aplikasi" tidak dihitung.
+- Tempo: 2,19 kata per detik bicara (132 kata per menit), tenang.
+- Waktu setiap baris = durasi audio terukur (26/26 baris terukur). Adegan sesi kamera: ditempatkan pada peristiwa aplikasi asli di `video/blender/out/sesi-meta.json`: hitungan 5/10 pada detik 24.242 dan koreksi "Rilekskan bahu, turunkan bahu Anda" pada detik 29.842 di dalam `layar-02-sesi-tekuk-siku.mp4`.
 
-## Aturan baca
+## Aturan
 
-- Video adalah bukti fungsi, bukan iklan (Bab 14). Setiap klaim yang diucapkan terlihat di layar dalam beberapa detik; kolom "Di layar" adalah buktinya. Bila rekaman tidak menampilkan hal itu, ubah narasinya, jangan menempel teks palsu.
-- Tanpa klaim diagnosis, prognosis, atau kesembuhan. PULIHIN adalah prototype kompetisi, bukan alat kesehatan teregulasi.
-- Pasien demo "Pak Budi, 58 tahun" adalah nama samaran. Semua orang yang tampil sebagai pasien adalah pemeran: label **Peragaan oleh pemeran** tampil di layar, diucapkan pada 0:50–1:02, dan ditulis di deskripsi YouTube.
-- Pembicara: **Dokter (di kamera)** = talking head; **Dokter (suara, di atas b-roll)** = suara dokter direkam terpisah, diputar di atas b-roll; **Narator (voice-over)** = suara narator (boleh dokter yang sama atau anggota tim); **Suara aplikasi** = suara TTS aplikasi dari rekaman layar, tidak dibacakan.
-- Baca pelan dan hangat. Timecode bicara adalah target; setelah narasi direkam, isi `mulai`/`selesai` di timeline.ts agar subtitle mengikuti potongan final.
+- Video adalah bukti fungsi, bukan iklan (Bab 14). Setiap klaim yang diucapkan terlihat di layar dalam beberapa detik; kolom "Di layar" adalah buktinya.
+- Tanpa rekaman manusia dan tanpa dokter. Pemeran pasien = karakter 3D (Blender) yang menggerakkan aplikasi ASLI lewat kamera palsu Chrome. Label **Peragaan dengan karakter 3D, bukan pasien sungguhan** tampil setiap kali karakter terlihat.
+- Narasi: suara sintetis (Microsoft Azure neural, id-ID, `id-ID-ArdiNeural`). Suara aplikasi (TTS peramban, tidak terekam headless) disuarakan ulang dengan kata persis pada detik persis ketika aplikasi asli menampilkan pesannya, diberi warna speaker ponsel (`id-ID-GadisNeural`).
+- Angka hanya dari `docs/bahan-paper.md`, dengan label sumber di layar. Tanpa klaim diagnosis, prognosis, atau kesembuhan. PULIHIN adalah prototype kompetisi, bukan alat kesehatan teregulasi. "Pak Budi, 58 tahun" adalah nama samaran; semua data adalah data demo.
+- Alamat yang disebut dan ditampilkan: **pulihin.vercel.app** (dari `src/config/identitas.ts`: domain final hanya bila `urlPublik` sudah mengarah ke sana).
+- Kolom `ucapan` di timeline.ts = teks yang dibacakan TTS (angka dieja, "PULIHIN" ditulis "Pulihin" agar dibaca satu kata, "prototype" dibaca "prototipe").
 
 ## Naskah per adegan
 
-### 0:00–0:12 · Pembuka dokter dan judul
+### 0:00,0–0:07,1 · Data: stroke dan kematian
 
-`s01-pembuka` · Tahap: Masalah klinis · Tata letak: Talking head dokter + judul
+`s01-fakta-kematian` · Tahap: Masalah klinis · Tata letak: Tipografi data bersumber
 
-**[N01] Dokter (di kamera)** (0:00,5–0:06,9)
+**[N01] Narator (suara sintetis)** (0:00,6–0:06,2)
 
-> Saya dokter spesialis saraf. Setiap minggu, saya melepas pasien stroke pulang ke rumah.
+> Menurut Kementerian Kesehatan, stroke menyebabkan 18,5 persen kematian di Indonesia.
 
-_EN:_ I am a neurologist. Every week, I discharge stroke patients to go home.
+_Ucapan TTS:_ Menurut Kementerian Kesehatan, stroke menyebabkan delapan belas koma lima persen kematian di Indonesia.
 
-- **Di layar:** Wajah dokter, lower third nama dan gelar, judul PULIHIN: Pendamping Rehabilitasi Stroke di Rumah.
-- **Momen screenshot (0:06):** Wajah dokter dengan judul PULIHIN dan nama dokter
+_EN:_ According to the Ministry of Health, stroke causes 18.5 percent of deaths in Indonesia.
 
-### 0:12–0:19 · Dokter: program di atas kertas
+- **Di layar:** Angka besar 18,5% menghitung naik, "kematian di Indonesia disebabkan stroke", "dan 11,2% dari total kecacatan", label sumber Kemenkes.
+- **Data:** kematian di Indonesia disebabkan stroke · Sumber: Kemenkes, rilis 25 Okt 2024
+- **Momen screenshot (0:04,0):** Angka 18,5% dengan label sumber Kemenkes
 
-`s02-kertas` · Tahap: Masalah klinis · Tata letak: Talking head dokter
+### 0:07,1–0:13,2 · Data: kontrol rutin
 
-**[N02] Dokter (di kamera)** (0:12,5–0:16,4)
+`s02-fakta-kontrol` · Tahap: Masalah klinis · Tata letak: Tipografi data bersumber
 
-> Mereka pulang membawa program latihan di atas kertas.
+**[N02] Narator (suara sintetis)** (0:07,7–0:12,3)
 
-_EN:_ They go home with an exercise programme on paper.
+> Namun hanya 49,2 persen penyandang stroke yang kontrol rutin.
 
-- **Di layar:** Wajah dokter yang melanjutkan penjelasan.
+_Ucapan TTS:_ Namun, hanya empat puluh sembilan koma dua persen penyandang stroke yang kontrol rutin.
 
-### 0:19–0:24 · B-roll: kertas program di meja
+_EN:_ Yet only 49.2 percent of people with stroke have regular check-ups.
 
-`s03-ragu` · Tahap: Masalah klinis · Tata letak: B-roll penuh layar + kalimat kunci
+- **Di layar:** Angka besar 49,2% "penyandang stroke yang kontrol rutin", perdesaan 39,6% dan perkotaan 53,7%, label sumber SKI 2023.
+- **Data:** penyandang stroke yang kontrol rutin · Sumber: SKI 2023, Kemenkes (Tabel 7.48)
 
-**[N03] Dokter (suara, di atas b-roll)** (0:19,5–0:23,5)
+### 0:13,2–0:22,1 · Data: tenaga terapi di puskesmas
 
-> Di rumah, mereka sering lupa dan ragu apakah gerakannya sudah benar.
+`s03-fakta-terapis` · Tahap: Masalah klinis · Tata letak: Tipografi data bersumber
 
-_EN:_ At home, they often forget, and are unsure whether they move correctly.
+**[N03] Narator (suara sintetis)** (0:13,8–0:21,2)
 
-- **Di layar:** Kertas program latihan diletakkan di meja rumah, dengan kalimat kunci di sampingnya.
-- **Teks penyunting:** "Lupa jadwal, ragu gerakannya benar" / _Missed sessions, unsure about the movement_
-- **Label:** Peragaan oleh pemeran
+> Tenaga terapi pun terbatas: hanya 926 tenaga keterapian fisik di lebih dari 10.000 puskesmas.
 
-### 0:24–0:30 · B-roll: pemeran kebingungan, kalimat masalah
+_Ucapan TTS:_ Tenaga terapi pun terbatas: hanya sembilan ratus dua puluh enam tenaga keterapian fisik, di lebih dari sepuluh ribu puskesmas.
 
-`s04-masalah` · Tahap: Masalah klinis · Tata letak: B-roll penuh layar + kalimat kunci
+_EN:_ Therapists are scarce too: only 926 physical therapy staff across more than 10,000 community health centres.
 
-**[N04] Dokter (suara, di atas b-roll)** (0:24,5–0:29,5)
+- **Di layar:** Angka besar 926 "tenaga keterapian fisik di 10.180 puskesmas", label sumber Profil Kesehatan Indonesia 2023.
+- **Data:** tenaga keterapian fisik di 10.180 puskesmas · Sumber: Profil Kesehatan Indonesia 2023, Kemenkes
+- **Momen screenshot (0:17,7):** Angka 926 tenaga keterapian fisik di 10.180 puskesmas, dengan label sumber
 
-> Padahal pemulihan ditentukan oleh latihan harian di rumah, dan di situlah pendampingan terputus.
+### 0:22,1–0:26,5 · B-roll 3D: kertas program, judul PULIHIN
 
-_EN:_ Yet recovery depends on daily exercise at home, and that is exactly where guidance breaks off.
+`s04-judul` · Tahap: Masalah klinis · Tata letak: B-roll 3D + judul PULIHIN
 
-- **Di layar:** Pemeran tampak ragu memegang kertas program; kalimat masalah tampil besar.
+**[N04] Narator (suara sintetis)** (0:22,7–0:25,6)
+
+> Pasien pulang membawa program latihan di atas kertas.
+
+_EN:_ Patients go home with an exercise programme on paper.
+
+- **Di layar:** Render 3D kertas program diletakkan di meja; judul PULIHIN, Pendamping Rehabilitasi Stroke di Rumah.
+- **Label:** Peragaan dengan karakter 3D, bukan pasien sungguhan
+- **Rekaman:** `broll-kertas-program.mp4` mulai detik 0
+
+### 0:26,5–0:33,5 · B-roll 3D: karakter ragu, kalimat masalah
+
+`s05-ragu` · Tahap: Masalah klinis · Tata letak: B-roll 3D penuh layar + kalimat kunci
+
+**[N05] Narator (suara sintetis)** (0:27,1–0:32,6)
+
+> Di rumah, mereka ragu apakah gerakannya sudah benar. Di situlah pendampingan terputus.
+
+_EN:_ At home, they are unsure whether they are moving correctly. That is where guidance breaks off.
+
+- **Di layar:** Karakter 3D ragu memegang kertas program; kalimat masalah tampil besar.
 - **Teks penyunting:** "Di rumah, pendampingan terputus" / _At home, guidance breaks off_
-- **Label:** Peragaan oleh pemeran
-- **Momen screenshot (0:28):** Kalimat masalah "Di rumah, pendampingan terputus" di layar
+- **Label:** Peragaan dengan karakter 3D, bukan pasien sungguhan
+- **Rekaman:** `broll-pemeran-ragu.mp4` mulai detik 0
+- **Momen screenshot (0:30,5):** Kalimat masalah "Di rumah, pendampingan terputus" di atas render 3D
 
-### 0:30–0:40 · Beranda: Latihan Hari Ini
+### 0:33,5–0:42,6 · Beranda: Latihan Hari Ini
 
-`s05-beranda` · Tahap: Satu gerakan kecil · Tata letak: Rekaman layar dalam bingkai ponsel + kalimat kunci
+`s06-beranda` · Tahap: Satu gerakan kecil · Tata letak: Rekaman layar di ponsel 3D + kalimat kunci
 
-**[N05] Narator (voice-over)** (0:30,5–0:39,5)
+**[N06] Narator (suara sintetis)** (0:34,1–0:41,7)
 
 > PULIHIN mengubah ponsel biasa menjadi pendamping latihan. Begitu dibuka, Latihan Hari Ini langsung tampil dalam huruf besar.
 
+_Ucapan TTS:_ Pulihin mengubah ponsel biasa menjadi pendamping latihan. Begitu dibuka, Latihan Hari Ini langsung tampil dalam huruf besar.
+
 _EN:_ PULIHIN turns an ordinary phone into an exercise companion. Once opened, Today's Exercises appear right away, in large type.
 
-- **Di layar:** Beranda Pak Budi (Demo): "Selamat pagi, Pak Budi", pengingat jadwal latihan gerak, Latihan Hari Ini berhuruf besar (0 dari 4 latihan selesai), tombol Mulai: Tekuk Siku.
+- **Di layar:** Beranda Pak Budi (Demo): "Selamat pagi, Pak Budi", Latihan Hari Ini berhuruf besar (0 dari 4 latihan selesai), tombol Mulai: Tekuk Siku.
 - **Teks penyunting:** "Ponsel biasa menjadi pendamping latihan" / _An ordinary phone as a home exercise companion_
 - **Label penunjuk di samping ponsel:** Latihan Hari Ini
+- **Rekaman:** `layar-01-beranda-detail.mp4` mulai detik 0
+- **Momen screenshot (0:37,5):** Beranda: Latihan Hari Ini berhuruf besar
 
-### 0:40–0:50 · Detail Latihan: Tekuk Siku
+### 0:42,6–0:53,7 · Detail Latihan: Tekuk Siku
 
-`s06-detail` · Tahap: Satu gerakan kecil · Tata letak: Rekaman layar dalam bingkai ponsel + kalimat kunci
+`s07-detail` · Tahap: Satu gerakan kecil · Tata letak: Rekaman layar di ponsel 3D + kalimat kunci
 
-**[N06] Narator (voice-over)** (0:40,5–0:49,5)
+**[N07] Narator (suara sintetis)** (0:43,2–0:52,8)
 
 > Kita mulai dari satu gerakan kecil: Tekuk Siku. Ada contoh gerakan, pesan keselamatan, lalu satu tombol besar: Mulai dengan Kamera.
 
 _EN:_ We start with one small movement: Elbow Flexion. There is a movement demo, a safety notice, then one big button: Start with Camera.
 
-- **Di layar:** Ketuk Tekuk Siku; Detail Latihan dengan contoh gerakan bergerak, Posisi dan Target, pesan "Berhenti bila nyeri, pusing, atau sesak" tepat di atas tombol Mulai dengan Kamera, lalu gulir ke kartu Utamakan keselamatan.
+- **Di layar:** Ketuk Tekuk Siku; Detail Latihan dengan contoh gerakan, pesan "Berhenti bila nyeri, pusing, atau sesak" di atas tombol Mulai dengan Kamera, lalu gulir ke Utamakan keselamatan.
 - **Teks penyunting:** "Mulai dari satu gerakan kecil" / _Start with one small movement_
 - **Label penunjuk di samping ponsel:** Mulai dengan Kamera
+- **Rekaman:** `layar-01-beranda-detail.mp4` mulai detik 9.049
 
-### 0:50–1:02 · Shot lebar: ponsel di meja, pemeran duduk
+### 0:53,7–1:03,6 · Render 3D lebar: ponsel di meja, karakter duduk
 
-`s07-posisi` · Tahap: Satu gerakan kecil · Tata letak: Shot lebar pemeran + rekaman layar dalam bingkai ponsel
+`s08-posisi` · Tahap: Satu gerakan kecil · Tata letak: Render 3D lebar + rekaman layar sinkron di ponsel 3D
 
-**[N07] Narator (voice-over)** (0:50,5–1:00,6)
+**[N08] Narator (suara sintetis)** (0:54,3–1:02,7)
 
-> Ponsel cukup diletakkan di meja, sekitar satu meter dari kursi. Yang tampil di sini adalah peragaan oleh pemeran, bukan pasien sungguhan.
+> Ponsel cukup diletakkan di meja, sekitar satu meter dari kursi. Ini peragaan dengan karakter 3D, bukan pasien sungguhan.
 
-_EN:_ The phone simply sits on a table, about one metre from the chair. What you see here is a demonstration by a performer, not a real patient.
+_Ucapan TTS:_ Ponsel cukup diletakkan di meja, sekitar satu meter dari kursi. Ini peragaan dengan karakter tiga dimensi, bukan pasien sungguhan.
 
-- **Di layar:** Pemeran duduk di depan ponsel bertripod; di bingkai ponsel tampil skeleton dan hitungan awal sesi.
+_EN:_ The phone simply sits on a table, about one metre from the chair. This is a demonstration with a 3D character, not a real patient.
+
+- **Di layar:** Karakter 3D duduk di depan ponsel di meja; di bingkai ponsel, Mulai dengan Kamera diketuk, lalu aplikasi asli mendeteksi tubuh dan menampilkan skeleton.
 - **Teks penyunting:** "Ponsel di meja, ± 1 meter" / _Phone on a table, about 1 metre away_
-- **Label:** Peragaan oleh pemeran
-- **Momen screenshot (0:57):** Skeleton dan hitungan awal di layar ponsel, pemeran duduk di depan ponsel
+- **Label:** Peragaan dengan karakter 3D, bukan pasien sungguhan
+- **Rekaman:** `kamera-sesi-lebar.mp4` mulai detik 1.906
+- **Rekaman:** `layar-02-sesi-tekuk-siku.mp4` mulai detik 1.906
+- **Momen screenshot (0:59,7):** Skeleton di layar ponsel, karakter 3D duduk di depan ponsel
 
-### 1:02–1:16 · Sesi kamera: sudut siku dan skeleton
+### 1:03,6–1:14,9 · Sesi kamera: sudut siku dan skeleton
 
-`s08-sudut` · Tahap: Satu gerakan kecil · Tata letak: Rekaman layar dalam bingkai ponsel + kalimat kunci
+`s09-sudut` · Tahap: Satu gerakan kecil · Tata letak: Rekaman layar di ponsel 3D + kalimat kunci
 
-**[N08] Narator (voice-over)** (1:02,5–1:14,6)
+**[N09] Narator (suara sintetis)** (1:04,2–1:14,0)
 
-> Kamera membaca titik-titik tubuh langsung di ponsel ini, tanpa mengunggah video. Repetisi dihitung dari sudut siku: tekuk penuh, luruskan lagi, baru terhitung satu.
+> Aplikasi asli membaca titik-titik tubuh langsung di perangkat, tanpa mengunggah video. Repetisi dihitung dari sudut siku: tekuk penuh, lalu luruskan lagi.
 
-_EN:_ The camera reads body landmarks right on this phone, without uploading any video. Each repetition is counted from the elbow angle: a full bend, straighten again, and only then does it count.
+_EN:_ The real app reads body landmarks right on the device, without uploading any video. Repetitions are counted from the elbow angle: a full bend, then straighten again.
 
-- **Di layar:** Skeleton mengikuti lengan pemeran, sudut siku tampil, hitungan bertambah setelah satu siklus tekuk-luruskan.
-- **Teks penyunting:** "Repetisi dihitung dari sudut siku" / _Repetitions counted from the elbow angle_ · Diproses di ponsel · video tidak diunggah
+- **Di layar:** Skeleton mengikuti lengan karakter 3D di kamera aplikasi, hitungan bertambah setelah satu siklus tekuk-luruskan.
+- **Teks penyunting:** "Repetisi dihitung dari sudut siku" / _Repetitions counted from the elbow angle_ · Diproses di perangkat · video tidak diunggah
 - **Label penunjuk di samping ponsel:** Sudut siku
+- **Label:** Peragaan dengan karakter 3D, bukan pasien sungguhan
+- **Rekaman:** `layar-02-sesi-tekuk-siku.mp4` mulai detik 11.817
 
-### 1:16–1:30 · Sesi kamera: 5 / 10
+### 1:14,9–1:19,1 · Sesi kamera: 5 / 10
 
-`s09-lima` · Tahap: Satu gerakan kecil · Tata letak: Rekaman layar dalam bingkai ponsel + kalimat kunci
+`s10-lima` · Tahap: Satu gerakan kecil · Tata letak: Rekaman layar di ponsel 3D + kalimat kunci
 
-**[N09] Narator (voice-over)** (1:16,5–1:26,4)
+**[N10] Narator (suara sintetis)** (1:15,5–1:18,1)
 
-> Lihat angkanya: lima dari sepuluh. Hitungan hanya naik bila gerakannya lengkap, dan aplikasi memberi tahu bila gerakannya belum tepat.
+> Lihat angkanya: lima dari sepuluh.
 
-_EN:_ Look at the count: five out of ten. It only rises when a movement is complete, and the app speaks up when the movement is not quite right.
+_EN:_ Look at the count: five out of ten.
 
-- **Di layar:** Hitungan besar 5 / 10 dengan skeleton di atas video kamera.
+- **Di layar:** Aplikasi asli menaikkan hitungan menjadi 5 / 10 (detik sesi-meta repetisiDetik[4]) dengan skeleton di atas video kamera.
 - **Teks penyunting:** "Hitungan naik setiap repetisi lengkap" / _The count rises with every complete repetition_
 - **Label penunjuk di samping ponsel:** Hitungan repetisi
-- **Momen screenshot (1:20):** Hitungan "5 / 10" dengan skeleton
+- **Label:** Peragaan dengan karakter 3D, bukan pasien sungguhan
+- **Rekaman:** `layar-02-sesi-tekuk-siku.mp4` mulai detik 23.113
+- **Momen screenshot (1:17,6):** Hitungan "5 / 10" dengan skeleton
 
-### 1:30–1:44 · Koreksi form: bahu terangkat
+### 1:19,1–1:31,2 · Koreksi form: bahu terangkat
 
-`s10-koreksi` · Tahap: Satu sesi utuh · Tata letak: Shot lebar pemeran + rekaman layar dalam bingkai ponsel
+`s11-koreksi` · Tahap: Satu sesi utuh · Tata letak: Render 3D lebar + rekaman layar sinkron di ponsel 3D
 
-**[N10a] Narator (voice-over)** (1:30,5–1:32,8)
+**[N11a] Narator (suara sintetis)** (1:19,7–1:21,3)
 
 > Sekarang bahunya ikut terangkat.
 
 _EN:_ Now the shoulder hikes up.
 
-**[N10-app] Suara aplikasi (dari rekaman layar), tidak dibacakan** (1:33,2–1:37,4)
+**[N11-app] Suara aplikasi (disuarakan ulang)** (1:21,7–1:25,0)
 
 > Rilekskan bahu, turunkan bahu Anda.
 
 _EN:_ [App voice] Relax your shoulder, lower your shoulder.
 
-**[N10b] Narator (voice-over)** (1:38–1:43,4)
+**[N11b] Narator (suara sintetis)** (1:25,5–1:30,3)
 
-> Aplikasi mengoreksi dengan suara dan teks besar, dalam Bahasa Indonesia.
+> Aplikasi langsung mengoreksi, dengan suara dan teks besar dalam Bahasa Indonesia.
 
-_EN:_ The app gives a form correction, by voice and in large text, in Indonesian.
+_EN:_ The app corrects right away, by voice and in large text, in Indonesian.
 
-- **Di layar:** Pemeran mengangkat bahu secara alami; pesan koreksi "Rilekskan bahu, turunkan bahu Anda" muncul di atas skeleton dan terdengar suara aplikasi.
+- **Di layar:** Karakter 3D mengangkat bahu; pesan koreksi "Rilekskan bahu, turunkan bahu Anda" muncul di atas skeleton pada frame sesi-meta koreksi[0].mulaiDetik, bersama suara aplikasi yang disuarakan ulang (kata dan frame persis).
 - **Teks penyunting:** "Koreksi form saat bahu terangkat" / _Form correction when the shoulder rises_
 - **Label penunjuk di samping ponsel:** Koreksi form
-- **Label:** Peragaan oleh pemeran
-- **Momen screenshot (1:36):** Pesan koreksi "Rilekskan bahu, turunkan bahu Anda" di atas skeleton
-- **Catatan:** Adegan terpenting. Koreksi harus muncul alami dari gerakan pemeran (Bab 15), JANGAN menempel teks koreksi saat menyunting. Sesuaikan mulaiDi dan waktu N10-app dengan detik koreksi pada rekaman.
+- **Label:** Peragaan dengan karakter 3D, bukan pasien sungguhan
+- **Rekaman:** `kamera-sesi-lebar.mp4` mulai detik 27.246
+- **Rekaman:** `layar-02-sesi-tekuk-siku.mp4` mulai detik 27.246
+- **Momen screenshot (1:22,9):** Pesan koreksi "Rilekskan bahu, turunkan bahu Anda" di atas skeleton
+- **Catatan:** Adegan terpenting. Koreksi muncul karena aplikasi asli memproses render 3D (kamera palsu Chrome); tidak ada teks koreksi yang ditempel saat menyunting. Suara aplikasi disuarakan ulang dengan kata persis dan pada detik persis dari sesi-meta.json, diberi warna speaker ponsel.
 
-### 1:44–1:58 · Pemeran memperbaiki, hitungan berlanjut
+### 1:31,2–1:38,3 · Sesi berlanjut sampai 10 / 10, Ringkasan aplikasi
 
-`s11-perbaiki` · Tahap: Satu sesi utuh · Tata letak: Rekaman layar dalam bingkai ponsel + kalimat kunci
+`s13-sepuluh` · Tahap: Satu sesi utuh · Tata letak: Rekaman layar di ponsel 3D + kalimat kunci
 
-**[N11] Narator (voice-over)** (1:44,5–1:54,2)
-
-> Pemeran menurunkan bahunya, pesan menghilang, dan hitungan berlanjut. Hanya satu pesan pada satu waktu, supaya tidak membingungkan.
-
-_EN:_ The performer lowers the shoulder, the message clears, and counting continues. Only one message at a time, so it never gets confusing.
-
-- **Di layar:** Pesan koreksi hilang setelah bahu turun; hitungan repetisi bertambah lagi.
-- **Teks penyunting:** "Satu pesan pada satu waktu" / _One form correction at a time_
-- **Label penunjuk di samping ponsel:** Pesan koreksi
-
-### 1:58–2:10 · Sesi berlanjut sampai 10 / 10
-
-`s12-cara-gerak` · Tahap: Satu sesi utuh · Tata letak: Rekaman layar dalam bingkai ponsel + kalimat kunci
-
-**[N12] Narator (voice-over)** (1:58,5–2:05,2)
+**[N13] Narator (suara sintetis)** (1:31,8–1:37,4)
 
 > Jadi bukan sekadar menghitung, melainkan menjaga cara geraknya, sampai repetisi kesepuluh.
 
 _EN:_ So it is not just counting: it guards how each movement is done, all the way to the tenth repetition.
 
-- **Di layar:** Hitungan naik sampai 10 / 10 dan sesi berakhir.
+- **Di layar:** Hitungan naik sampai 10 / 10 (sesi-meta selesaiDetik), lalu aplikasi asli menampilkan Ringkasan sesi ini (ringkasanDetik).
 - **Teks penyunting:** "Bukan sekadar menghitung" / _Not just counting: form correction_
 - **Label penunjuk di samping ponsel:** Hitungan repetisi
+- **Label:** Peragaan dengan karakter 3D, bukan pasien sungguhan
+- **Rekaman:** `layar-02-sesi-tekuk-siku.mp4` mulai detik 39.392
 
-### 2:10–2:30 · Ringkasan Sesi: skor
+### 1:38,3–1:51,8 · Ringkasan Sesi: skor
 
-`s13-ringkasan` · Tahap: Satu sesi utuh · Tata letak: Rekaman layar dalam bingkai ponsel + kalimat kunci
+`s14-ringkasan` · Tahap: Satu sesi utuh · Tata letak: Rekaman layar di ponsel 3D + kalimat kunci
 
-**[N13] Narator (voice-over)** (2:10,5–2:23,0)
+**[N14] Narator (suara sintetis)** (1:38,9–1:48,0)
 
-> Di akhir sesi ada skor dan ringkasan sederhana: jumlah repetisi dan durasi. Labelnya mudah dipahami, mulai dari Perlu Pendampingan, Berkembang, Baik, sampai Sangat Baik.
+> Di akhir sesi ada skor dan ringkasan sederhana: jumlah repetisi dan durasi. Labelnya mudah dipahami, dari Perlu Pendampingan sampai Sangat Baik.
 
-_EN:_ At the end of the session there is a score and a simple summary: repetitions and duration. The labels are easy to read, from Needs Support and Improving to Good and Very Good.
+_EN:_ At the end of the session there is a score and a simple summary: repetitions and duration. The labels are easy to read, from Needs Support to Very Good.
 
-- **Di layar:** Ringkasan Sesi "Hebat, target latihan tercapai!": angka skor dengan label, Repetisi 10 / 10, Durasi; lalu gulir ke Rincian skor (Jumlah gerakan, Rentang gerak, Irama gerakan, masing-masing dengan label).
+- **Di layar:** Ringkasan Sesi "Hebat, target latihan tercapai!": skor dengan label, Repetisi 10 / 10, Durasi; lalu Rincian skor.
 - **Teks penyunting:** "Skor dan ringkasan sederhana" / _A score and a simple summary_ · Perlu Pendampingan · Berkembang · Baik · Sangat Baik
 - **Label penunjuk di samping ponsel:** Skor sesi
-- **Momen screenshot (2:20):** Skor sesi dengan label, repetisi, dan durasi
+- **Rekaman:** `layar-03-ringkasan-beranda.mp4` mulai detik 0
+- **Momen screenshot (1:44,3):** Skor sesi dengan label, repetisi, dan durasi
 
-### 2:30–2:42 · Ringkasan Sesi: saran dan kalimat bukan diagnosis
+### 1:51,8–2:00,8 · Ringkasan Sesi: saran dan kalimat bukan diagnosis
 
-`s14-batasan` · Tahap: Satu sesi utuh · Tata letak: Rekaman layar dalam bingkai ponsel + kalimat kunci
+`s15-batasan` · Tahap: Satu sesi utuh · Tata letak: Rekaman layar di ponsel 3D + kalimat kunci
 
-**[N14] Narator (voice-over)** (2:30,5–2:38,4)
+**[N15] Narator (suara sintetis)** (1:52,4–1:59,2)
 
 > Ada satu saran untuk sesi berikutnya. Ringkasan ini bukan diagnosis, dan kalimat batasan itu selalu tampil.
 
 _EN:_ There is one tip for the next session. This summary is not a diagnosis, and that disclaimer always appears.
 
-- **Di layar:** Gulir ke kartu Saran untuk sesi berikutnya dan kalimat "Skor ini adalah skor latihan untuk motivasi dan pemantauan, bukan skor klinis dan bukan alat ukur diagnosis", di atas tombol Kembali ke Beranda.
+- **Di layar:** Kartu Saran untuk sesi berikutnya dan kalimat "Skor ini adalah skor latihan untuk motivasi dan pemantauan, bukan skor klinis dan bukan alat ukur diagnosis".
 - **Teks penyunting:** "Satu saran, bukan diagnosis" / _One tip, not a diagnosis_
 - **Label penunjuk di samping ponsel:** Kalimat bukan diagnosis
+- **Rekaman:** `layar-03-ringkasan-beranda.mp4` mulai detik 20
 
-### 2:42–3:00 · Kembali ke Beranda: latihan selesai
+### 2:00,8–2:10,8 · Kembali ke Beranda: latihan selesai
 
-`s15-tercatat` · Tahap: Satu sesi utuh · Tata letak: Rekaman layar dalam bingkai ponsel + kalimat kunci
+`s16-tercatat` · Tahap: Satu sesi utuh · Tata letak: Rekaman layar di ponsel 3D + kalimat kunci
 
-**[N15] Narator (voice-over)** (2:42,5–2:52,2)
+**[N16] Narator (suara sintetis)** (2:01,4–2:09,1)
 
-> Kembali ke Beranda, Tekuk Siku sudah bertanda selesai beserta skornya. Latihannya tercatat di ponsel, dan keluarga bisa melihatnya.
+> Kembali ke Beranda, Tekuk Siku sudah bertanda selesai beserta skornya. Latihannya tercatat, dan keluarga bisa melihatnya.
 
-_EN:_ Back on the home screen, Elbow Flexion is marked done, with its score. The exercise is recorded on the phone, and the family can see it.
+_EN:_ Back on the home screen, Elbow Flexion is marked done, with its score. The exercise is recorded, and the family can see it.
 
-- **Di layar:** Ketuk Kembali ke Beranda; Tekuk Siku bertanda "Selesai, skor 94", 1 dari 4 latihan selesai, 1 hari beruntun; tombol Untuk Keluarga terlihat.
+- **Di layar:** Ketuk Kembali ke Beranda; Tekuk Siku bertanda "Selesai" beserta skor, 1 dari 4 latihan selesai.
 - **Teks penyunting:** "Latihan hari ini tercatat" / _Today's exercise is recorded_
 - **Label penunjuk di samping ponsel:** Tekuk Siku selesai
-- **Momen screenshot (2:50):** Beranda: Tekuk Siku "Selesai" beserta angka skornya
+- **Rekaman:** `layar-03-ringkasan-beranda.mp4` mulai detik 32
+- **Momen screenshot (2:08,3):** Beranda: Tekuk Siku "Selesai" beserta angka skornya
 
-### 3:00–3:15 · Untuk Keluarga: tanda, status, grafik 7 hari
+### 2:10,8–2:25,3 · Untuk Keluarga: tanda, status, grafik 7 hari
 
-`s16-keluarga` · Tahap: Keluarga dan afasia · Tata letak: Rekaman layar dalam bingkai ponsel + kalimat kunci
+`s17-keluarga` · Tahap: Keluarga dan afasia · Tata letak: Rekaman layar di ponsel 3D + kalimat kunci
 
-**[N16] Narator (voice-over)** (3:00,5–3:11,1)
+**[N17] Narator (suara sintetis)** (2:11,4–2:20,0)
 
-> Keluarga tidak lagi menebak. Di halaman Untuk Keluarga ada tanda bila latihan sempat terhenti, status hari ini, dan grafik tujuh hari terakhir.
+> Keluarga tidak lagi menebak. Halaman Untuk Keluarga menunjukkan tanda bila latihan sempat terhenti, status hari ini, dan grafik tujuh hari terakhir.
 
 _EN:_ The family no longer has to guess. The For Family page shows a flag when exercise has stopped, today's status, and a chart of the last seven days.
 
-- **Di layar:** Kartu "Perlu perhatian: Minggu ini sempat 3 hari berturut-turut tanpa latihan", status "Sudah latihan hari ini", lalu gulir ke grafik Sesi terjadwal 7 hari terakhir (7 dari 14, 50%).
+- **Di layar:** Kartu "Perlu perhatian: Minggu ini sempat 3 hari berturut-turut tanpa latihan", status "Sudah latihan hari ini", lalu grafik Sesi terjadwal 7 hari terakhir.
 - **Teks penyunting:** "Keluarga tidak lagi menebak" / _Caregivers no longer have to guess_
 - **Label penunjuk di samping ponsel:** Sesi terjadwal 7 hari
-- **Momen screenshot (3:10):** Grafik Sesi terjadwal 7 hari terakhir di halaman Untuk Keluarga
+- **Rekaman:** `layar-04-keluarga.mp4` mulai detik 0
+- **Momen screenshot (2:20,8):** Grafik Sesi terjadwal 7 hari terakhir di halaman Untuk Keluarga
 
-### 3:15–3:30 · Untuk Keluarga: tren skor dan salin ringkasan
+### 2:25,3–2:38,3 · Untuk Keluarga: tren skor dan salin ringkasan
 
-`s17-tanda` · Tahap: Keluarga dan afasia · Tata letak: Rekaman layar dalam bingkai ponsel + kalimat kunci
+`s18-salin` · Tahap: Keluarga dan afasia · Tata letak: Rekaman layar di ponsel 3D + kalimat kunci
 
-**[N17] Narator (voice-over)** (3:15,5–3:24,3)
+**[N18] Narator (suara sintetis)** (2:25,9–2:32,8)
 
 > Tren skor empat belas hari juga terlihat. Ringkasan mingguan bisa disalin dengan satu ketukan, siap dikirim ke terapis.
 
 _EN:_ The 14-day score trend is there too. The weekly summary can be copied with one tap, ready to send to the therapist.
 
-- **Di layar:** Grafik Skor latihan 14 hari (gerak dan bicara), lalu ketuk Salin Ringkasan Mingguan; pesan "Ringkasan disalin. Tempel di WhatsApp untuk terapis." tampil.
+- **Di layar:** Grafik Skor latihan 14 hari, lalu ketuk Salin Ringkasan Mingguan; pesan "Ringkasan disalin. Tempel di WhatsApp untuk terapis." tampil.
 - **Teks penyunting:** "Ringkasan mingguan untuk terapis" / _A weekly summary for the therapist_
 - **Label penunjuk di samping ponsel:** Salin Ringkasan Mingguan
+- **Rekaman:** `layar-04-keluarga.mp4` mulai detik 14.5
+- **Momen screenshot (2:36,3):** Pesan "Ringkasan disalin" setelah Salin Ringkasan Mingguan diketuk
 
-### 3:30–3:42 · Latihan Bicara: kata dan gambar
+### 2:38,3–2:50,3 · Latihan Bicara: kata dan gambar
 
-`s18-afasia` · Tahap: Keluarga dan afasia · Tata letak: Rekaman layar dalam bingkai ponsel + kalimat kunci
+`s19-afasia` · Tahap: Keluarga dan afasia · Tata letak: Rekaman layar di ponsel 3D + kalimat kunci
 
-**[N18] Narator (voice-over)** (3:30,5–3:40,5)
+**[N19] Narator (suara sintetis)** (2:38,9–2:46,5)
 
 > Untuk pasien dengan gangguan bicara atau afasia, ada Latihan Bicara berbahasa Indonesia, dengan kata yang dipakai di rumah setiap hari.
 
 _EN:_ For patients with speech difficulties, or aphasia, there is Speech Practice in Indonesian, with words used at home every day.
 
-- **Di layar:** Latihan Bicara dengan pilihan kategori; pilih Benda di Rumah; satu kata dengan gambar besar dan tombol Dengar.
+- **Di layar:** Latihan Bicara: pilih Mode Latihan Mandiri dan kategori Benda di Rumah; satu kata dengan gambar besar dan tombol Dengar.
 - **Teks penyunting:** "Latihan bicara berbahasa Indonesia" / _Aphasia practice in Indonesian_
 - **Label penunjuk di samping ponsel:** Gambar dan kata
+- **Rekaman:** `layar-05-afasia.mp4` mulai detik 0
 
-### 3:42–4:00 · Pemeran menyebut kata, hasil Benar
+### 2:50,3–3:07,8 · Karakter menyebut kata, hasil Benar
 
-`s19-sebut` · Tahap: Keluarga dan afasia · Tata letak: Shot lebar pemeran + rekaman layar dalam bingkai ponsel
+`s20-sebut` · Tahap: Keluarga dan afasia · Tata letak: Render 3D lebar + rekaman layar sinkron di ponsel 3D
 
-**[N19a] Narator (voice-over)** (3:42,5–3:46,5)
+**[N20a] Narator (suara sintetis)** (2:50,9–2:54,5)
 
-> Pemeran mendengarkan contoh, lalu menyebutkan katanya.
+> Contoh kata bisa didengar lebih dulu, lalu katanya diucapkan.
 
-_EN:_ The performer listens to the example, then says the word.
+_EN:_ The example word can be heard first, then the word is spoken.
 
-**[N19b] Narator (voice-over)** (3:51–3:59,4)
+**[N20b] Narator (suara sintetis)** (2:55,0–3:02,9)
 
-> Aplikasi mendengarkan dan menilai. Kata yang tepat dinilai Benar, dan skornya tercatat.
+> Di Mode Latihan Mandiri, pendamping menilai dengan satu ketukan: Sudah Benar, atau Ulangi. Hasilnya tercatat.
 
-_EN:_ The app listens and scores the attempt. A correct word is marked Correct, and the score is saved.
+_EN:_ In Self-Practice Mode, the companion scores with one tap: Correct, or Repeat. The result is saved.
 
-- **Di layar:** Pemeran menyebut kata; layar menampilkan "Benar! Hebat, langsung tepat." lalu Kata Berikutnya.
+- **Di layar:** Karakter 3D menyebut kata ke arah ponsel; di layar, Sudah Benar diketuk dan "Benar! Hebat, langsung tepat." tampil, lalu Kata Berikutnya.
 - **Teks penyunting:** "Setiap kata dinilai" / _Every word attempt is scored_
 - **Label penunjuk di samping ponsel:** Hasil penilaian kata
-- **Label:** Peragaan oleh pemeran
-- **Momen screenshot (3:55):** Kata yang dinilai "Benar!" di Latihan Bicara
-- **Catatan:** Jeda 226,5-231 dibiarkan tanpa narasi agar suara pemeran menyebut kata terdengar jelas. Draf memakai rekaman otomatis Mode Latihan Mandiri ("Sudah Benar" diketuk), karena pengenal suara Chrome tidak tersedia di peramban otomatis. Versi final WAJIB memakai rekaman layar ponsel dengan pengenal suara asli (tampil "Terdengar: ...") agar kalimat N19b terbukti di layar.
+- **Label:** Peragaan dengan karakter 3D, bukan pasien sungguhan
+- **Rekaman:** `kamera-afasia-lebar.mp4` mulai detik 0
+- **Rekaman:** `layar-05-afasia.mp4` mulai detik 12
+- **Momen screenshot (3:00,3):** Kata yang dinilai "Benar!" di Latihan Bicara
+- **Catatan:** Rekaman layar memakai Mode Latihan Mandiri (pengenal suara Chrome tidak tersedia di peramban otomatis), maka narasi menyebut penilaian oleh pendamping, bukan pengenalan suara.
 
-### 4:00–4:12 · Dashboard Terapis: progres pasien
+### 3:07,8–3:18,8 · Dashboard Terapis: progres pasien
 
-`s20-terapis` · Tahap: Penutup · Tata letak: Rekaman layar desktop dalam bingkai peramban + kalimat kunci
+`s21-terapis` · Tahap: Terapis dan penutup · Tata letak: Rekaman layar desktop dalam bingkai peramban (perspektif halus) + kalimat kunci
 
-**[N20] Narator (voice-over)** (4:00,5–4:08,8)
+**[N21] Narator (suara sintetis)** (3:08,4–3:14,6)
 
 > Di Dashboard Terapis, terapis dapat menyusun program dan mengikuti kemajuan tanpa menunggu kunjungan berikutnya.
 
 _EN:_ On the Therapist Dashboard, the therapist can set the programme and follow progress without waiting for the next visit.
 
-- **Di layar:** Dashboard Terapis (label Prototype, Demo) dengan Pak Budi paling atas, lalu halaman Pak Budi: grafik Kepatuhan 7 hari terakhir dan Resep Program; di Pustaka latihan, Tambah Luruskan Tungkai.
+- **Di layar:** Dashboard Terapis (Prototype, Demo), halaman Pak Budi: grafik Kepatuhan 7 hari terakhir dan Resep Program; Tambah Luruskan Tungkai.
 - **Teks penyunting:** "Terapis menyusun program" / _Therapists set the home programme_
-- **Momen screenshot (4:06):** Grafik Kepatuhan 7 hari terakhir pada halaman Pak Budi di Dashboard Terapis
+- **Rekaman:** `layar-06-klinisi.mp4` mulai detik 0
+- **Momen screenshot (3:13,8):** Grafik Kepatuhan 7 hari terakhir pada halaman Pak Budi di Dashboard Terapis
 
-### 4:12–4:25 · Resep program menjadi Latihan Hari Ini
+### 3:18,8–3:33,3 · Resep program menjadi Latihan Hari Ini
 
-`s21-program` · Tahap: Penutup · Tata letak: Rekaman layar desktop dalam bingkai peramban + kalimat kunci
+`s22-program` · Tahap: Terapis dan penutup · Tata letak: Rekaman layar desktop dalam bingkai peramban (perspektif halus) + kalimat kunci
 
-**[N21] Narator (voice-over)** (4:12,5–4:20,0)
+**[N22] Narator (suara sintetis)** (3:19,4–3:25,0)
 
 > Di prototype ini, program yang disimpan terapis menjadi Latihan Hari Ini pada profil pasien tersebut.
 
+_Ucapan TTS:_ Di prototipe ini, program yang disimpan terapis menjadi Latihan Hari Ini pada profil pasien tersebut.
+
 _EN:_ In this prototype, the programme the therapist saves becomes Today's Exercises on that patient's profile.
 
-- **Di layar:** Simpan Resep diketuk dan pesan "Resep Pak Budi tersimpan" tampil; Lihat sebagai pasien membuka Beranda Pak Budi yang kini memuat Luruskan Tungkai (1 dari 5 latihan selesai).
+- **Di layar:** Simpan Resep dan pesan "Resep Pak Budi tersimpan"; Lihat sebagai pasien membuka Beranda Pak Budi yang kini memuat Luruskan Tungkai.
 - **Teks penyunting:** "Program terapis menjadi Latihan Hari Ini" / _The therapist's programme becomes today's exercises_
+- **Rekaman:** `layar-06-klinisi.mp4` mulai detik 11
+- **Momen screenshot (3:28,8):** Beranda Pak Budi memuat Luruskan Tungkai setelah terapis menyimpan resep
 
-### 4:25–4:50 · Penutup dokter dengan ponsel di tangan
+### 3:33,3–3:56,3 · Render 3D penutup: PULIHIN tidak menggantikan terapis
 
-`s22-penutup-dokter` · Tahap: Penutup · Tata letak: Talking head dokter
+`s23-penutup` · Tahap: Terapis dan penutup · Tata letak: Render 3D penutup + kartu alamat
 
-**[N22a] Dokter (di kamera)** (4:25,6–4:35,5)
+**[N23a] Narator (suara sintetis)** (3:33,9–3:40,8)
 
 > PULIHIN tidak menggantikan terapis. PULIHIN membantu memastikan yang diajarkan terapis benar-benar dilatih di rumah.
 
+_Ucapan TTS:_ Pulihin tidak menggantikan terapis. Pulihin membantu memastikan, yang diajarkan terapis benar-benar dilatih di rumah.
+
 _EN:_ PULIHIN does not replace the therapist. It helps make sure that what the therapist teaches is truly practised at home.
 
-**[N22b] Dokter (di kamera)** (4:36,8–4:47,5)
+**[N23b] Narator (suara sintetis)** (3:41,3–3:48,1)
 
-> Ini masih prototype untuk kompetisi, bukan alat kesehatan teregulasi. Silakan mencobanya di pulihinapp.id.
+> Ini masih prototype kompetisi, bukan alat kesehatan teregulasi. Coba sekarang di pulihin.vercel.app.
 
-_EN:_ This is still a competition prototype, not a regulated medical device. You can try it at pulihinapp.id.
+_Ucapan TTS:_ Ini masih prototipe kompetisi, bukan alat kesehatan teregulasi. Coba sekarang di pulihin titik vercel titik app.
 
-- **Di layar:** Wajah dokter memegang ponsel berisi aplikasi; kartu pulihinapp.id dan penafian prototype.
-- **Teks penyunting:** "pulihinapp.id" / _Competition prototype · not a regulated medical device_ · Prototype kompetisi · bukan alat kesehatan teregulasi
-- **Momen screenshot (4:40):** Wajah dokter dengan ponsel di tangan dan kartu pulihinapp.id
+_EN:_ This is still a competition prototype, not a regulated medical device. Try it now at pulihin.vercel.app.
 
-### 4:50–4:58 · Layar penutup
+- **Di layar:** Render 3D penutup; kalimat "Pendamping latihan di rumah, bukan pengganti terapis", lalu kartu pulihin.vercel.app dan penafian prototype.
+- **Teks penyunting:** "Pendamping latihan di rumah, bukan pengganti terapis" / _A home exercise companion, not a replacement for the therapist_
+- **Label:** Peragaan dengan karakter 3D, bukan pasien sungguhan
+- **Rekaman:** `penutup-3d.mp4` mulai detik 0
+- **Momen screenshot (3:47,3):** Render 3D penutup dengan kartu pulihin.vercel.app dan penafian prototype
 
-`s23-layar-penutup` · Tahap: Penutup · Tata letak: Layar penutup statis
+### 3:56,3–4:03,3 · Layar penutup
+
+`s24-layar-penutup` · Tahap: Terapis dan penutup · Tata letak: Layar penutup statis
 
 _(Tanpa narasi.)_
-- **Di layar:** PULIHIN · pulihinapp.id · Health and Wellbeing, .id Developer Day Indonesia 2026 (baris Tim tampil setelah namaTim diisi di src/config/identitas.ts)
-- **Momen screenshot (4:54):** Layar penutup: PULIHIN, pulihinapp.id, Health and Wellbeing, nama tim (bila diisi)
 
-## Naskah utuh (untuk dibaca saat rekam suara)
+- **Di layar:** PULIHIN · pulihin.vercel.app · Health and Wellbeing, .id Developer Day Indonesia 2026
+- **Momen screenshot (4:00,8):** Layar penutup: PULIHIN, pulihin.vercel.app, Health and Wellbeing, .id Developer Day Indonesia 2026
 
-N01 · Dokter (di kamera): Saya dokter spesialis saraf. Setiap minggu, saya melepas pasien stroke pulang ke rumah.
+## Naskah utuh
 
-N02 · Dokter (di kamera): Mereka pulang membawa program latihan di atas kertas.
+N01: Menurut Kementerian Kesehatan, stroke menyebabkan 18,5 persen kematian di Indonesia.
 
-N03 · Dokter (suara, di atas b-roll): Di rumah, mereka sering lupa dan ragu apakah gerakannya sudah benar.
+N02: Namun hanya 49,2 persen penyandang stroke yang kontrol rutin.
 
-N04 · Dokter (suara, di atas b-roll): Padahal pemulihan ditentukan oleh latihan harian di rumah, dan di situlah pendampingan terputus.
+N03: Tenaga terapi pun terbatas: hanya 926 tenaga keterapian fisik di lebih dari 10.000 puskesmas.
 
-N05 · Narator (voice-over): PULIHIN mengubah ponsel biasa menjadi pendamping latihan. Begitu dibuka, Latihan Hari Ini langsung tampil dalam huruf besar.
+N04: Pasien pulang membawa program latihan di atas kertas.
 
-N06 · Narator (voice-over): Kita mulai dari satu gerakan kecil: Tekuk Siku. Ada contoh gerakan, pesan keselamatan, lalu satu tombol besar: Mulai dengan Kamera.
+N05: Di rumah, mereka ragu apakah gerakannya sudah benar. Di situlah pendampingan terputus.
 
-N07 · Narator (voice-over): Ponsel cukup diletakkan di meja, sekitar satu meter dari kursi. Yang tampil di sini adalah peragaan oleh pemeran, bukan pasien sungguhan.
+N06: PULIHIN mengubah ponsel biasa menjadi pendamping latihan. Begitu dibuka, Latihan Hari Ini langsung tampil dalam huruf besar.
 
-N08 · Narator (voice-over): Kamera membaca titik-titik tubuh langsung di ponsel ini, tanpa mengunggah video. Repetisi dihitung dari sudut siku: tekuk penuh, luruskan lagi, baru terhitung satu.
+N07: Kita mulai dari satu gerakan kecil: Tekuk Siku. Ada contoh gerakan, pesan keselamatan, lalu satu tombol besar: Mulai dengan Kamera.
 
-N09 · Narator (voice-over): Lihat angkanya: lima dari sepuluh. Hitungan hanya naik bila gerakannya lengkap, dan aplikasi memberi tahu bila gerakannya belum tepat.
+N08: Ponsel cukup diletakkan di meja, sekitar satu meter dari kursi. Ini peragaan dengan karakter 3D, bukan pasien sungguhan.
 
-N10a · Narator (voice-over): Sekarang bahunya ikut terangkat.
+N09: Aplikasi asli membaca titik-titik tubuh langsung di perangkat, tanpa mengunggah video. Repetisi dihitung dari sudut siku: tekuk penuh, lalu luruskan lagi.
 
-N10b · Narator (voice-over): Aplikasi mengoreksi dengan suara dan teks besar, dalam Bahasa Indonesia.
+N10: Lihat angkanya: lima dari sepuluh.
 
-N11 · Narator (voice-over): Pemeran menurunkan bahunya, pesan menghilang, dan hitungan berlanjut. Hanya satu pesan pada satu waktu, supaya tidak membingungkan.
+N11a: Sekarang bahunya ikut terangkat.
 
-N12 · Narator (voice-over): Jadi bukan sekadar menghitung, melainkan menjaga cara geraknya, sampai repetisi kesepuluh.
+N11b: Aplikasi langsung mengoreksi, dengan suara dan teks besar dalam Bahasa Indonesia.
 
-N13 · Narator (voice-over): Di akhir sesi ada skor dan ringkasan sederhana: jumlah repetisi dan durasi. Labelnya mudah dipahami, mulai dari Perlu Pendampingan, Berkembang, Baik, sampai Sangat Baik.
+N13: Jadi bukan sekadar menghitung, melainkan menjaga cara geraknya, sampai repetisi kesepuluh.
 
-N14 · Narator (voice-over): Ada satu saran untuk sesi berikutnya. Ringkasan ini bukan diagnosis, dan kalimat batasan itu selalu tampil.
+N14: Di akhir sesi ada skor dan ringkasan sederhana: jumlah repetisi dan durasi. Labelnya mudah dipahami, dari Perlu Pendampingan sampai Sangat Baik.
 
-N15 · Narator (voice-over): Kembali ke Beranda, Tekuk Siku sudah bertanda selesai beserta skornya. Latihannya tercatat di ponsel, dan keluarga bisa melihatnya.
+N15: Ada satu saran untuk sesi berikutnya. Ringkasan ini bukan diagnosis, dan kalimat batasan itu selalu tampil.
 
-N16 · Narator (voice-over): Keluarga tidak lagi menebak. Di halaman Untuk Keluarga ada tanda bila latihan sempat terhenti, status hari ini, dan grafik tujuh hari terakhir.
+N16: Kembali ke Beranda, Tekuk Siku sudah bertanda selesai beserta skornya. Latihannya tercatat, dan keluarga bisa melihatnya.
 
-N17 · Narator (voice-over): Tren skor empat belas hari juga terlihat. Ringkasan mingguan bisa disalin dengan satu ketukan, siap dikirim ke terapis.
+N17: Keluarga tidak lagi menebak. Halaman Untuk Keluarga menunjukkan tanda bila latihan sempat terhenti, status hari ini, dan grafik tujuh hari terakhir.
 
-N18 · Narator (voice-over): Untuk pasien dengan gangguan bicara atau afasia, ada Latihan Bicara berbahasa Indonesia, dengan kata yang dipakai di rumah setiap hari.
+N18: Tren skor empat belas hari juga terlihat. Ringkasan mingguan bisa disalin dengan satu ketukan, siap dikirim ke terapis.
 
-N19a · Narator (voice-over): Pemeran mendengarkan contoh, lalu menyebutkan katanya.
+N19: Untuk pasien dengan gangguan bicara atau afasia, ada Latihan Bicara berbahasa Indonesia, dengan kata yang dipakai di rumah setiap hari.
 
-N19b · Narator (voice-over): Aplikasi mendengarkan dan menilai. Kata yang tepat dinilai Benar, dan skornya tercatat.
+N20a: Contoh kata bisa didengar lebih dulu, lalu katanya diucapkan.
 
-N20 · Narator (voice-over): Di Dashboard Terapis, terapis dapat menyusun program dan mengikuti kemajuan tanpa menunggu kunjungan berikutnya.
+N20b: Di Mode Latihan Mandiri, pendamping menilai dengan satu ketukan: Sudah Benar, atau Ulangi. Hasilnya tercatat.
 
-N21 · Narator (voice-over): Di prototype ini, program yang disimpan terapis menjadi Latihan Hari Ini pada profil pasien tersebut.
+N21: Di Dashboard Terapis, terapis dapat menyusun program dan mengikuti kemajuan tanpa menunggu kunjungan berikutnya.
 
-N22a · Dokter (di kamera): PULIHIN tidak menggantikan terapis. PULIHIN membantu memastikan yang diajarkan terapis benar-benar dilatih di rumah.
+N22: Di prototype ini, program yang disimpan terapis menjadi Latihan Hari Ini pada profil pasien tersebut.
 
-N22b · Dokter (di kamera): Ini masih prototype untuk kompetisi, bukan alat kesehatan teregulasi. Silakan mencobanya di pulihinapp.id.
+N23a: PULIHIN tidak menggantikan terapis. PULIHIN membantu memastikan yang diajarkan terapis benar-benar dilatih di rumah.
+
+N23b: Ini masih prototype kompetisi, bukan alat kesehatan teregulasi. Coba sekarang di pulihin.vercel.app.

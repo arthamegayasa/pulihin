@@ -1,36 +1,235 @@
 {
-  "dipindai": "2026-10-13T14:13:40.602Z",
+  "dipindai": "2026-10-15T01:53:00.548Z",
   "footage": {
+    "kamera-sesi-lebar.mp4": {
+      "bytes": 8588306,
+      "durasi": 46.667,
+      "lebar": 1280,
+      "tinggi": 720
+    },
     "layar-01-beranda-detail.mp4": {
-      "bytes": 982733,
+      "bytes": 3384997,
       "durasi": 21.5,
-      "lebar": 1080,
-      "tinggi": 2400
+      "lebar": 720,
+      "tinggi": 1600
+    },
+    "layar-02-sesi-tekuk-siku.mp4": {
+      "bytes": 7388695,
+      "durasi": 46.666,
+      "lebar": 720,
+      "tinggi": 1600
     },
     "layar-03-ringkasan-beranda.mp4": {
-      "bytes": 1832968,
+      "bytes": 6931850,
       "durasi": 51,
-      "lebar": 1080,
-      "tinggi": 2400
+      "lebar": 720,
+      "tinggi": 1600
     },
     "layar-04-keluarga.mp4": {
-      "bytes": 1872572,
+      "bytes": 8114797,
       "durasi": 31,
-      "lebar": 1080,
-      "tinggi": 2400
+      "lebar": 720,
+      "tinggi": 1600
     },
     "layar-05-afasia.mp4": {
-      "bytes": 758049,
+      "bytes": 2304619,
       "durasi": 31.5,
-      "lebar": 1080,
-      "tinggi": 2400
+      "lebar": 720,
+      "tinggi": 1600
     },
     "layar-06-klinisi.mp4": {
-      "bytes": 3406925,
+      "bytes": 5543429,
       "durasi": 26,
-      "lebar": 1920,
-      "tinggi": 1080
+      "lebar": 1280,
+      "tinggi": 720
     }
   },
-  "audio": {}
+  "audio": {
+    "aplikasi/N11-app.mp3": {
+      "bytes": 66396,
+      "durasi": 3.291,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N01.mp3": {
+      "bytes": 112894,
+      "durasi": 5.616,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N02.mp3": {
+      "bytes": 92518,
+      "durasi": 4.598,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N03.mp3": {
+      "bytes": 148943,
+      "durasi": 7.419,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N04.mp3": {
+      "bytes": 56992,
+      "durasi": 2.821,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N05.mp3": {
+      "bytes": 110804,
+      "durasi": 5.512,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N06.mp3": {
+      "bytes": 151555,
+      "durasi": 7.549,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N07.mp3": {
+      "bytes": 193351,
+      "durasi": 9.639,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N08.mp3": {
+      "bytes": 168796,
+      "durasi": 8.411,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N09.mp3": {
+      "bytes": 196485,
+      "durasi": 9.796,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N10.mp3": {
+      "bytes": 51245,
+      "durasi": 2.534,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N11a.mp3": {
+      "bytes": 33481,
+      "durasi": 1.646,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N11b.mp3": {
+      "bytes": 97743,
+      "durasi": 4.859,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N13.mp3": {
+      "bytes": 111326,
+      "durasi": 5.538,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N14.mp3": {
+      "bytes": 182902,
+      "durasi": 9.117,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N15.mp3": {
+      "bytes": 137971,
+      "durasi": 6.87,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N16.mp3": {
+      "bytes": 155212,
+      "durasi": 7.732,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N17.mp3": {
+      "bytes": 174020,
+      "durasi": 8.673,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N18.mp3": {
+      "bytes": 140061,
+      "durasi": 6.975,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N19.mp3": {
+      "bytes": 154167,
+      "durasi": 7.68,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N20a.mp3": {
+      "bytes": 74232,
+      "durasi": 3.683,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N20b.mp3": {
+      "bytes": 156779,
+      "durasi": 7.811,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N21.mp3": {
+      "bytes": 124910,
+      "durasi": 6.217,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N22.mp3": {
+      "bytes": 112894,
+      "durasi": 5.616,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N23a.mp3": {
+      "bytes": 139016,
+      "durasi": 6.922,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N23b.mp3": {
+      "bytes": 137971,
+      "durasi": 6.87,
+      "lebar": null,
+      "tinggi": null
+    },
+    "sfx/berhasil.mp3": {
+      "bytes": 26792,
+      "durasi": 1.646,
+      "lebar": null,
+      "tinggi": null
+    },
+    "sfx/ketuk.mp3": {
+      "bytes": 8820,
+      "durasi": 0.522,
+      "lebar": null,
+      "tinggi": null
+    },
+    "sfx/repetisi.mp3": {
+      "bytes": 17179,
+      "durasi": 1.045,
+      "lebar": null,
+      "tinggi": null
+    },
+    "sfx/suasana-rumah.mp3": {
+      "bytes": 321035,
+      "durasi": 20.036,
+      "lebar": null,
+      "tinggi": null
+    },
+    "sfx/transisi.mp3": {
+      "bytes": 20105,
+      "durasi": 1.228,
+      "lebar": null,
+      "tinggi": null
+    }
+  }
 }

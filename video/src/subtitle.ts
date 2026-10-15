@@ -20,10 +20,6 @@ export const MAKS_KARAKTER_BARIS = 42;
 export const MAKS_BARIS = 2;
 export const MIN_DETIK_ISYARAT = 1;
 export const MAKS_DETIK_ISYARAT = 6;
-/** Perkiraan kecepatan bicara Bahasa Indonesia yang tenang (karakter/detik). */
-const KARAKTER_PER_DETIK = 13.5;
-const JEDA_AWAL = 0.5;
-const JEDA_AKHIR = 0.5;
 const JARAK_ANTAR_ISYARAT = 0.04;
 const MAKS_KARAKTER_ISYARAT = MAKS_KARAKTER_BARIS * MAKS_BARIS;
 
@@ -121,24 +117,8 @@ export const pecah = (teks: string, durasi: number): { potongan: string[]; duras
   }
 };
 
-/** Rentang bicara satu baris narasi (detik absolut). */
-export const rentangBicara = (adegan: Adegan, baris: BarisNarasi): [number, number] => {
-  if (baris.mulai !== undefined && baris.selesai !== undefined) return [baris.mulai, baris.selesai];
-  const otomatis = adegan.narasi.filter((b) => b.mulai === undefined || b.selesai === undefined);
-  const awal = adegan.mulai + JEDA_AWAL;
-  const akhir = adegan.selesai - JEDA_AKHIR;
-  const total = otomatis.reduce((s, b) => s + b.teksId.length, 0);
-  let t = awal;
-  for (const b of otomatis) {
-    const jatah = ((akhir - awal) * b.teksId.length) / total;
-    if (b === baris) {
-      const perkiraan = b.teksId.length / KARAKTER_PER_DETIK;
-      return [bulat(t), bulat(t + Math.min(jatah, Math.max(perkiraan, 1.5)))];
-    }
-    t += jatah;
-  }
-  throw new Error(`Baris ${baris.id} tidak ada di adegan ${adegan.id}`);
-};
+/** Rentang bicara satu baris narasi (detik absolut): dari durasi audio terukur di timeline.ts. */
+export const rentangBicara = (_adegan: Adegan, baris: BarisNarasi): [number, number] => [baris.mulai, baris.selesai];
 
 const isyaratBaris = (adegan: Adegan, baris: BarisNarasi, bahasa: Bahasa): Omit<Isyarat, 'nomor'>[] => {
   const [mulai, selesai] = rentangBicara(adegan, baris);

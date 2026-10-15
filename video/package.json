@@ -11,25 +11,31 @@
     "scan": "node scripts/scan-footage.mjs",
     "srt": "node scripts/build-srt.mjs",
     "studio": "npm run scan && remotion studio src/index.ts",
-    "render": "npm run scan && remotion render src/index.ts PulihinDemo out/pulihin-demo-draft.mp4 --codec=h264 --crf=18",
-    "render:tanpa-subtitle": "npm run scan && remotion render src/index.ts PulihinDemo out/pulihin-demo-tanpa-subtitle.mp4 --codec=h264 --crf=18 --props=props/tanpa-subtitle.json",
     "still": "npm run scan && node scripts/stills.mjs",
     "rekam-layar": "node --disable-warning=ExperimentalWarning scripts/rekam-layar.mjs",
     "paper": "node --disable-warning=ExperimentalWarning scripts/tangkap-paper.mjs",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "narasi": "node --disable-warning=ExperimentalWarning scripts/narasi.mjs",
+    "render:final": "npm run scan && remotion render src/index.ts PulihinDemo out/pulihin-demo-final.mp4 --codec=h264 --crf=18 --audio-codec=aac --audio-bitrate=192k --concurrency=2 --gl=angle --props=props/tanpa-subtitle.json",
+    "render:final-en": "npm run scan && remotion render src/index.ts PulihinDemo out/pulihin-demo-final-en.mp4 --codec=h264 --crf=18 --audio-codec=aac --audio-bitrate=192k --concurrency=2 --gl=angle"
   },
   "dependencies": {
     "@fontsource-variable/plus-jakarta-sans": "5.3.0",
+    "@react-three/fiber": "9.8.2",
     "@remotion/bundler": "4.0.535",
     "@remotion/cli": "4.0.535",
+    "@remotion/media": "4.0.535",
     "@remotion/renderer": "4.0.535",
+    "@remotion/three": "4.0.535",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "remotion": "4.0.535"
+    "remotion": "4.0.535",
+    "three": "0.186.1"
   },
   "devDependencies": {
     "@types/node": "26.6.5",
     "@types/react": "19.3.0",
+    "@types/three": "0.186.0",
     "puppeteer-core": "25.13.0",
     "typescript": "7.0.2"
   }

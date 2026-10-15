@@ -203,7 +203,7 @@ Diisi pemilik produk. Nilai yang tampil di aplikasi dikumpulkan di `src/config/i
 - Model HP uji kelas bawah dan versi Chrome; hasil uji 50 repetisi dan fps di perangkat; tanggal uji.
 - Jam pengingat default (saat ini saran spec: 08.00 gerak, 16.00 bicara).
 - Aset animasi/video contoh gerakan bila pemilik produk punya sendiri (saat ini animasi figur bawaan).
-- Nama & gelar dokter di video, pemeran pasien & caregiver, lokasi rekam, tautan YouTube.
+- Tautan YouTube video demo (video tanpa rekaman manusia: karakter 3D + narasi sintetis, lihat `docs/video/README.md`).
 
 ## Laporan serah terima (Bab 19.4)
 
@@ -218,10 +218,11 @@ Akurasi repetisi: rekaman manusia nyata 14 dari 14 repetisi yang dimulai setelah
                   2 sengaja tidak dihitung karena dimulai sebelum Siap), 0 ganda; perangkat target [DIISI] dari 50
 Frame rate pose : emulasi desktop GPU 21-25 fps (1 orang, CPU 1x-6x); perangkat target [DIISI] fps
 Uji otomatis    : 25 berkas, 255 uji lulus
-Video           : draf lokal video/out/pulihin-demo-draft.mp4 (tidak di repo; 1920x1080, 4:58, 20,8 MB; render ulang: `cd video && npm run render`):
-                  adegan layar non-kamera = rekaman layar aplikasi asli; adegan dokter, pemeran, dan sesi kamera = kartu
-                  placeholder yang wajib diganti rekaman manusia (Bab 14.4). Final [DIISI] setelah perekaman
-Yang belum      : uji perangkat target (AC-F1-2, AC-F1-4, AC-F3-2), rekaman manusia untuk video
+Video           : tanpa rekaman manusia & tanpa dokter (karakter 3D Blender menggerakkan aplikasi asli via kamera palsu
+                  Chrome; narasi sintetis Microsoft Azure neural id-ID). Draf lokal video/out/pulihin-demo-draft.mp4
+                  (tidak di repo; 1920x1080, 30 fps, H.264+AAC, 4:03, 60,3 MB). Final: `cd video && npm run render:final`
+                  (+ `render:final-en`, subtitle EN tertanam) setelah semua render 3D ada. Alur: docs/video/README.md
+Yang belum      : uji perangkat target (AC-F1-2, AC-F1-4, AC-F3-2); 4 render 3D b-roll/afasia/penutup untuk video
 [DIISI] kosong  : lihat bagian "Isian [DIISI] yang masih kosong"
 ```
 

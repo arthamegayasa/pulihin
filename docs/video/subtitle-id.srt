@@ -1,245 +1,230 @@
 1
-00:00:00,500 --> 00:00:02,558
-Saya dokter spesialis saraf.
+00:00:00,600 --> 00:00:03,064
+Menurut Kementerian Kesehatan, stroke
 
 2
-00:00:02,598 --> 00:00:06,944
-Setiap minggu, saya melepas
-pasien stroke pulang ke rumah.
+00:00:03,104 --> 00:00:06,216
+menyebabkan 18,5 persen
+kematian di Indonesia.
 
 3
-00:00:12,500 --> 00:00:16,426
-Mereka pulang membawa program
-latihan di atas kertas.
+00:00:07,716 --> 00:00:12,314
+Namun hanya 49,2 persen penyandang
+stroke yang kontrol rutin.
 
 4
-00:00:19,500 --> 00:00:23,500
-Di rumah, mereka sering lupa
-dan ragu apakah gerakannya sudah benar.
+00:00:13,814 --> 00:00:17,322
+Tenaga terapi pun terbatas:
+hanya 926 tenaga
 
 5
-00:00:24,500 --> 00:00:27,513
-Padahal pemulihan ditentukan
-oleh latihan harian di rumah,
+00:00:17,362 --> 00:00:21,233
+keterapian fisik di lebih
+dari 10.000 puskesmas.
 
 6
-00:00:27,553 --> 00:00:29,500
-dan di situlah pendampingan terputus.
+00:00:22,733 --> 00:00:25,554
+Pasien pulang membawa program
+latihan di atas kertas.
 
 7
-00:00:30,500 --> 00:00:34,631
+00:00:27,133 --> 00:00:30,465
+Di rumah, mereka ragu apakah
+gerakannya sudah benar.
+
+8
+00:00:30,505 --> 00:00:32,645
+Di situlah pendampingan terputus.
+
+9
+00:00:34,145 --> 00:00:37,603
 PULIHIN mengubah ponsel biasa
 menjadi pendamping latihan.
 
-8
-00:00:34,671 --> 00:00:39,500
+10
+00:00:37,643 --> 00:00:41,694
 Begitu dibuka, Latihan Hari Ini
 langsung tampil dalam huruf besar.
 
-9
-00:00:40,500 --> 00:00:43,739
+11
+00:00:43,194 --> 00:00:46,666
 Kita mulai dari satu
 gerakan kecil: Tekuk Siku.
 
-10
-00:00:43,779 --> 00:00:46,390
+12
+00:00:46,706 --> 00:00:49,505
 Ada contoh gerakan, pesan keselamatan,
 
-11
-00:00:46,430 --> 00:00:49,500
+13
+00:00:49,545 --> 00:00:52,833
 lalu satu tombol besar:
 Mulai dengan Kamera.
 
-12
-00:00:50,500 --> 00:00:55,161
+14
+00:00:54,333 --> 00:00:58,746
 Ponsel cukup diletakkan di meja,
 sekitar satu meter dari kursi.
 
-13
-00:00:55,201 --> 00:01:00,648
-Yang tampil di sini adalah peragaan
-oleh pemeran, bukan pasien sungguhan.
-
-14
-00:01:02,500 --> 00:01:08,459
-Kamera membaca titik-titik tubuh langsung
-di ponsel ini, tanpa mengunggah video.
-
 15
-00:01:08,499 --> 00:01:11,983
-Repetisi dihitung dari
-sudut siku: tekuk penuh,
+00:00:58,786 --> 00:01:02,744
+Ini peragaan dengan karakter 3D,
+bukan pasien sungguhan.
 
 16
-00:01:12,023 --> 00:01:14,648
-luruskan lagi, baru terhitung satu.
+00:01:04,244 --> 00:01:06,717
+Aplikasi asli membaca titik-titik tubuh
 
 17
-00:01:16,500 --> 00:01:19,017
-Lihat angkanya: lima dari sepuluh.
+00:01:06,757 --> 00:01:09,682
+langsung di perangkat,
+tanpa mengunggah video.
 
 18
-00:01:19,057 --> 00:01:22,325
-Hitungan hanya naik
-bila gerakannya lengkap,
+00:01:09,722 --> 00:01:14,040
+Repetisi dihitung dari sudut siku:
+tekuk penuh, lalu luruskan lagi.
 
 19
-00:01:22,365 --> 00:01:26,426
-dan aplikasi memberi tahu
-bila gerakannya belum tepat.
+00:01:15,540 --> 00:01:18,074
+Lihat angkanya: lima dari sepuluh.
 
 20
-00:01:30,500 --> 00:01:32,800
+00:01:19,673 --> 00:01:21,319
 Sekarang bahunya ikut terangkat.
 
 21
-00:01:33,200 --> 00:01:37,400
+00:01:21,669 --> 00:01:24,960
 Rilekskan bahu, turunkan bahu Anda.
 
 22
-00:01:38,000 --> 00:01:43,400
-Aplikasi mengoreksi dengan suara
-dan teks besar, dalam Bahasa Indonesia.
+00:01:25,460 --> 00:01:30,319
+Aplikasi langsung mengoreksi, dengan suara
+dan teks besar dalam Bahasa Indonesia.
 
 23
-00:01:44,500 --> 00:01:49,611
-Pemeran menurunkan bahunya,
-pesan menghilang, dan hitungan berlanjut.
-
-24
-00:01:49,651 --> 00:01:54,204
-Hanya satu pesan pada satu waktu,
-supaya tidak membingungkan.
-
-25
-00:01:58,500 --> 00:02:02,056
+00:01:31,819 --> 00:01:34,766
 Jadi bukan sekadar menghitung,
 melainkan menjaga
 
-26
-00:02:02,096 --> 00:02:05,167
+24
+00:01:34,806 --> 00:01:37,357
 cara geraknya, sampai repetisi kesepuluh.
 
-27
-00:02:10,500 --> 00:02:16,082
+25
+00:01:38,857 --> 00:01:43,599
 Di akhir sesi ada skor dan ringkasan
 sederhana: jumlah repetisi dan durasi.
 
-28
-00:02:16,122 --> 00:02:20,205
-Labelnya mudah dipahami,
-mulai dari Perlu Pendampingan,
+26
+00:01:43,639 --> 00:01:47,974
+Labelnya mudah dipahami, dari Perlu
+Pendampingan sampai Sangat Baik.
 
-29
-00:02:20,245 --> 00:02:23,019
-Berkembang, Baik, sampai Sangat Baik.
-
-30
-00:02:30,500 --> 00:02:33,227
+27
+00:01:52,357 --> 00:01:54,715
 Ada satu saran untuk sesi berikutnya.
 
-31
-00:02:33,267 --> 00:02:38,426
+28
+00:01:54,755 --> 00:01:59,227
 Ringkasan ini bukan diagnosis,
 dan kalimat batasan itu selalu tampil.
 
-32
-00:02:42,500 --> 00:02:47,685
+29
+00:02:01,357 --> 00:02:05,827
 Kembali ke Beranda, Tekuk Siku sudah
 bertanda selesai beserta skornya.
 
-33
-00:02:47,725 --> 00:02:52,204
-Latihannya tercatat di ponsel,
+30
+00:02:05,867 --> 00:02:09,089
+Latihannya tercatat,
 dan keluarga bisa melihatnya.
 
-34
-00:03:00,500 --> 00:03:02,564
+31
+00:02:11,357 --> 00:02:12,980
 Keluarga tidak lagi menebak.
 
-35
-00:03:02,604 --> 00:03:07,447
-Di halaman Untuk Keluarga ada tanda
-bila latihan sempat terhenti,
+32
+00:02:13,020 --> 00:02:17,139
+Halaman Untuk Keluarga menunjukkan
+tanda bila latihan sempat terhenti,
 
-36
-00:03:07,487 --> 00:03:11,093
+33
+00:02:17,179 --> 00:02:20,030
 status hari ini,
 dan grafik tujuh hari terakhir.
 
-37
-00:03:15,500 --> 00:03:18,523
+34
+00:02:25,857 --> 00:02:28,241
 Tren skor empat belas hari juga terlihat.
 
-38
-00:03:18,563 --> 00:03:24,315
+35
+00:02:28,281 --> 00:02:32,832
 Ringkasan mingguan bisa disalin dengan
 satu ketukan, siap dikirim ke terapis.
 
-39
-00:03:30,500 --> 00:03:35,460
+36
+00:02:38,857 --> 00:02:42,657
 Untuk pasien dengan gangguan bicara
 atau afasia, ada Latihan Bicara
 
-40
-00:03:35,500 --> 00:03:40,500
+37
+00:02:42,697 --> 00:02:46,537
 berbahasa Indonesia, dengan kata
 yang dipakai di rumah setiap hari.
 
+38
+00:02:50,857 --> 00:02:54,540
+Contoh kata bisa didengar lebih
+dulu, lalu katanya diucapkan.
+
+39
+00:02:55,040 --> 00:02:58,139
+Di Mode Latihan Mandiri,
+pendamping menilai
+
+40
+00:02:58,179 --> 00:03:01,497
+dengan satu ketukan:
+Sudah Benar, atau Ulangi.
+
 41
-00:03:42,500 --> 00:03:46,500
-Pemeran mendengarkan contoh,
-lalu menyebutkan katanya.
+00:03:01,537 --> 00:03:02,851
+Hasilnya tercatat.
 
 42
-00:03:51,000 --> 00:03:54,281
-Aplikasi mendengarkan dan menilai.
-
-43
-00:03:54,321 --> 00:03:59,400
-Kata yang tepat dinilai Benar,
-dan skornya tercatat.
-
-44
-00:04:00,500 --> 00:04:04,346
+00:03:08,357 --> 00:03:11,229
 Di Dashboard Terapis,
 terapis dapat menyusun program
 
-45
-00:04:04,386 --> 00:04:08,796
+43
+00:03:11,269 --> 00:03:14,574
 dan mengikuti kemajuan tanpa
 menunggu kunjungan berikutnya.
 
-46
-00:04:12,500 --> 00:04:15,976
+44
+00:03:19,357 --> 00:03:21,957
 Di prototype ini, program
 yang disimpan terapis
 
-47
-00:04:16,016 --> 00:04:19,981
+45
+00:03:21,997 --> 00:03:24,973
 menjadi Latihan Hari Ini
 pada profil pasien tersebut.
 
-48
-00:04:25,600 --> 00:04:28,599
+46
+00:03:33,857 --> 00:03:35,924
 PULIHIN tidak menggantikan terapis.
 
-49
-00:04:28,639 --> 00:04:32,247
+47
+00:03:35,964 --> 00:03:40,779
 PULIHIN membantu memastikan yang diajarkan
-
-50
-00:04:32,287 --> 00:04:35,500
 terapis benar-benar dilatih di rumah.
 
-51
-00:04:36,800 --> 00:04:40,464
-Ini masih prototype untuk kompetisi,
-
-52
-00:04:40,504 --> 00:04:43,756
+48
+00:03:41,279 --> 00:03:45,611
+Ini masih prototype kompetisi,
 bukan alat kesehatan teregulasi.
 
-53
-00:04:43,796 --> 00:04:47,500
-Silakan mencobanya di pulihinapp.id.
+49
+00:03:45,651 --> 00:03:48,149
+Coba sekarang di pulihin.vercel.app.

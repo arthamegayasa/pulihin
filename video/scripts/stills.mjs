@@ -1,5 +1,5 @@
 // Merender still PNG ke video/out/stills/ untuk audit jeda 30 detik (Bab 14.2).
-// Bawaan: setiap 30 detik (0:30, 1:00, ...), semua momen screenshot di timeline.ts, dan detik 5 & 297.
+// Bawaan: setiap 30 detik (0:30, 1:00, ...), semua momen screenshot di timeline.ts, dan detik 5 & (akhir - 2).
 // Pakai: npm run still                 (bawaan)
 //        npm run still -- 12 96.5      (detik tertentu)
 //        npm run still -- --tanpa-subtitle
@@ -24,16 +24,17 @@ if (diminta.some((d) => !Number.isFinite(d))) {
 const tiap30 = Array.from({ length: Math.floor((TOTAL_DETIK - 1) / 30) }, (_, i) => (i + 1) * 30);
 const detik = diminta.length
   ? diminta
-  : [...new Set([...tiap30, ...ADEGAN.filter((a) => a.momen).map((a) => a.momen.detik), 5, 297])].sort((a, b) => a - b);
+  : [...new Set([...tiap30, ...ADEGAN.filter((a) => a.momen).map((a) => a.momen.detik), 5, Math.floor(TOTAL_DETIK - 2)])].sort((a, b) => a - b);
 
 console.log('Membundel komposisi...');
 const serveUrl = await bundle({ entryPoint: join(akar, 'src', 'index.ts'), publicDir: join(akar, 'public') });
-const composition = await selectComposition({ serveUrl, id: 'PulihinDemo', inputProps });
+const chromiumOptions = { gl: 'angle' };
+const composition = await selectComposition({ serveUrl, id: 'PulihinDemo', inputProps, chromiumOptions });
 
 for (const d of detik) {
   const frame = Math.min(Math.round(d * FPS), TOTAL_FRAME - 1);
   const output = join(keluar, namaStill(d));
-  await renderStill({ composition, serveUrl, output, frame, inputProps, imageFormat: 'png' });
+  await renderStill({ composition, serveUrl, output, frame, inputProps, imageFormat: 'png', chromiumOptions });
   console.log(`  ${String(d).padStart(5)} dtk (frame ${frame}) -> out/stills/${namaStill(d)}`);
 }
 console.log(`Selesai: ${detik.length} still.`);

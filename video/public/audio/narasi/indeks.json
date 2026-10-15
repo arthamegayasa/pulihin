@@ -1,0 +1,158 @@
+{
+  "N02": {
+    "hash": "bf66daf7d0626958",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Namun, hanya empat puluh sembilan koma dua persen penyandang stroke yang kontrol rutin."
+  },
+  "N01": {
+    "hash": "8638e64ff83aee0e",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Menurut Kementerian Kesehatan, stroke menyebabkan delapan belas koma lima persen kematian di Indonesia."
+  },
+  "N04": {
+    "hash": "4cd4e9d605287995",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Pasien pulang membawa program latihan di atas kertas."
+  },
+  "N03": {
+    "hash": "3e075bc3fed775be",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Tenaga terapi pun terbatas: hanya sembilan ratus dua puluh enam tenaga keterapian fisik, di lebih dari sepuluh ribu puskesmas."
+  },
+  "N05": {
+    "hash": "d315ed52d64f0991",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Di rumah, mereka ragu apakah gerakannya sudah benar. Di situlah pendampingan terputus."
+  },
+  "N06": {
+    "hash": "fcb2cdf10a955474",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Pulihin mengubah ponsel biasa menjadi pendamping latihan. Begitu dibuka, Latihan Hari Ini langsung tampil dalam huruf besar."
+  },
+  "N08": {
+    "hash": "4cea566a54b07d51",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Ponsel cukup diletakkan di meja, sekitar satu meter dari kursi. Ini peragaan dengan karakter tiga dimensi, bukan pasien sungguhan."
+  },
+  "N07": {
+    "hash": "6b61aaa26f23bde6",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Kita mulai dari satu gerakan kecil: Tekuk Siku. Ada contoh gerakan, pesan keselamatan, lalu satu tombol besar: Mulai dengan Kamera."
+  },
+  "N10": {
+    "hash": "ee05ee9ed3a4bdbd",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Lihat angkanya: lima dari sepuluh."
+  },
+  "N09": {
+    "hash": "cf5040f680324820",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Aplikasi asli membaca titik-titik tubuh langsung di perangkat, tanpa mengunggah video. Repetisi dihitung dari sudut siku: tekuk penuh, lalu luruskan lagi."
+  },
+  "N11a": {
+    "hash": "5855bc6f07930eff",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Sekarang bahunya ikut terangkat."
+  },
+  "N11-app": {
+    "hash": "0ff7d6f587570d73",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-GadisNeural",
+    "ucapan": "Rilekskan bahu, turunkan bahu Anda."
+  },
+  "N11b": {
+    "hash": "d9726f74be42ae4a",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Aplikasi langsung mengoreksi, dengan suara dan teks besar dalam Bahasa Indonesia."
+  },
+  "N13": {
+    "hash": "ec88337d04c59166",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Jadi bukan sekadar menghitung, melainkan menjaga cara geraknya, sampai repetisi kesepuluh."
+  },
+  "N15": {
+    "hash": "1a9e159cecee05b7",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Ada satu saran untuk sesi berikutnya. Ringkasan ini bukan diagnosis, dan kalimat batasan itu selalu tampil."
+  },
+  "N14": {
+    "hash": "c2a44ed57af54a61",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Di akhir sesi ada skor dan ringkasan sederhana: jumlah repetisi dan durasi. Labelnya mudah dipahami, dari Perlu Pendampingan sampai Sangat Baik."
+  },
+  "N16": {
+    "hash": "01b762c7ddfdaecc",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Kembali ke Beranda, Tekuk Siku sudah bertanda selesai beserta skornya. Latihannya tercatat, dan keluarga bisa melihatnya."
+  },
+  "N17": {
+    "hash": "5e9932cc3f730428",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Keluarga tidak lagi menebak. Halaman Untuk Keluarga menunjukkan tanda bila latihan sempat terhenti, status hari ini, dan grafik tujuh hari terakhir."
+  },
+  "N19": {
+    "hash": "3a8c687d7dceb2c1",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Untuk pasien dengan gangguan bicara atau afasia, ada Latihan Bicara berbahasa Indonesia, dengan kata yang dipakai di rumah setiap hari."
+  },
+  "N18": {
+    "hash": "5078993a471e9ece",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Tren skor empat belas hari juga terlihat. Ringkasan mingguan bisa disalin dengan satu ketukan, siap dikirim ke terapis."
+  },
+  "N20a": {
+    "hash": "9d18ca7e3ad2e92d",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Contoh kata bisa didengar lebih dulu, lalu katanya diucapkan."
+  },
+  "N21": {
+    "hash": "739b244ba9d4a091",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Di Dashboard Terapis, terapis dapat menyusun program dan mengikuti kemajuan tanpa menunggu kunjungan berikutnya."
+  },
+  "N20b": {
+    "hash": "2460ef1df058a486",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Di Mode Latihan Mandiri, pendamping menilai dengan satu ketukan: Sudah Benar, atau Ulangi. Hasilnya tercatat."
+  },
+  "N22": {
+    "hash": "9e2c9dbe0c2227b0",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Di prototipe ini, program yang disimpan terapis menjadi Latihan Hari Ini pada profil pasien tersebut."
+  },
+  "N23a": {
+    "hash": "a1aaa046bca09bce",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Pulihin tidak menggantikan terapis. Pulihin membantu memastikan, yang diajarkan terapis benar-benar dilatih di rumah."
+  },
+  "N23b": {
+    "hash": "b72e1ceed76f26e2",
+    "penyedia": "azure-edge",
+    "suara": "id-ID-ArdiNeural",
+    "ucapan": "Ini masih prototipe kompetisi, bukan alat kesehatan teregulasi. Coba sekarang di pulihin titik vercel titik app."
+  }
+}

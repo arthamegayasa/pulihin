@@ -16,7 +16,9 @@ export const SideText: React.FC<{
   atas?: number;
   /** Lebar kolom (bawaan LEBAR_KOLOM); kolom sempit (tata desktop) memakai huruf sedikit lebih kecil. */
   lebar?: number;
-}> = ({ teks, tahap, gaya = 'kolom', atas = 250, lebar = LEBAR_KOLOM }) => {
+  /** Bila diisi: kartu ditambatkan ke kanan (px dari tepi kanan bingkai), mis. di atas dinding kosong render 3D. */
+  kanan?: number;
+}> = ({ teks, tahap, gaya = 'kolom', atas = 250, lebar = LEBAR_KOLOM, kanan }) => {
   const ringkas = gaya === 'ringkas';
   const sempit = lebar < LEBAR_KOLOM;
   const opasitas = useMuncul(Math.round((teks.mulaiDi ?? 0.3) * FPS), 14);
@@ -24,7 +26,7 @@ export const SideText: React.FC<{
     <div
       style={{
         position: 'absolute',
-        left: KIRI,
+        ...(kanan === undefined ? { left: KIRI } : { right: kanan, textAlign: 'right' as const }),
         top: atas,
         width: lebar,
         fontFamily: FONT,

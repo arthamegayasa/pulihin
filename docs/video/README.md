@@ -1,95 +1,61 @@
-# Video Demo PULIHIN: Cara Merakit
+# Video Demo PULIHIN: Produksi Tanpa Rekaman Manusia
 
-Video demo (Deliverable B, maksimal 5 menit, 1080p, 16:9) dirakit secara terprogram dengan [Remotion](https://www.remotion.dev/) di folder `video/`. Folder itu adalah proyek terpisah dengan `package.json` dan `node_modules` sendiri; tidak memengaruhi aplikasi di root repo.
+Video demo (Deliverable B, maksimal 5 menit, 1080p, 16:9) dirakit secara terprogram dengan [Remotion](https://www.remotion.dev/) di folder `video/` (proyek terpisah dengan `package.json` sendiri). Keputusan pemilik produk (15 Okt 2026): **tidak ada rekaman manusia dan tidak ada dokter**.
+
+- Pemeran pasien = **karakter 3D** bergaya patung digital yang dirender di Blender. Render itu diputar sebagai kamera Chrome (`--use-fake-device-for-media-stream --use-file-for-fake-video-capture`) ke aplikasi PULIHIN produksi yang asli, sehingga skeleton, hitungan, dan pesan koreksi di layar benar-benar dihasilkan aplikasi. Label **"Peragaan dengan karakter 3D, bukan pasien sungguhan"** tampil setiap kali karakter terlihat.
+- Narasi = **suara sintetis** (Microsoft Azure neural, `id-ID-ArdiNeural`). Pembuka 0:00–0:30 = tipografi data bersumber (`docs/bahan-paper.md`, label sumber di layar) + b-roll 3D.
+- Suara aplikasi (TTS peramban) tidak terekam pada peramban otomatis. Pesan koreksi **disuarakan ulang** dengan kata persis dan pada detik persis dari `sesi-meta.json`, dengan warna speaker ponsel (`id-ID-GadisNeural`). Tidak ada bunyi yang menyiratkan fitur yang tidak ada.
+- Semua pengungkapan ada di layar penutup dan deskripsi YouTube (`youtube.md`).
 
 ## Isi
 
 | Berkas | Fungsi |
 |---|---|
-| `video/src/timeline.ts` | **Satu-satunya sumber kebenaran**: adegan, timecode, tata letak, slot rekaman, teks layar, narasi Indonesia, subtitle Inggris, momen screenshot. |
-| `src/config/identitas.ts` (aplikasi) | Nama tim dan narasumber klinis untuk layar penutup dan lower third dokter; diimpor oleh `timeline.ts`. |
-| `video/scripts/rekam-layar.mjs` | Merekam layar ASLI aplikasi untuk semua slot rekaman layar non-kamera (draf). Lihat bagian "Rekaman layar otomatis". |
-| `video/scripts/tangkap-paper.mjs` | Memotret empat layar paper ke `docs/screenshots/` (Bab 13.2). Lihat `docs/screenshots/README.md`. |
-| `docs/video/naskah-id.md` | Naskah narasi final (dibuat otomatis dari timeline, jumlah kata tercantum). |
-| `docs/video/subtitle-en.srt`, `subtitle-id.srt` | Subtitle Inggris (untuk YouTube) dan Indonesia (dibuat otomatis). |
-| `docs/video/shotlist.md` | Checklist hari perekaman, setelan ponsel/tripod/perekam layar, daftar berkas, shot per adegan, rencana cadangan, persetujuan pemeran, tabel audit jeda 30 detik. |
-| `docs/video/youtube.md` | Judul, deskripsi, tag, setelan unggah. |
-| `video/public/footage/` | Tempat rekaman (nama berkas persis seperti di shotlist). Tidak masuk git (`video/.gitignore`). |
-| `video/public/audio/` | Narasi per adegan `<id-adegan>.mp3`, atau satu berkas `narasi-lengkap.mp3`; musik opsional `musik.mp3`. |
-| `video/out/` | Hasil render dan berkas kerja rekaman (diabaikan git). |
+| `video/src/timeline.ts` | **Satu-satunya sumber kebenaran**: adegan, durasi minimal, tata letak, slot rekaman, teks layar, data bersumber, narasi (ID, EN, ucapan TTS), momen screenshot. Waktu dihitung otomatis dari durasi audio terukur dan peristiwa `sesi-meta.json`. |
+| `video/src/terukur.ts` | Dibuat `npm run scan`: durasi setiap MP3 narasi/SFX (ffprobe) dan isi `video/blender/out/sesi-meta.json`. |
+| `src/config/identitas.ts` (aplikasi) | Alamat aktif (`urlPublik` → host yang diucapkan dan ditampilkan) dan nama tim (layar penutup). |
+| `video/scripts/narasi.mjs` | `npm run narasi`: satu MP3 per baris narasi (`public/audio/narasi/<id>.mp3`) dan suara aplikasi (`public/audio/aplikasi/<id>.mp3`). Penyedia: `azure-edge` (bawaan) atau `--penyedia=elevenlabs`. |
+| `video/scripts/rekam-layar.mjs` | `npm run rekam-layar`: rekaman layar ASLI aplikasi produksi untuk slot non-kamera (`layar-01`, `layar-03` sampai `layar-06`). Jadwal ketukannya juga menjadi waktu bunyi ketukan (`KETUKAN` di timeline.ts). |
+| `video/blender/`, `video/scripts/rekam-sesi-3d.mjs` | Karakter 3D, render, dan rekaman sesi kamera dengan kamera palsu. Lihat `docs/video/produksi-3d.md`. |
+| `video/src/components/Ponsel3D.tsx` | Ponsel 3D (react-three-fiber lewat `@remotion/three`): badan bersudut bulat, bayangan studio lembut, layar = rekaman asli sebagai tekstur video (`@remotion/media` `<Video headless>`), gerak kamera sangat pelan. Satu kanvas per blok adegan ponsel agar badan ponsel diam dan hanya layar yang crossfade. |
+| `docs/video/naskah-id.md` | Naskah final (otomatis), jumlah kata, timecode terukur. |
+| `docs/video/subtitle-en.srt`, `subtitle-id.srt` | Subtitle dari waktu audio terukur (otomatis). |
+| `docs/video/shotlist.md` | Checklist produksi + tabel otomatis berkas, adegan, audit jeda 30 detik. |
+| `docs/video/youtube.md` | Judul, deskripsi dengan pengungkapan, bab (otomatis), setelan unggah. |
+| `video/public/audio/sfx/` | SFX siap pakai: ketukan, transisi, suasana rumah, `repetisi` (hanya tipografi data), `berhasil` (layar penutup). |
 
 ## Prasyarat
 
-- Node.js 22.18 atau lebih baru (skrip memuat `timeline.ts` langsung lewat type stripping Node; diuji dengan Node 24.19).
-- Sekali saja: `cd video && npm install`. Render pertama mengunduh Chrome Headless Shell (sekitar 120 MB) secara otomatis. FFmpeg/ffprobe sudah disertakan Remotion; tidak perlu dipasang terpisah.
-- Untuk `npm run rekam-layar` dan `npm run paper` saja: Google Chrome atau Chrome for Testing (dicari otomatis di `~/.cache/puppeteer/chrome`, atau set `CHROME_PATH`) dan ffmpeg (PATH, atau ffmpeg bawaan Remotion). Paket `puppeteer-core` sudah ada di `video/package.json`; tidak mengunduh peramban.
+- Node.js 22.18+ (skrip memuat `timeline.ts` lewat type stripping), `cd video && npm install`.
+- ffmpeg/ffprobe (PATH atau bawaan Remotion).
+- Narasi `azure-edge`: Python dengan modul `edge-tts` (`pip install edge-tts`; bila dipasang ke folder lain, set `PYTHONPATH`). Narasi `elevenlabs`: kunci dengan izin `text_to_speech` di `ELEVENLABS_API_KEY_TTS` (atau `ELEVENLABS_API_KEY`) dan `ELEVENLABS_VOICE_ID`; paralel maksimal 2.
+- Render: Chrome Headless Shell (diunduh Remotion) dengan WebGL ANGLE (`--gl=angle`, sudah di `remotion.config.ts` dan skrip render).
 
-## Alur kerja
+## Alur kerja (folder `video/`)
 
-Semua perintah dijalankan di folder `video/`.
+1. **Footage**: Blender3D mengisi `public/footage/` dengan render 3D + `layar-02-sesi-tekuk-siku.mp4` dan menulis `blender/out/sesi-meta.json`; `npm run rekam-layar` membuat rekaman layar lainnya. Footage ponsel ≤ 720 px lebar, lainnya ≤ 1920 px, keyframe tiap 1 dtk (hemat memori render).
+2. **Narasi**: `npm run narasi` (cache per baris; `--paksa` untuk membuat ulang semua).
+3. **Ukur**: `npm run scan` → `src/footage-manifest.json` + `src/terukur.ts`; melaporkan slot KOSONG/terlalu pendek dan baris tanpa audio. Slot kosong dirender sebagai kartu PLACEHOLDER.
+4. **Teks**: `npm run srt` → SRT EN/ID, `naskah-id.md`, blok otomatis `shotlist.md` dan `youtube.md`. Gagal bila naskah > 650 kata, video > 300 dtk, layar penutup < 5 dtk, label karakter hilang, ada jendela 30 dtk tanpa momen screenshot, atau isyarat subtitle melanggar keterbacaan (≤ 42 karakter/baris, 2 baris, 1–6 dtk).
+5. **Audit jeda**: `npm run still` → PNG tiap 30 dtk dan di setiap momen ke `out/stills/`; periksa satu per satu.
+6. **Render** (jangan bersamaan dengan render Blender): `npm run render:final` → `out/pulihin-demo-final.mp4` (tanpa subtitle tertanam) dan `npm run render:final-en` → `out/pulihin-demo-final-en.mp4` (subtitle Inggris tertanam). H.264 + AAC 192 kbps, 1920x1080, 30 fps, `--concurrency=2`.
 
-1. **Rekam** sesuai `docs/video/shotlist.md`. Untuk draf, rekaman layar non-kamera dapat dibuat otomatis dari aplikasi asli: `npm run rekam-layar` (lihat di bawah).
-2. **Salin rekaman** ke `video/public/footage/` dengan nama berkas persis (misalnya `layar-02-sesi-tekuk-siku.mp4`). Narasi (bila direkam terpisah) ke `video/public/audio/`.
-3. **Pindai:** `npm run scan`. Menulis `src/footage-manifest.json` dan melaporkan slot yang ADA/KOSONG, rekaman yang terlalu pendek, serta rekaman layar ponsel yang mendatar atau rekaman kamera/desktop yang tegak. Slot kosong tampil sebagai kartu **PLACEHOLDER** berisi instruksi perekaman (apa yang direkam, siapa yang merekam, nama berkas, durasi), sehingga draf lengkap selalu dapat dirender.
-4. **Potong:** di `src/timeline.ts`, sesuaikan `mulaiDi` (detik di dalam berkas) per adegan dan, bila perlu, `ke` pada `sorot` (posisi vertikal label penunjuk). Setelah narasi direkam, isi `mulai`/`selesai` per baris narasi agar subtitle mengikuti suara.
-5. **Pratinjau:** `npm run studio` (membuka Remotion Studio di peramban).
-6. **Subtitle, naskah, shotlist:** `npm run srt`. Membuat ulang `docs/video/subtitle-en.srt`, `subtitle-id.srt`, `naskah-id.md`, dan tabel OTOMATIS di `shotlist.md`. Skrip gagal bila naskah lebih dari 650 kata, video lebih dari 300 detik, ada jendela 30 detik tanpa momen screenshot, atau ada isyarat subtitle yang melanggar aturan keterbacaan (maksimal 42 karakter per baris, 2 baris, 1–6 detik per isyarat).
-7. **Audit jeda:** `npm run still` merender PNG di setiap 30 detik (0:30, 1:00, ... 4:30), di setiap momen screenshot, dan di detik 5 dan 297 ke `video/out/stills/`. Detik tertentu: `npm run still -- 96 140`. Centang tabel audit di `shotlist.md`.
-8. **Render:** `npm run render` → `video/out/pulihin-demo-draft.mp4` (H.264, 1920x1080, 30 fps, subtitle Inggris tertanam). Tanpa subtitle tertanam: `npm run render:tanpa-subtitle` → `video/out/pulihin-demo-tanpa-subtitle.mp4` (unggah SRT sebagai CC di YouTube). Segmen pendek untuk cek cepat: `npx remotion render src/index.ts PulihinDemo out/segmen.mp4 --frames=0-150`.
+## Cara waktu disusun
 
-## Rekaman layar otomatis (draf)
+- Setiap baris narasi diletakkan berurutan di adegannya (jeda awal 0,6 dtk, antar baris 0,5 dtk, akhir 0,9 dtk); adegan sepanjang `max(durasi minimal, narasi)`. Mengganti suara atau teks cukup dengan `npm run narasi && npm run scan && npm run srt`.
+- Adegan sesi kamera memakai detik di dalam `layar-02` yang **sama** dengan `kamera-sesi-lebar` (sinkron frame-ke-frame) dan diputar berurutan tanpa mundur: `s10-lima` dijangkarkan pada `repetisiDetik[4]` (angka berubah menjadi 5 saat narator mengucapkan "lima dari sepuluh"), `s11-koreksi` pada `koreksi[0].mulaiDetik` (suara aplikasi yang disuarakan ulang dimulai tepat di detik itu), `s13-sepuluh` berlangsung sampai `selesaiDetik` + 2 dtk. Adegan sebelum jangkar diperpanjang (maks. 8 dtk) agar sambungan tanpa lompatan.
+- Tanpa `sesi-meta.json`, timeline memakai perkiraan dan `npm run srt` memberi peringatan (draf saja).
 
-`npm run rekam-layar` merekam aplikasi yang **sedang berjalan** (bawaan `https://pulihin.vercel.app`, atau `--url=http://127.0.0.1:5173`) dengan Chrome tanpa jendela, lalu menyimpan MP4 H.264 30 fps ke `video/public/footage/` dengan nama slot di `timeline.ts`. Satu berkas saja: `npm run rekam-layar -- --hanya=layar-04-keluarga.mp4`. Butuh Chrome (otomatis dicari di cache Puppeteer, atau `CHROME_PATH=...`) dan ffmpeg (PATH, atau ffmpeg bawaan Remotion).
+## Desain
 
-| Berkas | Isi | Durasi | Ukuran (13 Okt 2026) |
-|---|---|---|---|
-| `layar-01-beranda-detail.mp4` | 1080x2400: Beranda sebelum latihan, ketuk Tekuk Siku, Detail Latihan, gulir ke Utamakan keselamatan | 21,5 dtk | 1,0 MB |
-| `layar-03-ringkasan-beranda.mp4` | 1080x2400: Ringkasan Sesi, Rincian skor, saran dan kalimat bukan diagnosis, Kembali ke Beranda (Tekuk Siku selesai) | 51 dtk | 1,8 MB |
-| `layar-04-keluarga.mp4` | 1080x2400: Untuk Keluarga: tanda perlu perhatian, grafik 7 hari, skor 14 hari, Salin Ringkasan Mingguan dan pesan "Ringkasan disalin" | 31 dtk | 1,9 MB |
-| `layar-05-afasia.mp4` | 1080x2400: Latihan Bicara, Mode Latihan Mandiri, Benda di Rumah, Dengar, Sudah Benar, "Benar!", Kata Berikutnya | 31,5 dtk | 0,8 MB |
-| `layar-06-klinisi.mp4` | 1920x1080: Dashboard Terapis, Pak Budi, Tambah Luruskan Tungkai, Simpan Resep, Lihat sebagai pasien | 26 dtk | 3,4 MB |
+- Palet #0B4F4A / #EAF2F0 / #C46A1B / #1A2B2E di atas putih, Plus Jakarta Sans lokal, hanya crossfade lembut (14 frame), gerak kamera ≤ 3%.
+- Rekaman layar ponsel di ponsel 3D sisi kanan, rasio asli (tidak ditarik). Dashboard Terapis di bingkai peramban dengan perspektif 3D halus.
+- Label penunjuk di samping ponsel, posisinya diproyeksikan dari pose ponsel 3D (`titikLayar`). Subtitle tertanam kiri bawah, tidak menutupi skor atau pesan koreksi.
+- Grade render 3D seragam (sedikit lembut, vinyet tipis). Suasana rumah 7% di bawah adegan 3D; ketukan pada waktu ketukan rekaman; transisi lembut antar tahap. **Tanpa musik.**
 
-Cara kerjanya, supaya jujur dan dapat diulang:
+## Aturan kejujuran
 
-- **Perangkat.** Ponsel: viewport 360x800 CSS px dengan DPR 3, hasil tepat 1080x2400 (ponsel Android kelas bawah acuan Bab 17.4). Desktop terapis: 1280x720 CSS px dengan DPR 1,5, hasil tepat 1920x1080. Chrome dijalankan dengan `--force-device-scale-factor` karena tanpa itu screencast hanya 360x800 (buram setelah diperbesar). Frame CDP screencast disusun ulang ke 30 fps menurut stempel waktunya, sehingga tempo ketukan dan guliran sama dengan aslinya.
-- **Data.** Setiap rekaman memakai profil peramban baru dan menyiapkan datanya lewat tombol aplikasi: Pilih Peran > Saya Pasien, Pengaturan > Petunjuk suara: Mati, Pengaturan > Data Demo > "Ada tanda perlu perhatian" > Setel Ulang Data Demo. Untuk adegan setelah sesi (Ringkasan, Beranda selesai, Untuk Keluarga, Latihan Bicara, Dashboard Terapis), skrip menyimpan cadangan lewat Pengaturan > Simpan cadangan (berkas .json), menambahkan **satu** sesi Tekuk Siku hari ini yang selesai (berlabel demo, `isDemo: true`, 10/10, satu koreksi bahu pada repetisi ke-7), lalu memulihkannya lewat Pengaturan > Pulihkan dari cadangan. Skor, rincian, dan saran sesi itu dihitung oleh fungsi skor aplikasi sendiri (`src/features/pose/scoring.ts`, dimuat oleh `scripts/lib/skor-aplikasi.mjs`) dari catatan repetisinya. Salinan berkas yang dipulihkan: `video/out/rekam-layar/cadangan-demo-sesi-tekuk-siku.json`. Sesi ini **data demo**, bukan hasil sesi kamera; di video final, Ringkasan Sesi sebaiknya berasal dari sesi kamera nyata yang direkam bersama `layar-02`.
-- **Interaksi.** Ketukan diberi penanda lingkaran abu-abu singkat (setara "Tampilkan ketukan" di Opsi Developer Android) dan, pada desktop, panah kursor; keduanya tidak menangkap ketukan dan tidak mengubah isi aplikasi. Guliran memakai easing pelan. Jadwal ketukan (detik di dalam berkas) ditulis di `rekam-layar.mjs` dan cocok dengan `mulaiDi` di `timeline.ts`; bila jadwal diubah, ubah keduanya.
-- **Jam.** Zona waktu peramban diatur sehingga jam lokal sekitar pukul 10 pagi (sapaan "Selamat pagi"), karena aplikasi memakai jam perangkat. `--jam=asli` memakai jam komputer.
-- **Tanpa audio.** Petunjuk suara mati dan rekaman tidak bersuara; peramban tidak punya bilah status atau notifikasi.
-- **Latihan Bicara.** Pengenal suara Chrome tidak tersedia di peramban otomatis, jadi draf memakai **Mode Latihan Mandiri** (Sudah Benar diketuk). Versi final **wajib** memakai rekaman layar ponsel saat pemeran benar-benar berbicara di Mode Suara (tampil "Terdengar: ..."), karena narasi N19b menyebut aplikasi mendengarkan dan menilai.
-- **Tidak direkam otomatis:** `layar-02-sesi-tekuk-siku.mp4` (sesi kamera dengan skeleton) dan semua rekaman kamera (dokter, pemeran). Itu wajib rekaman manusia (Bab 14.4). Kartu PLACEHOLDER-nya menjelaskan apa yang harus direkam.
-
-Rekaman tidak masuk git (`video/.gitignore`); jalankan ulang skrip untuk membuatnya kembali. Rekaman layar ponsel asli dari tim boleh menimpa berkas otomatis dengan nama yang sama.
-
-## Aturan audio
-
-- Bila ada `public/audio/narasi-lengkap.mp3`, berkas itu diputar dari 0:00 dan narasi per adegan diabaikan. Bila tidak, `public/audio/<id-adegan>.mp3` diputar 0,4 detik setelah adegan dimulai.
-- Suara asli talking head dokter dipakai bila tidak ada berkas narasi untuk adegan itu; bila ada (misalnya rekaman mikrofon lav terpisah), suara kamera dibisukan agar tidak dobel.
-- Suara asli rekaman dipakai pada dua adegan bukti: suara koreksi aplikasi (1:30–1:44, dari rekaman layar) dan suara pemeran menyebut kata (3:42–4:00, dari shot lebar). Naskah menyisakan jeda di sana.
-- Musik latar opsional: taruh `public/audio/musik.mp3`. Volumenya 12% dari narasi (`VOLUME_MUSIK`), di bawah batas 15% Bab 14.3. Tidak ada aset musik bawaan.
-
-## Tata letak dan desain
-
-- Rekaman layar ponsel tampil di bingkai ponsel di sisi kanan, rasio aslinya dipertahankan (letterbox), tidak pernah ditarik atau memenuhi lebar layar (Bab 14.3). Rekaman desktop Dashboard Terapis (4:00–4:25) tampil di bingkai peramban 16:9 di sisi kanan dengan tata yang sama.
-- Subtitle tertanam berada di kiri bawah, jauh dari bingkai ponsel dan di bawah bingkai peramban, sehingga tidak menutupi angka skor atau pesan koreksi.
-- Label penunjuk (misalnya "Skor sesi") berada di samping ponsel, tidak di atas layar aplikasi. Posisinya (`sorot.ke`) dan waktunya (`sorot.mulaiDi`) disesuaikan dengan rekaman di `timeline.ts`.
-- Palet #0B4F4A / #EAF2F0 / #C46A1B / #1A2B2E di atas putih, font Plus Jakarta Sans (dimuat lokal dari `@fontsource-variable/plus-jakarta-sans`), transisi hanya crossfade lembut.
-- Adegan 4:00–4:25: `ADEGAN_TERAPIS = 'klinisi'` (Dashboard Terapis P1, rekaman desktop) atau `'streak'` (kalender kepatuhan dan streak) di `timeline.ts`; jalankan `npm run srt` setelah mengubahnya.
-- Nama dokter (lower third) dan nama tim (layar penutup) dibaca dari `src/config/identitas.ts` (`narasumberKlinis`, `namaTim`). Selama masih `null`, baris itu **tidak tampil** (bukan "[DIISI]"). Isi identitas.ts, lalu render ulang.
-
-## Aturan etika (Bab 14.4, 15.1, 17)
-
-- Wajah dokter dan gerakan pasien direkam oleh manusia. **Dilarang** memakai avatar buatan AI, wajah atau suara sintetis yang berpura-pura menjadi dokter, atau rekaman stok yang berpura-pura menjadi pasien.
-- Pasien demo adalah pemeran. Label "Peragaan oleh pemeran" tampil setiap kali pemeran terlihat, diucapkan di narasi, dan ditulis di deskripsi YouTube. Jangan menyebut pemeran sebagai pasien asli.
-- Isi aplikasi di video hanya berasal dari rekaman layar asli. Jangan menempel skor, hitungan, atau pesan koreksi rekaan saat menyunting. Kartu PLACEHOLDER hanya untuk draf dan harus hilang di versi final (`npm run scan` harus melaporkan semua slot ADA).
-- Tanpa klaim diagnosis, prognosis, atau kesembuhan; PULIHIN adalah prototype kompetisi, bukan alat kesehatan teregulasi.
-- Tanpa notifikasi pribadi, nomor telepon, email pribadi, atau data pasien asli di frame mana pun. Mode Jangan Ganggu aktif selama perekaman.
-
-## Alat opsional yang meningkatkan kualitas
-
-- **Remotion (sudah terpasang)** cukup untuk merakit, memberi teks, subtitle tertanam, dan merender; tidak perlu editor video lain.
-- **Perekam layar bawaan Android** untuk rekaman layar 1080x2400 dengan suara internal.
-- **Mikrofon lav (klip) eksternal** untuk talking head dan narasi; perbedaan kejernihan suara paling terasa dibanding mikrofon bawaan ponsel.
-- **Lampu dari depan** (lampu LED/ring light sederhana) bila cahaya ruangan kurang; juga membantu pose estimation.
-- **Tripod dengan penjepit ponsel** untuk ponsel uji dan kamera shot lebar.
-- **Editor audio** (misalnya Audacity, gratis) untuk memotong jeda dan menyamakan volume narasi sebelum disimpan sebagai MP3.
+- Isi layar aplikasi hanya dari aplikasi asli yang berjalan (produksi https://pulihin.vercel.app). Tidak ada skor, hitungan, atau pesan koreksi yang ditempel saat menyunting.
+- Angka hanya dari `docs/bahan-paper.md` atau README, dengan label sumber. Tanpa klaim diagnosis, prognosis, atau kesembuhan. Prototype kompetisi, bukan alat kesehatan teregulasi. Data demo, nama samaran.
+- Latihan Bicara direkam dalam Mode Latihan Mandiri (pengenal suara Chrome tidak tersedia di peramban otomatis), jadi narasi menyebut penilaian oleh pendamping, bukan pengenalan suara.
+- Tidak ada avatar AI yang berbicara, tidak ada dokter rekaan, tidak ada rekaman stok yang berpura-pura menjadi pasien.
