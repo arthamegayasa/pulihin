@@ -46,9 +46,10 @@ export default defineConfig({
         // Precache hanya kerangka aplikasi (~1 MB) agar landing page ringan di kuota prabayar.
         // Aset MediaPipe (WASM ~13 MB + model 5,8 MB) masuk cache saat aplikasi dibuka (prefetch saat idle di
         // PoseEngine) atau saat sesi pertama, lalu dilayani CacheFirst: sesi kamera tetap bisa dimulai dalam
-        // mode pesawat setelah aplikasi termuat sekali (Bab 11, Ketahanan).
+        // mode pesawat setelah aplikasi termuat sekali (Bab 11, Ketahanan). Video peraga + poster (±0,5 MB per
+        // latihan) juga tidak di-precache: masuk cache saat Beranda pasien (program hari ini) atau Detail Latihan.
         globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2,json}'],
-        globIgnores: ['mediapipe/**', 'landing/og.jpg'],
+        globIgnores: ['mediapipe/**', 'peraga/**', 'landing/og.jpg'],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
         runtimeCaching: [
@@ -61,6 +62,31 @@ export default defineConfig({
               cacheableResponse: { statuses: [200] },
               // MediaPipe memuat loader lewat <script crossorigin> (mengirim Origin) sedangkan prefetch memakai
               // fetch biasa; abaikan Vary agar keduanya cocok saat luring meski host menambah `Vary: Origin`.
+              matchOptions: { ignoreVary: true },
+            },
+          },
+          // Video peraga 3D (VideoPeraga.tsx): satu cache untuk MP4 + poster WebP. Header content-type wajib cocok
+          // agar index.html dari rewrite SPA Vercel (berkas belum ada) tidak tersimpan sebagai video/poster.
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith('/peraga/') && url.pathname.endsWith('.mp4'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'pulihin-peraga',
+              expiration: { maxEntries: 40 },
+              cacheableResponse: { statuses: [200], headers: { 'content-type': 'video/mp4' } },
+              // Hanya jawaban 200 utuh yang disimpan (fetch tanpa Range); permintaan Range dari elemen <video>
+              // lalu dilayani sebagai 206 dari salinan cache itu, termasuk saat luring.
+              rangeRequests: true,
+              matchOptions: { ignoreVary: true },
+            },
+          },
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith('/peraga/') && url.pathname.endsWith('.webp'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'pulihin-peraga',
+              expiration: { maxEntries: 40 },
+              cacheableResponse: { statuses: [200], headers: { 'content-type': 'image/webp' } },
               matchOptions: { ignoreVary: true },
             },
           },

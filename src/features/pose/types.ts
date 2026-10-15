@@ -98,7 +98,12 @@ export interface ExerciseDefinition {
   /** Latihan berdiri wajib menampilkan syarat berpegangan (Bab 17.2). */
   wajibBerpegangan: boolean;
   koreksiUmum: KoreksiDefinisi[];
-  /** Aset contoh gerakan; 'bawaan' = animasi figur bawaan aplikasi. */
+  /**
+   * Aset contoh gerakan. 'bawaan' = figur 2D bawaan aplikasi (ExerciseDemo). Selain itu: path dasar video
+   * peraga 3D `'/peraga/<id>'`, yang berarti tiga berkas di `public/peraga/`: `<id>.mp4` (720x720 H.264,
+   * satu siklus mulus, sisi kanan anatomis, tanpa audio), `<id>-mulai.webp` dan `<id>-puncak.webp`
+   * (poster pose mulai/puncak). Sisi kiri dicerminkan di aplikasi (VideoPeraga).
+   */
   animasiAtauVideo: 'bawaan' | string;
   /**
    * Sumber koordinat sudut sendi (lihat docs/algoritma.md "Validasi dengan rekaman manusia nyata"):

@@ -1,53 +1,109 @@
 /**
- * Lokasi aset MediaPipe (disajikan dari domain sendiri, bukan CDN) dan prefetch-nya agar sesi kamera
- * tetap bisa dimulai tanpa sinyal setelah aplikasi dibuka sekali (Bab 11, Ketahanan).
+ * Lokasi aset MediaPipe (disajikan dari domain sendiri, bukan CDN) dan video peraga 3D, serta prefetch-nya
+ * agar sesi kamera dan contoh gerakan tetap tersedia tanpa sinyal setelah aplikasi dibuka sekali (Bab 11, Ketahanan).
  *
- * Service worker tidak mem-precache MediaPipe (WASM ~13 MB + model 5,8 MB) agar landing page ringan;
- * runtime cache CacheFirst `pulihin-mediapipe` (vite.config.ts) menyimpan apa pun di `/mediapipe/` yang
- * lewat SW. `prefetchAsetPose()` mengunduh PERSIS varian WASM yang akan dipilih FilesetResolver
- * (SIMD atau tanpa SIMD) + model saat browser senggang, sehingga ketiganya masuk cache itu.
- * Modul ini sengaja kecil: `@mediapipe/tasks-vision` hanya diimpor dinamis saat cache belum lengkap.
+ * Service worker tidak mem-precache MediaPipe (WASM ~13 MB + model 5,8 MB) maupun video peraga agar landing
+ * page ringan; runtime cache CacheFirst `pulihin-mediapipe` dan `pulihin-peraga` (vite.config.ts) menyimpan
+ * apa pun di `/mediapipe/` dan `/peraga/` yang lewat SW. `prefetchAsetPose()` mengunduh saat browser senggang:
+ * 1. video + poster peraga untuk latihan di program pasien aktif (kecil, ±0,5 MB per latihan);
+ * 2. PERSIS varian WASM yang akan dipilih FilesetResolver (SIMD atau tanpa SIMD) + model.
+ * `@mediapipe/tasks-vision` hanya diimpor dinamis saat cache MediaPipe belum lengkap.
  */
+
+import { getProgram } from '@/data/db';
+import { getPrefs } from '@/lib/prefs';
+import { getExercise } from './exerciseDefinitions';
 
 export const WASM_PATH = '/mediapipe/wasm';
 export const MODEL_PATH = '/mediapipe/models/pose_landmarker_lite.task';
 /** Harus sama dengan `cacheName` runtimeCaching `/mediapipe/` di vite.config.ts. */
 const CACHE_MEDIAPIPE = 'pulihin-mediapipe';
+/** Harus sama dengan `cacheName` runtimeCaching `/peraga/` di vite.config.ts. */
+const CACHE_PERAGA = 'pulihin-peraga';
 
 interface InfoKoneksi {
   saveData?: boolean;
   effectiveType?: string;
 }
 
+/** Berkas video peraga dari path dasar `ExerciseDefinition.animasiAtauVideo` (`'/peraga/<id>'`). */
+export interface AsetPeraga {
+  video: string;
+  mulai: string;
+  puncak: string;
+}
+
+export function asetPeraga(basePath: string): AsetPeraga {
+  return { video: `${basePath}.mp4`, mulai: `${basePath}-mulai.webp`, puncak: `${basePath}-puncak.webp` };
+}
+
+/** Penghemat Data aktif atau jaringan 2G: jangan mengunduh besar atau memutar video otomatis. */
+export function hematData(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const koneksi = (navigator as Navigator & { connection?: InfoKoneksi }).connection;
+  return Boolean(koneksi?.saveData || koneksi?.effectiveType === '2g' || koneksi?.effectiveType === 'slow-2g');
+}
+
 let sudahDijadwalkan = false;
 
 /**
- * Jadwalkan unduhan aset pose saat browser senggang (sekali per pemuatan halaman). Hanya dipanggil di jalur
- * pasien (Beranda dengan peran pasien, Detail Latihan): Pilih Peran, Keluarga, dan Terapis tidak perlu
- * mengunduh ~18 MB. Dilewati bila pengguna menyalakan Penghemat Data atau jaringan 2G, dan di mode
- * pengembangan (tanpa service worker).
+ * Jadwalkan unduhan aset peraga & pose saat browser senggang (sekali per pemuatan halaman). Hanya dipanggil
+ * di jalur pasien (Beranda dengan peran pasien, Detail Latihan): Pilih Peran, Keluarga, dan Terapis tidak
+ * perlu mengunduh ~18 MB. Dilewati bila Penghemat Data/2G, dan di mode pengembangan (tanpa service worker).
  */
 export function prefetchAsetPose(): void {
   if (sudahDijadwalkan || import.meta.env.DEV || typeof window === 'undefined') return;
   sudahDijadwalkan = true;
-  if (!('serviceWorker' in navigator) || !('caches' in window)) return;
-  const koneksi = (navigator as Navigator & { connection?: InfoKoneksi }).connection;
-  if (koneksi?.saveData || koneksi?.effectiveType === '2g' || koneksi?.effectiveType === 'slow-2g') return;
-  const jalankan = () => {
-    unduhAsetPose().catch((e: unknown) => console.warn('Prefetch aset pose gagal; akan dimuat saat sesi pertama', e));
+  if (!('serviceWorker' in navigator) || !('caches' in window) || hematData()) return;
+  const jalankan = async () => {
+    await tungguServiceWorker();
+    // Peraga dulu: kecil dan langsung terlihat di Detail Latihan; MediaPipe sesudahnya.
+    await unduhPeragaProgram().catch((e: unknown) => console.warn('Prefetch video peraga gagal; dimuat saat Detail Latihan dibuka', e));
+    await unduhAsetPose().catch((e: unknown) => console.warn('Prefetch aset pose gagal; akan dimuat saat sesi pertama', e));
   };
-  if (typeof requestIdleCallback === 'function') requestIdleCallback(jalankan, { timeout: 15_000 });
-  else setTimeout(jalankan, 3000);
+  // Mengembalikan void (bukan Promise): kegagalan sudah ditangani di dalam `jalankan`.
+  const mulai = () => void jalankan();
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(mulai, { timeout: 15_000 });
+  else setTimeout(mulai, 3000);
+}
+
+/** Fetch harus melewati SW (runtime cache). Kunjungan pertama: tunggu SW aktif mengendalikan halaman. */
+async function tungguServiceWorker(): Promise<void> {
+  await navigator.serviceWorker.ready;
+  if (navigator.serviceWorker.controller) return;
+  await new Promise<void>((selesai) => navigator.serviceWorker.addEventListener('controllerchange', () => selesai(), { once: true }));
+}
+
+/**
+ * Unduh satu URL lewat SW bila belum ada di `cache`; isi dibuang (SW menyimpan salinannya). Permintaan tanpa
+ * header Range, jadi jawaban 200 utuh yang bisa disimpan (jawaban 206 dari elemen video tidak di-cache).
+ */
+async function unduhKeCache(cache: Cache, url: string): Promise<void> {
+  if ((await cache.match(url)) !== undefined) return;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
+  const pembaca = res.body?.getReader();
+  if (pembaca) while (!(await pembaca.read()).done);
+}
+
+/** Video + kedua poster untuk tiap latihan program pasien aktif yang sudah memakai video peraga. */
+async function unduhPeragaProgram(): Promise<void> {
+  const program = await getProgram(getPrefs().activePatientId);
+  const basis = new Set<string>();
+  for (const item of program?.items ?? []) {
+    const aset = getExercise(item.latihanId)?.animasiAtauVideo;
+    if (aset !== undefined && aset !== 'bawaan') basis.add(aset);
+  }
+  if (basis.size === 0) return;
+  const cache = await caches.open(CACHE_PERAGA);
+  // Berurutan agar tidak bersaing bandwidth dengan pemakaian aplikasi.
+  for (const b of basis) {
+    const { video, mulai, puncak } = asetPeraga(b);
+    for (const url of [mulai, puncak, video]) await unduhKeCache(cache, url);
+  }
 }
 
 async function unduhAsetPose(): Promise<void> {
-  // Fetch harus melewati SW (runtime cache). Kunjungan pertama: tunggu SW aktif mengendalikan halaman.
-  await navigator.serviceWorker.ready;
-  if (!navigator.serviceWorker.controller) {
-    await new Promise<void>((selesai) =>
-      navigator.serviceWorker.addEventListener('controllerchange', () => selesai(), { once: true }),
-    );
-  }
   const cache = await caches.open(CACHE_MEDIAPIPE);
   const varian = ['vision_wasm_internal', 'vision_wasm_nosimd_internal'];
   const ada = async (url: string) => (await cache.match(url)) !== undefined;
@@ -61,13 +117,5 @@ async function unduhAsetPose(): Promise<void> {
   // Import dinamis disengaja (pemisahan bundel): pustaka ~ratusan KB tidak boleh masuk bundel awal AppShell.
   const { FilesetResolver } = await import('@mediapipe/tasks-vision');
   const fileset = await FilesetResolver.forVisionTasks(WASM_PATH);
-  const daftar = [fileset.wasmLoaderPath, fileset.wasmBinaryPath, MODEL_PATH];
-  // Berurutan agar tidak bersaing bandwidth dengan pemakaian aplikasi; isi dibuang (SW menyimpan salinannya).
-  for (const url of daftar) {
-    if (await ada(url)) continue;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
-    const pembaca = res.body?.getReader();
-    if (pembaca) while (!(await pembaca.read()).done);
-  }
+  for (const url of [fileset.wasmLoaderPath, fileset.wasmBinaryPath, MODEL_PATH]) await unduhKeCache(cache, url);
 }

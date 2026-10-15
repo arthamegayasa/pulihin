@@ -10,6 +10,7 @@ import { LABEL_POSISI, labelSendi } from '@/features/pose/labels';
 import { PhonePlacement } from '@/features/pose/PhonePlacement';
 import { prefetchAsetPose } from '@/features/pose/asetPose';
 import { preloadPoseEngine } from '@/features/pose/PoseEngine';
+import { VideoPeraga } from '@/features/pose/VideoPeraga';
 import { useDataPasien } from '@/features/adherence/hooks';
 import { bacaRentang, bacaSisi, bacaTarget, RENTANG_PENUH, urlSesi, type StatusMulaiSesi } from '@/features/pose/sesiParams';
 import { getPrefs, setPrefs, usePrefs } from '@/lib/prefs';
@@ -71,7 +72,18 @@ export default function DetailLatihan() {
       {/* Pilihan sisi di atas contoh gerakan: terlihat di layar pertama (tidak tertutup bilah Mulai) dan contoh langsung mengikuti. */}
       {pilihSisi && <PilihSisi nilai={sisiLatihan} onPilih={(s) => setPrefs({ sisiLatihan: s })} />}
 
-      <ExerciseDemo exerciseId={def.id} nama={def.nama} sisi={pilihSisi ? sisiLatihan : undefined} tempoDetik={def.tempoTargetDetik} />
+      {def.animasiAtauVideo === 'bawaan' ? (
+        <ExerciseDemo exerciseId={def.id} nama={def.nama} sisi={pilihSisi ? sisiLatihan : undefined} tempoDetik={def.tempoTargetDetik} />
+      ) : (
+        <VideoPeraga
+          key={def.id}
+          exerciseId={def.id}
+          nama={def.nama}
+          basePath={def.animasiAtauVideo}
+          sisi={pilihSisi ? sisiLatihan : undefined}
+          tempoDetik={def.tempoTargetDetik}
+        />
+      )}
 
       {/* Dua kolom bila muat (lebar >= 17rem: huruf normal di layar 360px); Huruf Lebih Besar: bertumpuk agar kata tidak terpotong. */}
       <div className="@container">
