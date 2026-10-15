@@ -209,7 +209,7 @@ export const EXERCISES: ExerciseDefinition[] = [
       koreksi('rentang-kurang'),
       koreksi('tempo-cepat'),
     ],
-    animasiAtauVideo: 'bawaan',
+    animasiAtauVideo: '/peraga/fleksi-bahu',
     sumberSudut: 'hibrida',
     arahKamera: 'depan',
   },
@@ -246,7 +246,7 @@ export const EXERCISES: ExerciseDefinition[] = [
       koreksi('rentang-kurang'),
       koreksi('tempo-cepat'),
     ],
-    animasiAtauVideo: 'bawaan',
+    animasiAtauVideo: '/peraga/fleksi-siku',
     // Rekaman nyata (median per loop): 3D istirahat 22-29° / puncak 101-115° (tidak pernah melewati
     // 120/30), hibrida istirahat 2-20° / puncak 158-178° dari depan maupun serong. docs/algoritma.md Bagian 13.
     sumberSudut: 'hibrida',
@@ -284,7 +284,7 @@ export const EXERCISES: ExerciseDefinition[] = [
       koreksi('rentang-kurang'),
       koreksi('tempo-cepat'),
     ],
-    animasiAtauVideo: 'bawaan',
+    animasiAtauVideo: '/peraga/abduksi-bahu',
     sumberSudut: 'hibrida',
     arahKamera: 'depan',
   },
