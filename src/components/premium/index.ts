@@ -1,0 +1,10 @@
+export { Ilustrasi, type IlustrasiProps } from '@/components/premium/Ilustrasi';
+export { srcIlustrasi, ukuranIlustrasi, WARNA_LATAR_ILUSTRASI, type JenisIlustrasi, type NamaLanding, type NamaMomen, type RefIlustrasi } from '@/components/premium/asetIlustrasi';
+export { KartuHero } from '@/components/premium/KartuHero';
+export { KartuStat } from '@/components/premium/KartuStat';
+export { JudulBagian } from '@/components/premium/JudulBagian';
+export { Kerangka, KerangkaGrup, KerangkaKartu } from '@/components/premium/Kerangka';
+export { Lencana } from '@/components/premium/Lencana';
+export { IkonBingkai } from '@/components/premium/IkonBingkai';
+export { TombolIkon, TautanIkon } from '@/components/premium/TombolIkon';
+export { KeadaanKosong } from '@/components/premium/KeadaanKosong';

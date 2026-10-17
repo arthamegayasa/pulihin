@@ -19,18 +19,18 @@ export function WeeklyChart({ data, className = '' }: { data: BatangHari[]; clas
         {data.map((b) => {
           const penuh = b.target > 0 && b.selesai >= b.target;
           return (
-            <li key={b.tanggal} className={`flex min-w-0 flex-col items-center gap-1 rounded-xl py-1.5 ${b.hariIni ? 'bg-primer-terang' : ''}`}>
+            <li key={b.tanggal} className={`flex min-w-0 flex-col items-center gap-1 rounded-kontrol py-1.5 ${b.hariIni ? 'bg-primer-terang' : ''}`}>
               <span className="text-[0.95rem] font-bold leading-none tracking-tight text-teks tabular">{b.target > 0 ? `${b.selesai}/${b.target}` : '–'}</span>
               <span className="relative h-[96px] w-[60%] max-w-[28px]">
                 {b.target > 0 && (
                   <span
-                    className="absolute inset-x-0 bottom-0 rounded-md border-[1.5px] border-dashed border-primer bg-white"
+                    className="absolute inset-x-0 bottom-0 rounded-[6px] border-[1.5px] border-dashed border-primer bg-white"
                     style={{ height: persen(b.target) }}
                   />
                 )}
                 {b.selesai > 0 && (
                   <span
-                    className={`absolute inset-x-0 bottom-0 rounded-md ${penuh ? 'bg-sukses' : 'bg-primer'}`}
+                    className={`absolute inset-x-0 bottom-0 rounded-[6px] inset-shadow-sorot ${penuh ? 'bg-sukses' : 'bg-primer'}`}
                     style={{ height: persen(b.selesai) }}
                   />
                 )}

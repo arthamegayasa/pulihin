@@ -47,9 +47,9 @@ export function ConfirmDialog({
       }}
       aria-labelledby={idJudul}
       aria-describedby={idIsi}
-      className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-kartu bg-white p-5 text-teks shadow-angkat backdrop:bg-teks/50"
+      className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-panel border border-garis-halus bg-permukaan-naik p-5 text-teks shadow-mengambang open:animate-naik backdrop:bg-teks/55"
     >
-      <h2 id={idJudul} className="text-[1.3rem] font-extrabold leading-tight">
+      <h2 id={idJudul} className="text-[1.3rem] font-extrabold leading-tight tracking-[-0.01em] text-balance">
         {judul}
       </h2>
       <div id={idIsi} className="mt-2 space-y-2 text-teks-2">

@@ -24,7 +24,7 @@ export function Toggle({
       aria-checked={aktif}
       disabled={disabled}
       onClick={() => onUbah(!aktif)}
-      className="flex min-h-[56px] w-full items-center gap-3 rounded-2xl px-1 py-2 text-left hover:bg-primer-terang disabled:opacity-50"
+      className="flex min-h-[56px] w-full items-center gap-3 rounded-kontrol px-1 py-2 text-left transition-colors duration-(--durasi-cepat) hover:bg-primer-terang active:bg-primer-terang disabled:opacity-50"
     >
       <span className="min-w-0 flex-1">
         <span className="block font-bold">{label}</span>
@@ -33,10 +33,11 @@ export function Toggle({
       {/* Sakelar (ukuran px) dengan kata keadaan di bawahnya: kolom kanan tetap sempit saat Huruf Lebih Besar. */}
       <span className="flex shrink-0 flex-col items-center gap-0.5" aria-hidden>
         <span
-          className={`relative h-[32px] w-[56px] rounded-full border-2 transition-colors ${aktif ? 'border-primer bg-primer' : 'border-teks-2 bg-white'}`}
+          className={`relative h-[32px] w-[56px] rounded-full border-2 transition-colors duration-(--durasi-sedang) ${aktif ? 'border-primer bg-primer' : 'border-teks-2 bg-white'}`}
         >
+          {/* Kenop bergeser lewat transform (GPU), bukan `left`. */}
           <span
-            className={`absolute top-1/2 size-[20px] -translate-y-1/2 rounded-full transition-[left] ${aktif ? 'left-[28px] bg-white shadow' : 'left-[4px] bg-teks-2'}`}
+            className={`absolute left-[4px] top-1/2 size-[20px] -translate-y-1/2 rounded-full transition-[translate,background-color] duration-(--durasi-sedang) ease-lembut ${aktif ? 'translate-x-[24px] bg-white shadow-[0_1px_2px_rgb(8_59_55/0.35)]' : 'translate-x-0 bg-teks-2'}`}
           />
         </span>
         <span className="text-[0.95rem] font-bold leading-tight text-teks-2">{aktif ? 'Aktif' : 'Mati'}</span>

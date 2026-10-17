@@ -41,7 +41,7 @@ export function StreakCalendar({ hari, className = '' }: { hari: HariKalender[];
         {hari.map((h) => (
           <li
             key={h.tanggal}
-            className={`flex flex-col items-center gap-1 rounded-xl py-1.5 ${h.hariIni ? 'bg-primer-terang' : ''}`}
+            className={`flex flex-col items-center gap-1 rounded-kontrol py-1.5 ${h.hariIni ? 'bg-primer-terang' : ''}`}
             aria-label={`${h.hariIni ? 'Hari ini, ' : ''}${namaHari(h.tanggal)} ${formatTanggalPendek(h.tanggal)}: ${KATA[h.status]}`}
           >
             <span className={`text-[0.95rem] leading-tight tracking-tight ${h.hariIni ? 'font-extrabold text-primer' : 'font-semibold text-teks-2'}`} aria-hidden>

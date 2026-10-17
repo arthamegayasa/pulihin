@@ -10,7 +10,7 @@ export function ScoreRing({ skor, ukuran = 184 }: { skor: number; ukuran?: numbe
   const keliling = 2 * Math.PI * r;
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="relative" style={{ width: ukuran, height: ukuran }}>
+      <div className="relative rounded-full bg-permukaan shadow-sedang" style={{ width: ukuran, height: ukuran }}>
         <svg viewBox="0 0 100 100" className="size-full -rotate-90" aria-hidden>
           <circle cx={50} cy={50} r={r} fill="none" stroke="var(--color-primer-terang)" strokeWidth={9} />
           <circle
@@ -23,11 +23,11 @@ export function ScoreRing({ skor, ukuran = 184 }: { skor: number; ukuran?: numbe
             strokeLinecap="round"
             strokeDasharray={keliling}
             strokeDashoffset={keliling * (1 - nilai / 100)}
-            className="transition-[stroke-dashoffset] duration-700 ease-out"
+            className="transition-[stroke-dashoffset] duration-700 ease-lembut"
           />
         </svg>
         <div className="absolute inset-0 grid place-items-center">
-          <span className="tabular text-[3.4rem] font-extrabold leading-none text-primer">{nilai}</span>
+          <span className="tabular text-[3.4rem] font-extrabold leading-none tracking-[-0.03em] text-primer">{nilai}</span>
         </div>
       </div>
       <p className="text-[1.3rem] font-bold text-teks">

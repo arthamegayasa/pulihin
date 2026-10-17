@@ -1,16 +1,23 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/plus-jakarta-sans';
 
-/* Design system PULIHIN (Bab 12). Token warna dari spesifikasi; jangan menambah aksen baru. */
+/*
+ * Design system PULIHIN (Bab 12). Token warna dari spesifikasi; satu aksen (oranye), jangan menambah aksen baru.
+ * Kontras teks: teks (#1A2B2E) >= 12.9:1 dan teks-2 (#3D5357) >= 7.1:1 di atas SEMUA permukaan di bawah
+ * (putih, latar, primer-terang, cekung, *-terang). Dokumentasi pemakaian: lihat komentar per kelompok.
+ */
 @theme {
   --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
 
+  /* Warna merek & status */
   --color-primer: #0b4f4a;
   --color-primer-tua: #083b37;
   --color-primer-terang: #eaf2f0;
   --color-primer-garis: #c9dcd8;
   --color-aksen: #c46a1b;
   --color-aksen-terang: #fbefe3;
+  /* Teks bernada aksen (lencana Demo, angka streak kecil): 7.3:1 di atas aksen-terang. */
+  --color-aksen-teks: #7a3f0c;
   --color-sukses: #1f7a3d;
   --color-sukses-terang: #e6f4ea;
   --color-peringatan: #9a6b00;
@@ -18,14 +25,82 @@
   --color-bahaya: #b42318;
   --color-bahaya-terang: #fdecea;
   --color-teks: #1a2b2e;
-  /* teks sekunder: kontras 7.3:1 di atas putih */
   --color-teks-2: #3d5357;
   --color-garis: #d7e1df;
-  --color-latar: #f6f9f8;
+  /* Garis rambut untuk kartu di atas latar: lebih halus dari `garis`, tetap terlihat di layar murah. */
+  --color-garis-halus: #e1e9e6;
 
+  /*
+   * Hierarki permukaan (dari paling bawah):
+   *   latar            halaman (teal hangat sangat lembut)
+   *   permukaan        kartu biasa (putih)
+   *   permukaan-naik   elemen mengambang: dialog, toast, header lengket (putih + bayangan lebih dalam)
+   *   cekung           sumur/area tertanam: lintasan grafik, kerangka, bidang input pasif
+   *   ilustrasi        latar ilustrasi S2 (#EEF4F2) agar tepi gambar menyatu dengan kartunya
+   */
+  --color-latar: #f3f6f3;
+  --color-permukaan: #ffffff;
+  --color-permukaan-naik: #ffffff;
+  --color-cekung: #e9f0ee;
+  --color-ilustrasi: #eef4f2;
+
+  /* Skala radius (px, tidak ikut membesar pada Huruf Lebih Besar). Kartu 16px sesuai Bab 12.2 (12-16px). */
+  --radius-kecil: 8px;
+  --radius-kontrol: 14px;
   --radius-kartu: 16px;
-  --shadow-tipis: 0 1px 2px rgb(11 79 74 / 0.06), 0 1px 1px rgb(11 79 74 / 0.04);
-  --shadow-angkat: 0 6px 20px -8px rgb(11 79 74 / 0.25);
+  --radius-panel: 24px;
+
+  /*
+   * Bayangan berlapis bernada teal (bukan hitam). Dari datar ke tinggi:
+   *   tipis       kartu di atas latar
+   *   sedang      kartu yang bisa diketuk saat ditekan/hover, kartu hero
+   *   angkat      tombol utama (dipadu sorot dalam di BigButton)
+   *   mengambang  dialog, toast
+   */
+  --shadow-tipis: 0 1px 2px rgb(11 79 74 / 0.05), 0 2px 6px -2px rgb(11 79 74 / 0.06);
+  --shadow-sedang: 0 1px 2px rgb(11 79 74 / 0.06), 0 4px 12px -4px rgb(11 79 74 / 0.1), 0 12px 24px -16px rgb(11 79 74 / 0.18);
+  --shadow-angkat: 0 1px 2px rgb(8 59 55 / 0.1), 0 4px 10px -4px rgb(8 59 55 / 0.22), 0 12px 24px -14px rgb(8 59 55 / 0.3);
+  --shadow-mengambang: 0 2px 4px rgb(8 59 55 / 0.08), 0 12px 28px -8px rgb(8 59 55 / 0.22), 0 32px 64px -24px rgb(8 59 55 / 0.3);
+  /* Sorot tipis di tepi atas tombol berwarna: kesan "ditekan dari bahan", tanpa gradasi. */
+  --inset-shadow-sorot: inset 0 1px 0 rgb(255 255 255 / 0.14);
+
+  /* Gerak: kurva lembut tanpa pantulan; durasi pendek. Semua menjadi ~0 saat prefers-reduced-motion. */
+  --ease-lembut: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-tekan: cubic-bezier(0.2, 0, 0, 1);
+  --default-transition-duration: 180ms;
+  --default-transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-muncul: muncul 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-naik: naik 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Kerangka memuat: denyut pelan 1.8 detik (Bab 12.3: skeleton tidak berkedip cepat). */
+  --animate-denyut-pelan: denyut-pelan 1.8s ease-in-out infinite alternate;
+
+  @keyframes muncul {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes naik {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+  @keyframes denyut-pelan {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0.55;
+    }
+  }
+}
+
+/* Durasi gerak sebagai variabel CSS biasa: `duration-(--durasi-cepat)`. */
+:root {
+  --durasi-cepat: 120ms;
+  --durasi-sedang: 180ms;
+  --durasi-lambat: 320ms;
 }
 
 /* Ukuran dasar 18px; "Huruf Lebih Besar" memperbesar 20% (Bab 12.2, 12.3). */
@@ -40,17 +115,25 @@ html[data-huruf='besar'] {
 
 body {
   @apply bg-latar text-teks font-sans antialiased;
-  line-height: 1.5;
+  line-height: 1.55;
   overscroll-behavior-y: none;
+  text-rendering: optimizeLegibility;
 }
 
+/* Cincin fokus: aksen tebal 3px dengan celah putih agar terlihat di atas tombol teal maupun latar. */
 :focus-visible {
   outline: 3px solid var(--color-aksen);
-  outline-offset: 2px;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px #fff;
 }
 
 /* Hormati pengaturan gerak dikurangi (Bab 12.3). */
 @media (prefers-reduced-motion: reduce) {
+  :root {
+    --durasi-cepat: 0.001ms;
+    --durasi-sedang: 0.001ms;
+    --durasi-lambat: 0.001ms;
+  }
   *,
   *::before,
   *::after {
@@ -61,7 +144,51 @@ body {
   }
 }
 
-.tabular {
+/*
+ * Skala tipografi. Ukuran rem: ikut Huruf Lebih Besar. Warna tidak ditetapkan (pakai text-teks/text-primer).
+ *   tipe-display    angka/salam besar (2rem = 36px)
+ *   tipe-judul      judul layar (1.5rem = 27px, Bab 12.2 >= 24px)
+ *   tipe-subjudul   judul bagian/kartu (1.15rem)
+ *   tipe-isi        teks isi (1rem = 18px)
+ *   tipe-keterangan teks pendukung (0.95rem, ukuran terkecil yang dipakai di aplikasi)
+ *   tipe-label      label kecil tebal di atas judul (0.95rem, bukan huruf kapital semua: lebih mudah dibaca lansia)
+ */
+@utility tipe-display {
+  font-size: 2rem;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+@utility tipe-judul {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+@utility tipe-subjudul {
+  font-size: 1.15rem;
+  line-height: 1.3;
+  font-weight: 800;
+  letter-spacing: -0.005em;
+}
+@utility tipe-isi {
+  font-size: 1rem;
+  line-height: 1.55;
+}
+@utility tipe-keterangan {
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+@utility tipe-label {
+  font-size: 0.95rem;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+/* Angka sejajar (skor, hitungan, tanggal) agar tidak "melompat" saat berubah. */
+@utility tabular {
   font-variant-numeric: tabular-nums;
 }
 

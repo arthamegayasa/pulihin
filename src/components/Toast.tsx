@@ -17,7 +17,7 @@ export function Toast({ pesan, nada = 'sukses', onTutup }: { pesan: string | nul
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 safe-bottom" role="status" aria-live="polite">
       {pesan && (
-        <div className="pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl bg-teks py-2 pl-4 pr-2 text-white shadow-angkat">
+        <div className="pointer-events-auto flex w-full max-w-md animate-naik items-start gap-3 rounded-kartu bg-teks py-2 pl-4 pr-2 text-white shadow-mengambang ring-1 ring-white/10">
           {nada === 'sukses' ? (
             <CheckCircle size={26} weight="fill" className="mt-2.5 shrink-0 text-[#7fd49b]" aria-hidden />
           ) : (
@@ -27,7 +27,7 @@ export function Toast({ pesan, nada = 'sukses', onTutup }: { pesan: string | nul
           <button
             type="button"
             onClick={onTutup}
-            className="grid size-12 shrink-0 place-items-center rounded-xl text-white hover:bg-white/10"
+            className="grid size-12 shrink-0 place-items-center rounded-kontrol text-white hover:bg-white/10 active:bg-white/15"
             aria-label="Tutup pesan"
           >
             <X size={24} weight="bold" aria-hidden />
