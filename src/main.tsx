@@ -4,6 +4,7 @@ import { RouterProvider } from 'react-router/dom';
 import { hapusCacheIlustrasiLama } from '@/config/cacheIlustrasi';
 import { ensureDemoData } from '@/data/seed';
 import { applyPrefsToDocument } from '@/lib/prefs';
+import { pasangPembaruanAplikasi } from '@/lib/pembaruanAplikasi';
 import { pasangPenjagaJaringan } from '@/lib/privasiJaringan';
 import { router } from '@/router';
 import './index.css';
@@ -20,3 +21,5 @@ createRoot(document.getElementById('root')!).render(
     <RouterProvider router={router} />
   </StrictMode>,
 );
+// Versi baru setelah deploy dipakai otomatis (ditunda selama sesi/pengeditan resep).
+pasangPembaruanAplikasi(router);

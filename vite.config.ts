@@ -14,8 +14,10 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
+      // SW baru langsung aktif; src/lib/pembaruanAplikasi.ts memuat ulang halaman ke versi baru begitu aman
+      // (tidak di tengah sesi). Skrip registrasi bawaan tidak memuat ulang, jadi versi lama tetap tampil.
       registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      injectRegister: false,
       includeAssets: ['icons/favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
         id: '/app',
@@ -65,6 +67,9 @@ export default defineConfig({
         ],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
+        // Wajib eksplisit karena injectRegister: false (plugin hanya menyetelnya untuk registrasi bawaan).
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname.startsWith('/mediapipe/'),
