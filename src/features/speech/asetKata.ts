@@ -1,7 +1,7 @@
 /**
  * Gambar kata afasia (`public/ilustrasi/kata/<kataId>.webp`, 512x512) dan unduhan lanjutannya.
  *
- * Service worker tidak mem-precache gambar kata (100 berkas); runtime cache CacheFirst `pulihin-ilustrasi`
+ * Service worker tidak mem-precache gambar kata (100 berkas); runtime cache CacheFirst `CACHE_ILUSTRASI`
  * (vite.config.ts) menyimpan setiap gambar yang lewat SW. Agar satu sesi 10 kata tetap lengkap saat sinyal
  * hilang di tengah latihan (Mode Latihan Mandiri tidak butuh internet), `simpanGambarSesi` mengunduh ke-10
  * gambar sesi begitu sesi dimulai. Dilewati bila Penghemat Data/2G aktif atau halaman belum dikendalikan SW
@@ -9,10 +9,8 @@
  */
 
 import { srcIlustrasi } from '@/components/premium/asetIlustrasi';
+import { CACHE_ILUSTRASI } from '@/config/cacheIlustrasi';
 import { hematData } from '@/features/pose/asetPose';
-
-/** Harus sama dengan `cacheName` runtimeCaching `/ilustrasi/` di vite.config.ts. */
-const CACHE_ILUSTRASI = 'pulihin-ilustrasi';
 
 const sedangDipramuat = new Set<string>();
 

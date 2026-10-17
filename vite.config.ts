@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { CACHE_ILUSTRASI } from './src/config/cacheIlustrasi.ts';
 
 export default defineConfig({
   resolve: {
@@ -108,7 +109,7 @@ export default defineConfig({
             urlPattern: ({ url }) => url.pathname.startsWith('/ilustrasi/'),
             handler: 'CacheFirst',
             options: {
-              cacheName: 'pulihin-ilustrasi',
+              cacheName: CACHE_ILUSTRASI,
               expiration: { maxEntries: 140 },
               cacheableResponse: { statuses: [200], headers: { 'content-type': 'image/webp' } },
               matchOptions: { ignoreVary: true },
