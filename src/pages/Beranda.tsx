@@ -1,25 +1,19 @@
-import {
-  BellRinging,
-  CaretRight,
-  ChatCircleText,
-  CheckCircle,
-  Confetti,
-  Fire,
-  HandHeart,
-  PersonArmsSpread,
-  Play,
-  SealCheck,
-  type Icon,
-} from '@phosphor-icons/react';
+import { BellRinging, Confetti, Fire, HandHeart, Play } from '@phosphor-icons/react';
 import { useEffect } from 'react';
 import { Link } from 'react-router';
 import { BigLink } from '@/components/BigButton';
 import { Card } from '@/components/Card';
 import { KosongDemo } from '@/components/KosongDemo';
+import { Kerangka, KerangkaGrup, KerangkaKartu, Lencana } from '@/components/premium';
 import type { InfoStreak } from '@/features/adherence/adherence';
 import { useDataPasien, useLaporan, useSekarang } from '@/features/adherence/hooks';
 import { latihanBerikutnya, statusProgramHariIni, teksProgresSet, teksSudahDicoba, teksTarget, urlLatihanProgram } from '@/features/adherence/program';
 import { bannerPengingat, pengingatHariIni } from '@/features/adherence/reminders';
+import { BarisHariIni } from '@/features/pasien/BarisHariIni';
+import { CincinHariIni } from '@/features/pasien/CincinHariIni';
+import { IlustrasiPotong } from '@/features/pasien/IlustrasiPotong';
+import { KartuSapa } from '@/features/pasien/KartuSapa';
+import { PosterLatihan } from '@/features/pasien/PosterLatihan';
 import { getExercise } from '@/features/pose/exerciseDefinitions';
 import { prefetchAsetPose } from '@/features/pose/asetPose';
 import { formatTanggalPendek, namaHari, namaHariPendek, toISODate } from '@/lib/date';
@@ -61,12 +55,22 @@ export default function Beranda() {
     if (role === 'pasien') prefetchAsetPose();
   }, [role]);
 
-  if (loading && !data) return <p className="py-10 text-center text-teks-2">Memuat latihan hari ini...</p>;
+  if (loading && !data) {
+    return (
+      <KerangkaGrup label="Memuat latihan hari ini..." className={`flex flex-col ${padat ? 'gap-[8px]' : 'gap-2.5'}`}>
+        <Kerangka bentuk="kotak" className={`rounded-kartu ${padat ? 'h-[112px]' : 'h-[153px]'}`} />
+        <Kerangka bentuk="judul" className="w-1/2" />
+        <KerangkaKartu baris={1} gambar />
+        <KerangkaKartu baris={1} gambar />
+        <Kerangka bentuk="tombol" />
+      </KerangkaGrup>
+    );
+  }
   if (error) return <p className="py-10 text-center text-teks-2">Data latihan belum bisa dibaca. Coba muat ulang halaman.</p>;
   if (!data?.profile || !lap) {
     return (
       <section className="space-y-4">
-        <h1 className="text-[1.5rem] font-extrabold">{salam(sekarang.getHours())}</h1>
+        <h1 className="tipe-judul">{salam(sekarang.getHours())}</h1>
         <KosongDemo />
       </section>
     );
@@ -82,52 +86,67 @@ export default function Beranda() {
   const berikut = latihanBerikutnya(items);
   const banner = bannerPengingat(pengingatHariIni(schedule, lap.hariIni, sekarang), sekarang);
   const semuaSelesai = selesai === total;
+  const teksSalam = salam(sekarang.getHours());
+  const streak = (
+    <Lencana nada="aksen" ikon={<Fire weight="fill" />} className="max-w-none">
+      {teksStreak(lap.streak)}
+    </Lencana>
+  );
+  const pengingat = banner && banner.nada !== 'sukses' && (
+    <p role="status" className="flex items-start gap-1.5 text-[0.95rem] font-bold leading-snug text-teks">
+      <BellRinging size={20} weight="fill" className={`mt-px shrink-0 ${banner.nada === 'aksen' ? 'text-aksen' : 'text-primer'}`} aria-hidden />
+      {banner.teks}
+    </p>
+  );
 
   return (
-    <section className={`flex flex-col ${padat ? 'gap-2' : 'gap-3'}`}>
-      <header>
-        <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-          <h1 className={`font-extrabold leading-tight ${padat ? 'text-[1.25rem]' : 'text-[1.4rem]'}`}>
-            {padat ? 'Halo' : salam(sekarang.getHours())}, {profile.namaSamaran}
-          </h1>
-          {padat && (
-            <p className="text-[0.95rem] text-teks-2">
-              {namaHariPendek(today)}, {formatTanggalPendek(today)}
-            </p>
-          )}
-        </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-          {!padat && (
-            <p className="text-[0.95rem] text-teks-2">
-              {namaHari(today)}, {formatTanggalPendek(today)}
-            </p>
-          )}
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-aksen-terang px-2.5 py-0.5 text-[0.95rem] font-bold text-teks">
-            <Fire size={18} weight="fill" className="text-aksen" aria-hidden />
-            {teksStreak(lap.streak)}
-          </span>
-        </div>
-      </header>
-
-      {banner && banner.nada !== 'sukses' && (
-        <p
-          role="status"
-          className={`flex items-center gap-2 rounded-kartu border px-3 text-[0.95rem] font-bold leading-snug ${padat ? 'py-1' : 'py-2'} ${banner.nada === 'aksen' ? 'border-aksen/30 bg-aksen-terang' : 'border-primer-garis bg-primer-terang'}`}
+    <section className={`flex flex-col ${padat ? 'gap-[8px]' : 'gap-2.5'}`}>
+      {padat ? (
+        // Huruf Lebih Besar: sapaan ringkas dengan potongan wajah dari ilustrasi Beranda (kartu hero bertumpuk
+        // terlalu tinggi; daftar latihan dan tombol Untuk Keluarga harus tetap terlihat tanpa menggulir).
+        <header className="flex items-center gap-3">
+          <IlustrasiPotong
+            ilustrasi={{ jenis: 'momen', nama: 'beranda' }}
+            potong={{ x: 548, y: 70, sisi: 170 }}
+            prioritas
+            className="size-[56px] rounded-full border-2 border-permukaan shadow-tipis"
+          />
+          <div className="min-w-0 flex-1">
+            <h1 className="text-[1.25rem] font-extrabold leading-tight tracking-[-0.01em]">Halo, {profile.namaSamaran}</h1>
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+              <p className="text-[0.95rem] text-teks-2">
+                {namaHariPendek(today)}, {formatTanggalPendek(today)}
+              </p>
+              {streak}
+            </div>
+          </div>
+        </header>
+      ) : (
+        <KartuSapa
+          ilustrasi={{ jenis: 'momen', nama: 'beranda' }}
+          label={<span aria-hidden>{teksSalam},</span>}
+          judul={
+            <>
+              <span className="sr-only">{teksSalam}, </span>
+              {profile.namaSamaran}
+            </>
+          }
+          sub={`${namaHari(today)}, ${formatTanggalPendek(today)}`}
         >
-          <BellRinging size={22} weight="fill" className={`shrink-0 ${banner.nada === 'aksen' ? 'text-aksen' : 'text-primer'}`} aria-hidden />
-          {banner.teks}
-        </p>
+          {streak}
+        </KartuSapa>
       )}
 
-      <div>
-        <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-2">
-          <h2 className="text-[1.15rem] font-extrabold">Latihan Hari Ini</h2>
-          <span className="inline-flex items-center gap-1 text-[0.95rem] font-bold text-primer">
-            <SealCheck size={18} weight="fill" aria-hidden />
-            {selesai} dari {total}
-            {padat ? <span className="sr-only"> latihan selesai</span> : ' latihan selesai'}
-          </span>
+      {padat && pengingat}
+
+      <section aria-labelledby="judul-hari-ini">
+        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-x-3">
+          <h2 id="judul-hari-ini" className="tipe-subjudul">
+            Latihan Hari Ini
+          </h2>
+          <CincinHariIni selesai={selesai} total={total} kecil={padat} />
         </div>
+        {!padat && pengingat && <div className="-mt-0.5 mb-1.5">{pengingat}</div>}
         {items.length === 0 && (
           <Card className="mb-2 text-[0.95rem]">
             Belum ada program latihan gerak. Program disusun oleh terapis. Sementara itu, pilih latihan di{' '}
@@ -138,138 +157,55 @@ export default function Beranda() {
           </Card>
         )}
         {/* Tiap baris kartu terpisah berjarak 8px: target sentuh tidak bersentuhan (Bab 12.2). */}
-        <ul className="flex flex-col gap-2">
-          {items.map((item) => (
-            <BarisLatihan
+        <ul className="flex flex-col gap-[8px]">
+          {items.map((item, i) => (
+            <BarisHariIni
               key={item.latihanId}
               to={urlLatihanProgram(item)}
-              Ikon={PersonArmsSpread}
+              // Huruf Lebih Besar: tanpa gambar kecil agar nama latihan tidak terpotong jadi tiga baris.
+              gambar={padat ? undefined : <PosterLatihan latihanId={item.latihanId} prioritas={i < 3} />}
               nama={item.nama}
               ukuran={teksTarget(item)}
               selesai={item.selesai}
               skor={item.skorTerakhir}
               progres={teksProgresSet(item) ?? teksSudahDicoba(item)}
-              padat={padat}
             />
           ))}
-          <BarisLatihan
+          <BarisHariIni
             to={PATHS.afasia}
-            Ikon={ChatCircleText}
+            gambar={padat ? undefined : <IlustrasiPotong ilustrasi={{ jenis: 'momen', nama: 'bicara' }} potong={{ x: 500, y: 90, sisi: 270 }} className="size-[56px] rounded-[12px]" />}
             nama="Latihan Bicara"
             ukuran="10 kata"
             selesai={afasiaSelesai}
             skor={lap.hariIni.skorAfasiaTerakhir}
-            padat={padat}
           />
         </ul>
-      </div>
+      </section>
 
       {semuaSelesai ? (
-        <Card nada="sukses" className="flex items-center gap-3">
-          <Confetti size={32} weight="fill" className="shrink-0 text-sukses" aria-hidden />
-          <p className="font-bold">Semua latihan hari ini selesai. Hebat, {profile.namaSamaran}! Istirahat yang cukup ya.</p>
-        </Card>
+        <div className="flex items-center gap-3 rounded-kartu border border-sukses/30 bg-sukses-terang px-4 py-3">
+          <Confetti size={30} weight="fill" className="shrink-0 text-sukses" aria-hidden />
+          <p className="leading-snug">
+            <span className="font-extrabold">Hebat, {profile.namaSamaran}!</span> Semua latihan hari ini selesai.
+          </p>
+        </div>
       ) : berikut ? (
-        <BigLink
-          to={urlLatihanProgram(berikut)}
-          ukuran="besar"
-          ikon={<Play size={28} weight="fill" aria-hidden />}
-        >
+        <BigLink to={urlLatihanProgram(berikut)} ikon={<Play weight="fill" aria-hidden />}>
           Mulai: {berikut.nama}
           {berikut.setSelesai > 0 && ` (set ${berikut.setSelesai + 1} dari ${berikut.set})`}
         </BigLink>
       ) : (
-        <BigLink to={PATHS.afasia} ukuran="besar" ikon={<Play size={28} weight="fill" aria-hidden />}>
+        <BigLink to={PATHS.afasia} ikon={<Play weight="fill" aria-hidden />}>
           Mulai: Latihan Bicara
         </BigLink>
       )}
 
-      <BigLink to={PATHS.keluarga} varian="garis" ikon={<HandHeart size={26} weight="bold" aria-hidden />}>
+      <BigLink to={PATHS.keluarga} varian="garis" ikon={<HandHeart weight="bold" aria-hidden />}>
         Untuk Keluarga
       </BigLink>
-      <Link to={PATHS.latihan} className="self-center py-2 text-[0.95rem] font-bold text-primer underline underline-offset-4">
+      <Link to={PATHS.latihan} className="self-center py-2 tipe-label text-primer underline underline-offset-4">
         Lihat semua latihan
       </Link>
     </section>
-  );
-}
-
-function BarisLatihan({
-  to,
-  Ikon,
-  nama,
-  ukuran,
-  selesai,
-  skor,
-  progres = null,
-  padat,
-}: {
-  to: string;
-  Ikon: Icon;
-  nama: string;
-  ukuran: string;
-  selesai: boolean;
-  skor: number | null;
-  /** "1 dari 2 set" atau "Sudah dicoba: 3 dari 10" bila sudah dikerjakan sebagian. */
-  progres?: string | null;
-  padat: boolean;
-}) {
-  if (padat) {
-    // Huruf Lebih Besar: satu baris nama + status pendek di kanan; jumlah repetisi ada di halaman detail.
-    return (
-      <li>
-        <Link
-          to={to}
-          className={`flex min-h-[56px] items-center gap-2 rounded-kartu border bg-white px-3 py-1 shadow-tipis hover:bg-primer-terang ${selesai ? 'border-sukses/40' : 'border-garis'}`}
-        >
-          <span className="min-w-0 flex-1">
-            <span className="block font-bold leading-tight">{nama}</span>
-            {!selesai && progres && <span className="block text-[0.95rem] font-bold leading-snug text-teks">{progres}</span>}
-          </span>
-          {selesai ? (
-            <span className="inline-flex shrink-0 items-center gap-1 text-[0.95rem] font-bold text-sukses">
-              Selesai
-              <CheckCircle size={26} weight="fill" aria-hidden />
-            </span>
-          ) : (
-            <span className="inline-flex shrink-0 items-center gap-0.5 text-[0.95rem] font-semibold text-teks-2">
-              {!progres && 'Belum'}
-              <CaretRight size={22} weight="bold" className="text-primer" aria-hidden />
-            </span>
-          )}
-        </Link>
-      </li>
-    );
-  }
-  return (
-    <li>
-      <Link
-        to={to}
-        className={`flex min-h-[56px] items-center gap-3 rounded-kartu border bg-white px-3 py-1.5 shadow-tipis hover:bg-primer-terang ${selesai ? 'border-sukses/40' : 'border-garis'}`}
-      >
-        <Ikon size={26} weight="bold" className="shrink-0 text-primer" aria-hidden />
-        <span className="min-w-0 flex-1">
-          <span className="block font-bold leading-tight">{nama}</span>
-          <span className="block text-[0.95rem] leading-snug text-teks-2">
-            {selesai ? (
-              <>
-                {ukuran} · <span className="font-bold text-sukses">Selesai{skor !== null && `, skor ${skor}`}</span>
-              </>
-            ) : progres ? (
-              <span className="font-bold text-teks">{progres}</span>
-            ) : (
-              <>
-                {ukuran} · <span className="font-semibold">Belum</span>
-              </>
-            )}
-          </span>
-        </span>
-        {selesai ? (
-          <CheckCircle size={28} weight="fill" className="shrink-0 text-sukses" aria-hidden />
-        ) : (
-          <CaretRight size={22} weight="bold" className="shrink-0 text-primer" aria-hidden />
-        )}
-      </Link>
-    </li>
   );
 }

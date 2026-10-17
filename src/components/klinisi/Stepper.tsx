@@ -19,7 +19,7 @@ export function Stepper({
 }) {
   const id = useId();
   const tombol =
-    'grid size-14 shrink-0 place-items-center rounded-2xl border-2 border-primer bg-white text-primer hover:bg-primer-terang active:scale-[0.97] disabled:border-garis disabled:text-teks-2/50 disabled:pointer-events-none';
+    'grid size-14 shrink-0 place-items-center rounded-kontrol border-2 border-primer bg-permukaan text-primer shadow-tipis transition-[transform,background-color] duration-(--durasi-cepat) ease-tekan hover:bg-primer-terang active:translate-y-px active:shadow-none disabled:border-garis disabled:text-teks-2/50 disabled:shadow-none disabled:pointer-events-none';
   return (
     <div role="group" aria-labelledby={id}>
       <p id={id} className="mb-1 text-[0.95rem] font-bold text-teks-2">

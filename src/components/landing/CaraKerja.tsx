@@ -16,20 +16,21 @@ const LANGKAH = [
   },
 ] as const;
 
-/** Cara kerja dalam tiga langkah, berdampingan dengan layar Detail Latihan (gambar contoh gerakan). */
+/** Cara kerja dalam tiga langkah, berdampingan dengan layar Beranda dan Detail Latihan asli (bertumpuk). */
 export function CaraKerja() {
   return (
-    <section id="cara-kerja" aria-labelledby="judul-cara-kerja" className="mx-auto max-w-6xl scroll-mt-6 px-5 py-16 md:px-8 lg:py-20">
-      <div className="grid items-center gap-12 lg:grid-cols-12">
-        <div className="lg:col-span-7">
-          <h2 id="judul-cara-kerja" className="text-[1.75rem] font-extrabold leading-tight tracking-tight lg:text-[2.2rem]">
-            Cara kerja
+    <section id="cara-kerja" aria-labelledby="judul-cara-kerja" className="scroll-mt-6 border-y border-garis-halus bg-permukaan">
+      <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 md:px-8 lg:grid-cols-12 lg:py-20">
+        <div className="lg:col-span-6">
+          <p className="tipe-label text-primer">Cara kerja</p>
+          <h2 id="judul-cara-kerja" className="mt-2 text-balance text-[1.75rem] font-extrabold leading-tight tracking-tight lg:text-[2.2rem]">
+            Tiga langkah, setiap hari
           </h2>
-          <ol className="mt-8 space-y-8">
+          <ol className="mt-8 space-y-4">
             {LANGKAH.map((l, i) => (
-              <li key={l.judul} className="grid grid-cols-[2.75rem_1fr] gap-4">
+              <li key={l.judul} className="grid grid-cols-[2.75rem_1fr] gap-4 rounded-kartu border border-garis-halus bg-latar p-5">
                 <span
-                  className="grid size-11 place-items-center rounded-full bg-primer text-[1.1rem] font-extrabold text-white tabular"
+                  className="grid size-11 place-items-center rounded-full bg-primer text-[1.1rem] font-extrabold text-white shadow-angkat inset-shadow-sorot tabular"
                   aria-hidden
                 >
                   {i + 1}
@@ -42,9 +43,10 @@ export function CaraKerja() {
             ))}
           </ol>
         </div>
-
-        <div className="flex justify-center lg:col-span-5">
-          <BingkaiPonsel layar={LAYAR.detail} className="w-[15rem] sm:w-[16rem] lg:w-[17rem]" />
+        {/* Dua ponsel asli bertumpuk di panel: Beranda di belakang, Detail Latihan di depan; terpotong tepi bawah panel. */}
+        <div className="relative h-[27rem] overflow-hidden rounded-panel bg-ilustrasi ring-1 ring-primer-garis/60 sm:h-[32rem] lg:col-span-6 lg:h-[36rem]">
+          <BingkaiPonsel layar={LAYAR.beranda} className="absolute left-[7%] top-8 w-[46%] max-w-[16rem] lg:top-10" />
+          <BingkaiPonsel layar={LAYAR.detail} className="absolute right-[7%] top-24 w-[46%] max-w-[16rem] lg:top-28" />
         </div>
       </div>
     </section>

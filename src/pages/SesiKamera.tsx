@@ -519,7 +519,7 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
         {berjalan && (
           <section
             aria-label="Panduan dan hitungan"
-            className="z-20 flex min-h-[15.25rem] shrink-0 flex-col bg-white text-teks safe-bottom rounded-t-3xl landscape:min-h-0 landscape:w-[clamp(17rem,34vw,27rem)] landscape:rounded-none landscape:overflow-y-auto"
+            className="z-20 flex min-h-[15.25rem] shrink-0 flex-col bg-permukaan text-teks safe-bottom rounded-t-panel landscape:min-h-0 landscape:w-[clamp(17rem,34vw,27rem)] landscape:rounded-none landscape:overflow-y-auto"
           >
             {modePanduan ? (
               <PanelPanduan
@@ -551,12 +551,12 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
               />
             )}
             {/* Layar lebar (laptop): ruang sisa panel dipakai untuk langkah gerakan sebagai pengingat. */}
-            <div className="mx-5 mb-5 mt-auto hidden border-t border-garis pt-4 landscape:lg:block">
+            <div className="mx-5 mb-5 mt-auto hidden border-t border-garis-halus pt-4 landscape:lg:block">
               <h2 className="mb-2 text-[1rem] font-bold text-teks-2">Cara melakukan</h2>
               <ol className="space-y-2">
                 {def.panduanLangkah.map((langkah, i) => (
                   <li key={i} className="flex gap-3 text-[0.95rem] leading-snug">
-                    <span className="tabular grid size-7 shrink-0 place-items-center rounded-full bg-primer-terang text-[0.95rem] font-bold text-primer">
+                    <span className="tabular grid size-7 shrink-0 place-items-center rounded-[9px] bg-primer-terang text-[0.95rem] font-bold text-primer">
                       {i + 1}
                     </span>
                     <span className="pt-0.5">{langkah}</span>
@@ -779,14 +779,14 @@ function LayarKendala({ judul, isi, langkah, onUlangi, kembali }: { judul: strin
           </BigLink>
           <div className="flex items-center gap-3">
             <CameraSlash size={44} weight="bold" className="shrink-0 text-primer" aria-hidden />
-            <h2 className="text-[1.5rem] font-extrabold leading-tight">{judul}</h2>
+            <h2 className="tipe-judul">{judul}</h2>
           </div>
           <p>{isi}</p>
           {langkah && (
-            <ol className="space-y-2 rounded-kartu border border-garis bg-white p-4 shadow-tipis">
+            <ol className="space-y-2 rounded-kartu border border-garis-halus bg-permukaan p-4 shadow-tipis">
               {langkah.map((l, i) => (
                 <li key={i} className="flex gap-3">
-                  <span className="tabular grid size-8 shrink-0 place-items-center rounded-full bg-primer text-[0.95rem] font-bold text-white">{i + 1}</span>
+                  <span className="tabular grid size-8 shrink-0 place-items-center rounded-[10px] bg-primer text-[0.95rem] font-bold text-white">{i + 1}</span>
                   <span className="pt-0.5">{l}</span>
                 </li>
               ))}
@@ -794,7 +794,7 @@ function LayarKendala({ judul, isi, langkah, onUlangi, kembali }: { judul: strin
           )}
         </div>
       </div>
-      <div className="shrink-0 border-t border-garis bg-latar px-5 pt-3 safe-bottom">
+      <div className="shrink-0 border-t border-garis-halus bg-permukaan px-5 pt-3 safe-bottom">
         <div className="mx-auto max-w-md">
           <BigButton onClick={onUlangi} ikon={<ArrowClockwise size={24} weight="bold" aria-hidden />}>
             Coba Lagi

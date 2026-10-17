@@ -1,4 +1,18 @@
-import { ArrowCounterClockwise, DownloadSimple, Info, Trash, UploadSimple, Wrench } from '@phosphor-icons/react';
+import {
+  Alarm,
+  ArrowCounterClockwise,
+  CaretRight,
+  Database,
+  DownloadSimple,
+  FloppyDisk,
+  Info,
+  TextAa,
+  Trash,
+  UploadSimple,
+  UserCircle,
+  UserSwitch,
+  Wrench,
+} from '@phosphor-icons/react';
 import { useRef, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { BigButton } from '@/components/BigButton';
@@ -9,6 +23,7 @@ import { KosongDemo } from '@/components/KosongDemo';
 import { PageHeader } from '@/components/PageHeader';
 import { Toggle } from '@/components/Toggle';
 import { useToast } from '@/components/Toast';
+import { IkonBingkai } from '@/components/premium';
 import { CadanganTidakValidError, importAll, putSchedule, validasiCadangan } from '@/data/db';
 import { buatCadangan, hapusSemuaDataLokal, resetDemoData } from '@/data/seed';
 import { useDataPasien } from '@/features/adherence/hooks';
@@ -90,117 +105,123 @@ export default function Pengaturan() {
   const profiles = data?.profiles ?? [];
 
   return (
-    <section className="space-y-5">
+    <section className="space-y-7">
       <PageHeader judul="Pengaturan dan Demo" />
 
-      {data?.profile && data.schedule ? (
-        <FormJadwal key={`${data.profile.id}-${data.schedule.jamGerak}-${data.schedule.jamAfasia}-${data.schedule.notifikasiAktif}`} awal={data.schedule} namaPasien={data.profile.namaSamaran} onTersimpan={() => tampilkanToast('Jadwal tersimpan.')} />
-      ) : (
-        <Bagian judul="Jadwal Latihan">
-          <p className="text-teks-2">{data ? 'Jadwal tersedia setelah ada data pasien.' : 'Memuat jadwal...'}</p>
+      <Grup id="grup-latihan" judul="Latihan">
+        {data?.profile && data.schedule ? (
+          <FormJadwal key={`${data.profile.id}-${data.schedule.jamGerak}-${data.schedule.jamAfasia}-${data.schedule.notifikasiAktif}`} awal={data.schedule} namaPasien={data.profile.namaSamaran} onTersimpan={() => tampilkanToast('Jadwal tersimpan.')} />
+        ) : (
+          <Bagian judul="Jadwal Latihan" ikon={<Alarm weight="bold" />}>
+            <p className="text-teks-2">{data ? 'Jadwal tersedia setelah ada data pasien.' : 'Memuat jadwal...'}</p>
+          </Bagian>
+        )}
+      </Grup>
+
+      <Grup id="grup-tampilan" judul="Tampilan dan peran">
+        <Bagian judul="Tampilan" ikon={<TextAa weight="bold" />}>
+          <div className="-mx-1 divide-y divide-garis-halus">
+            <Toggle
+              label="Huruf Lebih Besar"
+              keterangan="Memperbesar teks 20 persen."
+              aktif={prefs.hurufBesar}
+              onUbah={(v) => setPrefs({ hurufBesar: v })}
+            />
+            <Toggle
+              label="Petunjuk suara"
+              keterangan="Membacakan petunjuk dalam Bahasa Indonesia."
+              aktif={prefs.suaraAktif}
+              onUbah={(v) => setPrefs({ suaraAktif: v })}
+            />
+          </div>
         </Bagian>
-      )}
 
-      <Bagian judul="Tampilan">
-        <Toggle
-          label="Huruf Lebih Besar"
-          keterangan="Memperbesar teks 20 persen."
-          aktif={prefs.hurufBesar}
-          onUbah={(v) => setPrefs({ hurufBesar: v })}
-        />
-        <Toggle
-          label="Petunjuk suara"
-          keterangan="Membacakan petunjuk dalam Bahasa Indonesia."
-          aktif={prefs.suaraAktif}
-          onUbah={(v) => setPrefs({ suaraAktif: v })}
-        />
-      </Bagian>
-
-      <Bagian judul="Peran di ponsel ini">
-        <div className="space-y-2" role="radiogroup" aria-label="Peran">
-          {PERAN.map((p) => (
-            <PilihanTombol key={p.role} terpilih={prefs.role === p.role} onPilih={() => setPrefs({ role: p.role })}>
-              {p.label}
-            </PilihanTombol>
-          ))}
-        </div>
-      </Bagian>
-
-      {profiles.length > 0 && (
-        <Bagian judul="Pasien demo aktif" aksi={<DemoBadge />}>
-          <div className="space-y-2" role="radiogroup" aria-label="Pasien demo aktif">
-            {profiles.map((p) => (
-              <PilihanTombol key={p.id} terpilih={data?.profile?.id === p.id} onPilih={() => setPrefs({ activePatientId: p.id })}>
-                <span className="block">{p.namaSamaran}</span>
-                <span className="block text-[0.95rem] font-normal text-teks-2">
-                  {p.usia} tahun, {p.keterangan.toLowerCase()}
-                </span>
+        <Bagian judul="Peran di ponsel ini" ikon={<UserSwitch weight="bold" />}>
+          <div className="space-y-2" role="radiogroup" aria-label="Peran">
+            {PERAN.map((p) => (
+              <PilihanTombol key={p.role} terpilih={prefs.role === p.role} onPilih={() => setPrefs({ role: p.role })}>
+                {p.label}
               </PilihanTombol>
             ))}
           </div>
         </Bagian>
-      )}
+      </Grup>
 
-      <Bagian judul="Data Demo" aksi={<DemoBadge />}>
-        {profiles.length === 0 && <KosongDemo />}
-        <p className="text-[0.95rem] text-teks-2">Pilih kondisi awal data contoh untuk peragaan, lalu tekan Setel Ulang Data Demo.</p>
-        <div className="space-y-2" role="radiogroup" aria-label="Skenario data demo">
-          {SKENARIO.map((s) => (
-            <PilihanTombol key={s.id} terpilih={skenario === s.id} onPilih={() => setSkenario(s.id)}>
-              <span className="block">{s.label}</span>
-              <span className="block text-[0.95rem] font-normal text-teks-2">{s.sub}</span>
-            </PilihanTombol>
-          ))}
-        </div>
-        <BigButton varian="garis" ikon={<ArrowCounterClockwise size={24} weight="bold" aria-hidden />} onClick={() => setKonfirmasi({ jenis: 'reset' })}>
-          Setel Ulang Data Demo
-        </BigButton>
-      </Bagian>
+      <Grup id="grup-data" judul="Data di ponsel ini">
+        {profiles.length > 0 && (
+          <Bagian judul="Pasien demo aktif" ikon={<UserCircle weight="bold" />} aksi={<DemoBadge />}>
+            <div className="space-y-2" role="radiogroup" aria-label="Pasien demo aktif">
+              {profiles.map((p) => (
+                <PilihanTombol key={p.id} terpilih={data?.profile?.id === p.id} onPilih={() => setPrefs({ activePatientId: p.id })}>
+                  <span className="block">{p.namaSamaran}</span>
+                  <span className="block tipe-keterangan font-normal text-teks-2">
+                    {p.usia} tahun, {p.keterangan.toLowerCase()}
+                  </span>
+                </PilihanTombol>
+              ))}
+            </div>
+          </Bagian>
+        )}
 
-      <Bagian judul="Cadangan Data">
-        <p className="text-[0.95rem] text-teks-2">Simpan semua data di ponsel ini sebagai berkas cadangan, atau pulihkan dari berkas cadangan.</p>
-        <BigButton varian="garis" ikon={<DownloadSimple size={24} weight="bold" aria-hidden />} onClick={() => void ekspor()}>
-          Simpan cadangan (berkas .json)
-        </BigButton>
-        <BigButton varian="garis" ikon={<UploadSimple size={24} weight="bold" aria-hidden />} onClick={() => fileRef.current?.click()}>
-          Pulihkan dari cadangan
-        </BigButton>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="application/json,.json"
-          className="sr-only"
-          tabIndex={-1}
-          aria-hidden
-          onChange={(e) => void pilihBerkas(e.target.files?.[0])}
-        />
-      </Bagian>
-
-      <Bagian judul="Hapus Data">
-        <p className="text-[0.95rem] text-teks-2">
-          Menghapus semua profil, sesi, skor, program, jadwal, dan pengaturan dari ponsel ini tanpa sisa.
-        </p>
-        <BigButton varian="garis" ikon={<Trash size={24} weight="bold" aria-hidden />} onClick={() => setKonfirmasi({ jenis: 'hapus' })}>
-          Hapus Semua Data Lokal
-        </BigButton>
-      </Bagian>
-
-      <nav className="flex flex-col gap-2 pt-1" aria-label="Tautan lain">
-        <Link to={PATHS.tentang} className="flex min-h-[48px] items-center gap-2 font-bold text-primer underline underline-offset-4">
-          <Info size={22} weight="bold" aria-hidden />
-          Tentang PULIHIN
-        </Link>
-      </nav>
-
-      {tampilUji && (
-        <Bagian judul="Untuk penguji">
-          <p className="text-[0.95rem] text-teks-2">Alat teknis untuk memeriksa kamera dan penghitungan gerak. Tidak diperlukan untuk latihan.</p>
-          <Link to={PATHS.uji} className="flex min-h-[48px] items-center gap-2 font-bold text-primer underline underline-offset-4">
-            <Wrench size={22} weight="bold" aria-hidden />
-            Buka Mode Uji
-          </Link>
+        <Bagian judul="Data Demo" ikon={<Database weight="bold" />} aksi={<DemoBadge />}>
+          {profiles.length === 0 && <KosongDemo />}
+          <p className="tipe-keterangan text-teks-2">Pilih kondisi awal data contoh untuk peragaan, lalu tekan Setel Ulang Data Demo.</p>
+          <div className="space-y-2" role="radiogroup" aria-label="Skenario data demo">
+            {SKENARIO.map((s) => (
+              <PilihanTombol key={s.id} terpilih={skenario === s.id} onPilih={() => setSkenario(s.id)}>
+                <span className="block">{s.label}</span>
+                <span className="block tipe-keterangan font-normal text-teks-2">{s.sub}</span>
+              </PilihanTombol>
+            ))}
+          </div>
+          <BigButton varian="garis" ikon={<ArrowCounterClockwise weight="bold" aria-hidden />} onClick={() => setKonfirmasi({ jenis: 'reset' })}>
+            Setel Ulang Data Demo
+          </BigButton>
         </Bagian>
-      )}
+
+        <Bagian judul="Cadangan Data" ikon={<FloppyDisk weight="bold" />}>
+          <p className="tipe-keterangan text-teks-2">Simpan semua data di ponsel ini sebagai berkas cadangan, atau pulihkan dari berkas cadangan.</p>
+          <BigButton varian="garis" ikon={<DownloadSimple weight="bold" aria-hidden />} onClick={() => void ekspor()}>
+            Simpan cadangan (berkas .json)
+          </BigButton>
+          <BigButton varian="garis" ikon={<UploadSimple weight="bold" aria-hidden />} onClick={() => fileRef.current?.click()}>
+            Pulihkan dari cadangan
+          </BigButton>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json,.json"
+            className="sr-only"
+            tabIndex={-1}
+            aria-hidden
+            onChange={(e) => void pilihBerkas(e.target.files?.[0])}
+          />
+        </Bagian>
+
+        <Bagian judul="Hapus Data" ikon={<Trash weight="bold" />} nada="peringatan">
+          <p className="tipe-keterangan text-teks-2">
+            Menghapus semua profil, sesi, skor, program, jadwal, dan pengaturan dari ponsel ini tanpa sisa.
+          </p>
+          <BigButton varian="garis" ikon={<Trash weight="bold" aria-hidden />} onClick={() => setKonfirmasi({ jenis: 'hapus' })}>
+            Hapus Semua Data Lokal
+          </BigButton>
+        </Bagian>
+      </Grup>
+
+      <Grup id="grup-lainnya" judul="Lainnya">
+        <nav aria-label="Tautan lain">
+          <BarisTautan to={PATHS.tentang} ikon={<Info weight="bold" />} judul="Tentang PULIHIN" sub="Status prototype, privasi, dan kredit." />
+        </nav>
+        {tampilUji && (
+          <Bagian judul="Untuk penguji" ikon={<Wrench weight="bold" />}>
+            <p className="tipe-keterangan text-teks-2">Alat teknis untuk memeriksa kamera dan penghitungan gerak. Tidak diperlukan untuk latihan.</p>
+            <Link to={PATHS.uji} className="flex min-h-[48px] items-center gap-2 font-bold text-primer underline underline-offset-4">
+              <Wrench size={22} weight="bold" aria-hidden />
+              Buka Mode Uji
+            </Link>
+          </Bagian>
+        )}
+      </Grup>
 
       <ConfirmDialog
         buka={konfirmasi?.jenis === 'reset'}
@@ -252,15 +273,57 @@ export default function Pengaturan() {
   );
 }
 
-function Bagian({ judul, aksi, children }: { judul: string; aksi?: ReactNode; children: ReactNode }) {
+/** Kelompok beberapa kartu pengaturan dengan label kecil di atasnya. */
+function Grup({ id, judul, children }: { id: string; judul: string; children: ReactNode }) {
   return (
-    <Card className="space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-[1.15rem] font-extrabold">{judul}</h2>
+    <section aria-labelledby={id} className="space-y-3">
+      <h2 id={id} className="px-1 tipe-label text-teks-2">
+        {judul}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+function Bagian({
+  judul,
+  ikon,
+  nada = 'primer',
+  aksi,
+  children,
+}: {
+  judul: string;
+  ikon: ReactNode;
+  nada?: 'primer' | 'peringatan';
+  aksi?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <Card className="space-y-4">
+      <div className="flex items-center gap-3">
+        <IkonBingkai nada={nada}>{ikon}</IkonBingkai>
+        <h3 className="min-w-0 flex-1 tipe-subjudul text-teks">{judul}</h3>
         {aksi}
       </div>
       {children}
     </Card>
+  );
+}
+
+/** Baris tautan bergaya daftar pengaturan: ubin ikon, judul, keterangan, panah. */
+function BarisTautan({ to, ikon, judul, sub }: { to: string; ikon: ReactNode; judul: string; sub: string }) {
+  return (
+    <Link
+      to={to}
+      className="group flex min-h-[64px] items-center gap-3 rounded-kartu border border-garis-halus bg-permukaan p-4 shadow-tipis transition-colors duration-(--durasi-cepat) hover:border-primer-garis hover:bg-primer-terang/50"
+    >
+      <IkonBingkai nada="primer">{ikon}</IkonBingkai>
+      <span className="min-w-0 flex-1">
+        <span className="block tipe-subjudul text-teks">{judul}</span>
+        <span className="block tipe-keterangan text-teks-2">{sub}</span>
+      </span>
+      <CaretRight size={24} weight="bold" className="shrink-0 text-primer" aria-hidden />
+    </Link>
   );
 }
 
@@ -271,11 +334,11 @@ function PilihanTombol({ terpilih, onPilih, children }: { terpilih: boolean; onP
       role="radio"
       aria-checked={terpilih}
       onClick={onPilih}
-      className={`flex min-h-[56px] w-full items-center gap-3 rounded-2xl border-2 px-3 py-2 text-left font-bold ${terpilih ? 'border-primer bg-primer-terang text-primer' : 'border-garis bg-white text-teks'}`}
+      className={`flex min-h-[56px] w-full items-center gap-3 rounded-kontrol border-2 px-3.5 py-2 text-left font-bold transition-colors duration-(--durasi-cepat) ${terpilih ? 'border-primer bg-primer-terang text-primer' : 'border-garis bg-permukaan text-teks hover:border-primer-garis hover:bg-primer-terang/40'}`}
     >
       <span
         aria-hidden
-        className={`grid size-6 shrink-0 place-items-center rounded-full border-2 ${terpilih ? 'border-primer' : 'border-teks-2/50'}`}
+        className={`grid size-6 shrink-0 place-items-center rounded-full border-2 ${terpilih ? 'border-primer bg-permukaan' : 'border-teks-2/60'}`}
       >
         {terpilih && <span className="size-3 rounded-full bg-primer" />}
       </span>
@@ -329,29 +392,31 @@ function FormJadwal({ awal, namaPasien, onTersimpan }: { awal: Schedule; namaPas
     }
   };
 
-  const kelasInput = 'min-h-[56px] w-[10.5rem] max-w-full shrink-0 rounded-2xl border-2 border-garis bg-white px-3 text-[1.15rem] font-bold text-teks focus:border-primer';
+  const kelasInput =
+    'mt-1.5 block min-h-[56px] w-full rounded-kontrol border-2 border-garis bg-permukaan px-3 text-[1.15rem] font-bold text-teks tabular focus:border-primer';
 
   return (
-    <Bagian judul="Jadwal Latihan">
-      <p className="text-[0.95rem] text-teks-2">
+    <Bagian judul="Jadwal Latihan" ikon={<Alarm weight="bold" />}>
+      <p className="tipe-keterangan text-teks-2">
         Jadwal harian untuk {namaPasien}: satu sesi gerak (latihan apa saja dari daftar hari ini) dan satu sesi bicara.
       </p>
-      <div className="space-y-3">
-        <label className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 font-bold">
+      {/* Dua kolom berdampingan; satu kolom bila Huruf Lebih Besar membuat kolom terlalu sempit. */}
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,7.5rem),1fr))] gap-3">
+        <label className="min-w-0 font-bold text-teks">
           Latihan gerak
           <input type="time" value={jamGerak} onChange={(e) => setJamGerak(e.target.value)} className={kelasInput} required />
         </label>
-        <label className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 font-bold">
+        <label className="min-w-0 font-bold text-teks">
           Latihan bicara
           <input type="time" value={jamAfasia} onChange={(e) => setJamAfasia(e.target.value)} className={kelasInput} required />
         </label>
       </div>
       <Toggle label="Notifikasi pengingat" keterangan="Muncul saat jam latihan tiba." aktif={notif} onUbah={(v) => void ubahNotif(v)} />
-      <p className="text-[0.95rem] text-teks-2">
+      <p className="tipe-keterangan text-teks-2">
         Notifikasi hanya muncul selama PULIHIN terbuka di ponsel. Pengingat saat aplikasi tertutup belum tersedia di prototype ini.
         Tanpa izin notifikasi, pengingat tetap tampil di Beranda.
       </p>
-      {catatanNotif && <p className="rounded-xl bg-primer-terang p-3 text-[0.95rem]">{catatanNotif}</p>}
+      {catatanNotif && <p className="rounded-kontrol bg-primer-terang p-3 tipe-keterangan text-teks">{catatanNotif}</p>}
       {galat && <p className="font-semibold text-teks">{galat}</p>}
       <BigButton onClick={() => void simpan()} disabled={sibuk}>
         {sibuk ? 'Menyimpan...' : 'Simpan Jadwal'}

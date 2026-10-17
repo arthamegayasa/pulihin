@@ -1,4 +1,5 @@
-import { CheckCircle, Clock, Copy, Fire, ShareNetwork } from '@phosphor-icons/react';
+import { CalendarCheck, ChatCircleText, CheckCircle, Clock, Copy, Fire, PersonArmsSpread, ShareNetwork } from '@phosphor-icons/react';
+import type { ReactNode } from 'react';
 import { BigButton } from '@/components/BigButton';
 import { Card } from '@/components/Card';
 import { KosongDemo } from '@/components/KosongDemo';
@@ -9,7 +10,8 @@ import { useToast } from '@/components/Toast';
 import { TrendChart } from '@/components/TrendChart';
 import { WeeklyChart } from '@/components/WeeklyChart';
 import { KartuRedFlag } from '@/components/klinisi/RedFlagKlinisi';
-import { teksTargetHarian } from '@/features/adherence/adherence';
+import { IkonBingkai, JudulBagian, KartuHero, KartuStat, KeadaanKosong, Kerangka, KerangkaGrup, KerangkaKartu } from '@/components/premium';
+import { teksTargetHarian, type PerbandinganSkor } from '@/features/adherence/adherence';
 import { useDataPasien, useLaporan, useSekarang } from '@/features/adherence/hooks';
 import { kataTren, teksRingkasanMingguan, type LaporanKepatuhan } from '@/features/adherence/laporan';
 import { statusProgramHariIni } from '@/features/adherence/program';
@@ -37,15 +39,34 @@ async function salinTeks(teks: string): Promise<boolean> {
   }
 }
 
-/** Untuk Keluarga (Bab 9.2): status hari ini, red flag, grafik mingguan, tren skor, streak, bagikan ringkasan. */
+/** Untuk Keluarga (Bab 9.2): red flag, status hari ini, angka utama, grafik mingguan, tren skor, streak, bagikan ringkasan. */
 export default function Pendamping() {
   const sekarang = useSekarang();
   const { data, loading, error } = useDataPasien();
   const lap = useLaporan(data, sekarang);
   const [toast, tampilkanToast] = useToast();
 
-  if (loading && !data) return <p className="py-10 text-center text-teks-2">Memuat ringkasan...</p>;
-  if (error) return <p className="py-10 text-center text-teks-2">Data latihan belum bisa dibaca. Coba muat ulang halaman.</p>;
+  if (loading && !data) {
+    return (
+      <KerangkaGrup label="Memuat ringkasan..." className="space-y-4">
+        <Kerangka bentuk="judul" className="h-[3rem]" />
+        <Kerangka bentuk="kotak" className="aspect-[16/9]" />
+        <div className="grid grid-cols-2 gap-3">
+          <Kerangka bentuk="kotak" className="h-[7.5rem]" />
+          <Kerangka bentuk="kotak" className="h-[7.5rem]" />
+        </div>
+        <KerangkaKartu baris={3} />
+      </KerangkaGrup>
+    );
+  }
+  if (error) {
+    return (
+      <section>
+        <PageHeader judul="Untuk Keluarga" />
+        <KeadaanKosong judul="Data latihan belum bisa dibaca">Coba muat ulang halaman. Data tetap tersimpan di ponsel ini.</KeadaanKosong>
+      </section>
+    );
+  }
   if (!data?.profile || !lap) {
     return (
       <section>
@@ -57,6 +78,7 @@ export default function Pendamping() {
 
   const { profile, program, schedule, sessions } = data;
   const teks = teksRingkasanMingguan(profile, lap);
+  const h = lap.hariIni;
 
   const salin = async () => {
     const ok = await salinTeks(teks);
@@ -76,95 +98,136 @@ export default function Pendamping() {
   };
 
   return (
-    <section className="space-y-4">
-      {/* Nama pasien di baris sendiri selebar layar: kolom judul tidak terjepit tombol Kembali/Beranda pada
-          Huruf Lebih Besar. Label Demo cukup satu, di kepala aplikasi (AppShell). */}
-      <div>
+    <section className="space-y-6">
+      <div className="space-y-4">
         <PageHeader judul="Untuk Keluarga" />
-        <p className="-mt-2 flex flex-wrap items-baseline gap-x-2 text-teks-2">
-          <span className="font-bold text-teks">{profile.namaSamaran}</span>
-          <span>
-            {profile.usia} tahun, {profile.keterangan.toLowerCase()}
-          </span>
-        </p>
-      </div>
 
-      {lap.redFlags.length > 0 && (
-        <section className="space-y-3" aria-label="Tanda perlu perhatian">
-          {lap.redFlags.map((f) => (
-            <KartuRedFlag key={f.id} flag={f} />
-          ))}
-        </section>
-      )}
+        {/* Tanda perlu perhatian selalu paling atas: hal pertama yang perlu diketahui keluarga. */}
+        {lap.redFlags.length > 0 && (
+          <section className="space-y-3" aria-label="Tanda perlu perhatian">
+            {lap.redFlags.map((f) => (
+              <KartuRedFlag key={f.id} flag={f} />
+            ))}
+          </section>
+        )}
+
+        {/* Teks hero sengaja pendek: di ponsel 360px kolom teksnya hanya ~10rem agar tidak menutupi ilustrasi. */}
+        <KartuHero
+          ilustrasi={{ jenis: 'momen', nama: 'keluarga' }}
+          label={profile.isDemo ? 'Pasien demo' : 'Pasien'}
+          judul={profile.namaSamaran}
+          sub={
+            <span className="flex items-start gap-1.5 font-bold text-teks">
+              {h.adaSesi ? (
+                <CheckCircle size={22} weight="fill" className="mt-[3px] shrink-0 text-sukses" aria-hidden />
+              ) : (
+                <Clock size={22} weight="bold" className="mt-[3px] shrink-0 text-teks-2" aria-hidden />
+              )}
+              <span className="min-w-0 text-balance">{h.adaSesi ? 'Sudah latihan hari ini' : 'Belum latihan hari ini'}</span>
+            </span>
+          }
+        />
+      </div>
 
       <StatusHariIni lap={lap} sessions={sessions} schedule={schedule} program={program} />
 
-      <Card>
-        <div className="flex items-baseline justify-between gap-2">
-          <h2 className="text-[1.15rem] font-extrabold">Sesi terjadwal 7 hari terakhir</h2>
-          <p className="text-[1.4rem] font-extrabold text-primer tabular">{lap.kepatuhan.persen}%</p>
+      <section aria-labelledby="judul-angka">
+        <JudulBagian id="judul-angka" judul="Minggu ini" sub="Dihitung dari 7 hari terakhir. Skor rata-rata, 0 sampai 100." />
+        {/* Dua kolom di ponsel normal; satu kolom bila Huruf Lebih Besar (8.5rem ikut membesar). */}
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,8.5rem),1fr))] gap-3">
+          <KartuStat
+            label="Kepatuhan"
+            nilai={`${lap.kepatuhan.persen}%`}
+            keterangan={`${lap.kepatuhan.selesai} dari ${lap.kepatuhan.target} sesi`}
+            ikon={<CalendarCheck weight="bold" />}
+            nada="primer"
+          />
+          <KartuStat
+            label="Beruntun"
+            nilai={lap.streak.saatIni}
+            satuan="hari"
+            keterangan={`terpanjang ${lap.streak.terpanjang} hari`}
+            ikon={<Fire weight="fill" />}
+            nada="aksen"
+          />
+          <StatSkor label="Skor gerak" skor={lap.skorGerak} />
+          <StatSkor label="Skor bicara" skor={lap.skorAfasia} />
         </div>
-        <p className="mb-2 text-[0.95rem] text-teks-2">
-          {lap.kepatuhan.selesai} dari {lap.kepatuhan.target} sesi terjadwal sudah dikerjakan. Jadwal harian:{' '}
-          {teksTargetHarian(lap.target)}.
-        </p>
+      </section>
+
+      <BagianGrafik
+        id="judul-mingguan"
+        judul="Sesi terjadwal 7 hari"
+        sub={`${lap.kepatuhan.selesai} dari ${lap.kepatuhan.target} sesi terjadwal sudah dikerjakan. Jadwal harian: ${teksTargetHarian(lap.target)}.`}
+      >
         <WeeklyChart data={lap.batang} />
-      </Card>
+      </BagianGrafik>
 
-      <Card>
-        <h2 className="text-[1.15rem] font-extrabold">Skor latihan 14 hari</h2>
-        <ul className="mb-3 mt-1 space-y-0.5 text-[0.95rem]">
-          <li>
-            Gerak minggu ini:{' '}
-            <span className="font-bold">{lap.skorGerak.sekarang === null ? 'belum ada' : `${lap.skorGerak.sekarang} (${labelSkor(lap.skorGerak.sekarang)})`}</span>
-            {lap.skorGerak.sekarang !== null && <span className="text-teks-2">, {kataTren(lap.skorGerak)}</span>}
-          </li>
-          <li>
-            Bicara minggu ini:{' '}
-            <span className="font-bold">{lap.skorAfasia.sekarang === null ? 'belum ada' : `${lap.skorAfasia.sekarang} (${labelSkor(lap.skorAfasia.sekarang)})`}</span>
-            {lap.skorAfasia.sekarang !== null && <span className="text-teks-2">, {kataTren(lap.skorAfasia)}</span>}
-          </li>
-        </ul>
+      <BagianGrafik id="judul-tren" judul="Tren skor 14 hari" sub="Rata-rata skor latihan per hari, 0 sampai 100.">
         <TrendChart data={lap.tren} />
-      </Card>
+      </BagianGrafik>
 
-      <Card>
-        <div className="mb-3 flex items-start gap-3">
-          <Fire size={32} weight="fill" className="shrink-0 text-aksen" aria-hidden />
-          <div>
-            <h2 className="text-[1.15rem] font-extrabold leading-tight">
-              {lap.streak.saatIni > 0 ? `${lap.streak.saatIni} hari berturut-turut berlatih` : 'Siap mulai lagi'}
+      <BagianGrafik
+        id="judul-streak"
+        judul={lap.streak.saatIni > 0 ? `${lap.streak.saatIni} hari berturut-turut` : 'Siap mulai lagi'}
+        sub={
+          lap.streak.saatIni === 0
+            ? 'Satu latihan ringan hari ini sudah cukup untuk memulai lagi.'
+            : lap.streak.perluLanjutHariIni
+              ? 'Hari ini belum latihan. Ajak lanjutkan hari ini.'
+              : 'Hari ini sudah latihan. Terima kasih sudah menemani.'
+        }
+      >
+        <StreakCalendar hari={lap.kalender} />
+      </BagianGrafik>
+
+      {/* Tombol selebar layar (di luar kartu) agar "Salin Ringkasan Mingguan" muat satu baris di 360px. */}
+      <section aria-labelledby="judul-bagikan" className="space-y-3">
+        <div className="flex items-start gap-3 rounded-kartu border border-primer-garis bg-primer-terang p-4">
+          <IkonBingkai nada="putih">
+            <ShareNetwork weight="bold" />
+          </IkonBingkai>
+          <div className="min-w-0">
+            <h2 id="judul-bagikan" className="tipe-subjudul text-teks">
+              Kirim ringkasan ke terapis
             </h2>
-            <p className="text-[0.95rem] text-teks-2">
-              {lap.streak.saatIni === 0
-                ? 'Satu latihan ringan hari ini sudah cukup untuk memulai lagi.'
-                : lap.streak.perluLanjutHariIni
-                  ? 'Hari ini belum latihan. Ajak lanjutkan hari ini.'
-                  : 'Hari ini sudah latihan. Terima kasih sudah menemani.'}{' '}
-              Paling lama {lap.streak.terpanjang} hari berturut-turut.
+            <p className="tipe-keterangan text-teks-2">
+              Berisi nama samaran, jumlah latihan, skor, dan tanda perlu perhatian minggu ini. Tidak ada yang dikirim sampai Anda
+              sendiri menempel atau membagikannya.
             </p>
           </div>
         </div>
-        <StreakCalendar hari={lap.kalender} />
-      </Card>
-
-      <div className="space-y-3 pt-1">
-        <BigButton onClick={() => void salin()} ikon={<Copy size={26} weight="bold" aria-hidden />}>
+        <BigButton onClick={() => void salin()} ikon={<Copy weight="bold" aria-hidden />}>
           Salin Ringkasan Mingguan
         </BigButton>
-        <BigButton varian="garis" onClick={() => void kirim()} ikon={<ShareNetwork size={26} weight="bold" aria-hidden />}>
+        <BigButton varian="garis" onClick={() => void kirim()} ikon={<ShareNetwork weight="bold" aria-hidden />}>
           Kirim lewat WhatsApp
         </BigButton>
-        <p className="text-[0.95rem] text-teks-2">
-          Ringkasan berisi nama samaran, jumlah latihan, skor, dan tanda perlu perhatian minggu ini. Tidak ada yang dikirim
-          sampai Anda sendiri menempel atau membagikannya.
-        </p>
-      </div>
+      </section>
 
       <NonDiagnosisNote />
       {toast}
     </section>
   );
+}
+
+/** Bagian grafik: judul + penjelasan di luar kartu, grafik di dalam kartu putih. */
+function BagianGrafik({ id, judul, sub, children }: { id: string; judul: string; sub: ReactNode; children: ReactNode }) {
+  return (
+    <section aria-labelledby={id}>
+      <JudulBagian id={id} judul={judul} sub={sub} />
+      {/* relative + overflow-hidden: tabel sr-only di dalam grafik tidak boleh melebarkan halaman ponsel. */}
+      <Card className="relative overflow-hidden">{children}</Card>
+    </section>
+  );
+}
+
+/** Skor rata-rata 7 hari; label pendek tanpa ikon agar muat satu baris di kartu setengah lebar (360px). */
+function StatSkor({ label, skor }: { label: string; skor: PerbandinganSkor }) {
+  if (skor.sekarang === null) {
+    return <KartuStat label={label} nilai={<span aria-label="belum ada">-</span>} keterangan="belum ada sesi minggu ini" />;
+  }
+  return <KartuStat label={label} nilai={skor.sekarang} keterangan={`${labelSkor(skor.sekarang)}, ${kataTren(skor)}`} />;
 }
 
 function StatusHariIni({
@@ -185,42 +248,48 @@ function StatusHariIni({
   const tuntas = daftar.filter((d) => d.selesai).length;
   const gerakSudah =
     daftar.length === 0 ? `Sudah, ${h.jumlahGerak} sesi` : `${tuntas > 0 ? 'Sudah' : 'Sudah dicoba'}, ${tuntas} dari ${daftar.length} latihan selesai`;
+
+  let sub: string;
+  if (h.adaSesi && h.terakhirAt !== null && h.skorTerakhir !== null) {
+    sub = `Terakhir pukul ${formatJam(h.terakhirAt)}, skor ${h.skorTerakhir} (${labelSkor(h.skorTerakhir)}).`;
+  } else if (terakhir) {
+    sub = `Latihan terakhir: ${namaHari(terakhir.tanggal)}, ${formatTanggalPendek(terakhir.tanggal)} pukul ${formatJam(terakhir.selesaiAt ?? terakhir.mulaiAt)}, skor ${terakhir.skor}.`;
+  } else {
+    sub = 'Belum ada latihan yang tercatat.';
+  }
+
   return (
-    <Card nada={h.adaSesi ? 'sukses' : 'putih'}>
-      <div className="flex items-start gap-3">
-        {h.adaSesi ? (
-          <CheckCircle size={32} weight="fill" className="shrink-0 text-sukses" aria-hidden />
-        ) : (
-          <Clock size={32} weight="bold" className="shrink-0 text-primer" aria-hidden />
-        )}
-        <div className="min-w-0 flex-1">
-          <h2 className="text-[1.15rem] font-extrabold leading-tight">{h.adaSesi ? 'Sudah latihan hari ini' : 'Belum latihan hari ini'}</h2>
-          {h.adaSesi && h.terakhirAt !== null && h.skorTerakhir !== null && (
-            <p className="text-[0.95rem]">
-              Terakhir pukul {formatJam(h.terakhirAt)}, skor {h.skorTerakhir} ({labelSkor(h.skorTerakhir)}).
-            </p>
-          )}
-          {!h.adaSesi && terakhir && (
-            <p className="text-[0.95rem]">
-              Latihan terakhir: {namaHari(terakhir.tanggal)}, {formatTanggalPendek(terakhir.tanggal)} pukul{' '}
-              {formatJam(terakhir.selesaiAt ?? terakhir.mulaiAt)}, skor {terakhir.skor}.
-            </p>
-          )}
-          {!h.adaSesi && !terakhir && <p className="text-[0.95rem]">Belum ada latihan yang tercatat.</p>}
-        </div>
+    <section aria-labelledby="judul-hari-ini">
+      <JudulBagian id="judul-hari-ini" judul="Hari ini" sub={sub} />
+      <Card>
+        <ul className="divide-y divide-garis-halus">
+          <BarisStatus
+            ikon={<PersonArmsSpread weight="bold" />}
+            judul="Latihan gerak"
+            selesai={h.gerakSelesai}
+            detail={h.gerakSelesai ? gerakSudah : `Belum${schedule ? `, jadwal pukul ${jamTampil(schedule.jamGerak)}` : ''}`}
+          />
+          <BarisStatus
+            ikon={<ChatCircleText weight="bold" />}
+            judul="Latihan bicara"
+            selesai={h.afasiaSelesai}
+            detail={h.afasiaSelesai ? 'Sudah' : `Belum${schedule ? `, jadwal pukul ${jamTampil(schedule.jamAfasia)}` : ''}`}
+          />
+        </ul>
+      </Card>
+    </section>
+  );
+}
+
+function BarisStatus({ ikon, judul, detail, selesai }: { ikon: ReactNode; judul: string; detail: string; selesai: boolean }) {
+  return (
+    <li className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+      <IkonBingkai nada={selesai ? 'sukses' : 'primer'}>{ikon}</IkonBingkai>
+      <div className="min-w-0 flex-1">
+        <p className="font-bold text-teks">{judul}</p>
+        <p className="tipe-keterangan text-teks-2">{detail}</p>
       </div>
-      <dl className="mt-3 grid grid-cols-2 gap-2 text-[0.95rem]">
-        <div className="rounded-xl bg-white/70 p-2">
-          <dt className="text-teks-2">Latihan gerak</dt>
-          <dd className="font-bold">{h.gerakSelesai ? gerakSudah : `Belum${schedule ? ` (jadwal ${jamTampil(schedule.jamGerak)})` : ''}`}</dd>
-        </div>
-        <div className="rounded-xl bg-white/70 p-2">
-          <dt className="text-teks-2">Latihan bicara</dt>
-          <dd className="font-bold">
-            {h.afasiaSelesai ? 'Sudah' : `Belum${schedule ? ` (jadwal ${jamTampil(schedule.jamAfasia)})` : ''}`}
-          </dd>
-        </div>
-      </dl>
-    </Card>
+      {selesai && <CheckCircle size={28} weight="fill" className="shrink-0 text-sukses" aria-hidden />}
+    </li>
   );
 }

@@ -11,11 +11,12 @@ import {
   Sparkle,
   Stop,
 } from '@phosphor-icons/react';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, type Ref, useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { BigButton } from '@/components/BigButton';
 import { Card } from '@/components/Card';
 import { PageHeader } from '@/components/PageHeader';
+import { IkonBingkai, Kerangka, KerangkaGrup, Lencana } from '@/components/premium';
 import { addSpeechAttempt, putSession } from '@/data/db';
 import { todayISO } from '@/lib/date';
 import { newId } from '@/lib/id';
@@ -23,6 +24,7 @@ import { getPrefs } from '@/lib/prefs';
 import { cancelSpeech, speak } from '@/lib/speak';
 import { PATHS } from '@/router-paths';
 import type { HasilKata, Session, SpeechAttempt } from '@/types';
+import { pramuatGambarKata, simpanGambarSesi } from '@/features/speech/asetKata';
 import { buatPenjagaUcapan, putarContohKata } from '@/features/speech/contohKata';
 import { GambarKata } from '@/features/speech/GambarKata';
 import { useModeMandiriDipilih } from '@/features/speech/modeMandiri';
@@ -148,6 +150,17 @@ export default function AfasiaLatihan() {
     [penjaga],
   );
 
+  // Ke-10 gambar sesi disimpan ke cache begitu sesi siap: latihan tetap bergambar bila sinyal hilang di tengah jalan.
+  useEffect(() => {
+    if (persiapan) simpanGambarSesi(persiapan.daftar.map((k) => k.id));
+  }, [persiapan]);
+
+  // Gambar kata berikutnya dimuat lebih dulu agar langsung tampil saat Kata Berikutnya ditekan.
+  const idBerikut = persiapan?.daftar[indeks + 1]?.id;
+  useEffect(() => {
+    if (idBerikut) pramuatGambarKata(idBerikut);
+  }, [idBerikut]);
+
   if (galatMuat) {
     return (
       <section>
@@ -160,9 +173,15 @@ export default function AfasiaLatihan() {
     return (
       <section>
         <PageHeader judul={judul} kembali={PATHS.afasia} />
-        <p className="text-teks-2" aria-live="polite">
-          Menyiapkan kata…
-        </p>
+        <KerangkaGrup label="Menyiapkan kata…" className="flex flex-col gap-3">
+          <Kerangka bentuk="teks" className="h-2" />
+          <div className="flex flex-col items-center gap-3 rounded-kartu border border-garis-halus bg-permukaan p-4 shadow-sedang">
+            <Kerangka bentuk="kotak" className="size-[min(11rem,24dvh)]" />
+            <Kerangka bentuk="judul" className="w-1/2" />
+            <Kerangka bentuk="tombol" className="w-[9rem]" />
+          </div>
+          <Kerangka bentuk="tombol" className="mt-6 h-[80px]" />
+        </KerangkaGrup>
       </section>
     );
   }
@@ -320,65 +339,68 @@ export default function AfasiaLatihan() {
       <PageHeader judul={judul} kembali={PATHS.afasia} />
 
       <div>
-        <div className="flex items-center justify-between gap-2 text-[1rem]">
-          <span className="font-bold whitespace-nowrap">
-            Kata {indeks + 1} dari {daftar.length}
+        <div className="flex items-center justify-between gap-2">
+          <span className="tipe-label whitespace-nowrap text-teks">
+            Kata <span className="tabular">{indeks + 1}</span> dari <span className="tabular">{daftar.length}</span>
           </span>
           {modeMandiri ? (
-            <span className="flex items-center gap-1.5 whitespace-nowrap text-teks-2">
-              <Hand size={20} weight="bold" aria-hidden />
+            <Lencana nada="primer" ikon={<Hand weight="bold" />}>
               Mandiri
-            </span>
+            </Lencana>
           ) : (
             <TitikPercobaan ke={percobaanKini} />
           )}
         </div>
+        {/* Satu ruas per kata: selesai = teal, kata sekarang = teal muda. */}
         <div
           role="progressbar"
           aria-label="Kemajuan sesi"
           aria-valuemin={0}
           aria-valuemax={daftar.length}
           aria-valuenow={selesaiKata}
-          className="mt-1.5 h-3 overflow-hidden rounded-full bg-primer-terang"
+          aria-valuetext={`${selesaiKata} dari ${daftar.length} kata selesai`}
+          className="mt-1.5 flex gap-1"
         >
-          <div
-            className="h-full rounded-full bg-primer motion-safe:transition-[width] motion-safe:duration-500"
-            style={{ width: `${(selesaiKata / daftar.length) * 100}%` }}
-          />
+          {daftar.map((k, i) => (
+            <span
+              key={k.id}
+              className={`h-2 flex-1 rounded-full transition-colors ${i < selesaiKata ? 'bg-primer' : i === indeks ? 'bg-primer-garis' : 'bg-cekung'}`}
+            />
+          ))}
         </div>
       </div>
 
-      {/* Saat umpan balik tampil, gambar mengecil dan sejajar kata agar tombol utama tetap terlihat tanpa menggulir. */}
-      <Card className="mt-2.5 flex flex-col items-center gap-2 py-3 text-center">
-        {/* flex-wrap: kata panjang turun ke bawah gambar, bukan terpotong di tengah kata. */}
-        <div
-          className={
-            ringkas
-              ? 'flex w-full flex-wrap items-center justify-center gap-x-3'
-              : 'flex w-full flex-col items-center gap-1'
-          }
-        >
+      {/* Siap: gambar besar, kata + Dengar sebaris di bawahnya. Saat umpan balik tampil, gambar mengecil ke samping
+          kata agar tombol utama tetap terlihat tanpa menggulir di layar 360x740. */}
+      <Card tingkat="naik" className="mt-2.5 p-3!">
+        <div className={`flex items-center ${ringkas ? 'gap-3.5' : 'flex-col gap-2.5'}`}>
           <GambarKata
+            key={kata.id}
             kata={kata}
-            ukuran={ringkas ? 'min(4.5rem, 9dvh)' : 'min(7rem, 14dvh)'}
-            className="motion-safe:transition-[font-size,width,height] motion-safe:duration-200"
+            prioritas
+            ukuran={ringkas ? 'min(6rem, 13dvh)' : 'min(10.5rem, 22dvh)'}
+            className="rounded-kontrol motion-safe:transition-[width,height] motion-safe:duration-(--durasi-lambat) motion-safe:ease-lembut"
           />
-          <p
-            className={`max-w-full font-extrabold leading-tight break-words ${ringkas ? 'text-[2.1rem]' : 'text-[2.5rem]'}`}
-            lang="id"
-            data-kata={kata.kata}
+          <div
+            className={`flex min-w-0 ${ringkas ? 'flex-1 flex-col items-start gap-1.5' : 'flex-wrap items-center justify-center gap-x-4 gap-y-1.5 self-stretch text-center'}`}
           >
-            {kata.kata}
-          </p>
+            <p
+              className={`max-w-full font-extrabold leading-[1.1] tracking-[-0.01em] break-words ${ringkas ? 'text-[min(2.25rem,10.5vw)]' : 'text-[min(2.75rem,13vw)]'}`}
+              lang="id"
+              data-kata={kata.kata}
+            >
+              {kata.kata}
+            </p>
+            <BigButton
+              varian="garis"
+              penuh={false}
+              onClick={dengarContoh}
+              ikon={<SpeakerHigh weight="bold" aria-hidden />}
+            >
+              Dengar
+            </BigButton>
+          </div>
         </div>
-        <BigButton
-          varian="garis"
-          penuh={false}
-          onClick={dengarContoh}
-          ikon={<SpeakerHigh size={26} weight="bold" aria-hidden />}
-        >
-          Dengar
-        </BigButton>
       </Card>
 
       <div aria-live="polite" className="mt-2.5 flex flex-col gap-2">
@@ -423,9 +445,9 @@ export default function AfasiaLatihan() {
               <button
                 type="button"
                 onClick={() => dengarRef.current?.stop()}
-                className="relative flex min-h-[80px] w-full items-center justify-center gap-3 rounded-2xl border-2 border-primer bg-primer-terang text-[1.25rem] font-bold text-primer"
+                className="relative flex min-h-[80px] w-full items-center justify-center gap-3 rounded-kontrol border-2 border-primer bg-primer-terang text-[1.25rem] font-bold text-primer shadow-tipis"
               >
-                <span aria-hidden className="absolute inset-0 animate-pulse rounded-2xl ring-4 ring-primer/25" />
+                <span aria-hidden className="absolute -inset-[3px] animate-pulse rounded-kontrol ring-4 ring-primer/25" />
                 <Stop size={28} weight="fill" aria-hidden />
                 <span>Selesai Bicara</span>
               </button>
@@ -475,8 +497,10 @@ export default function AfasiaLatihan() {
 /** "Percobaan" + titik per percobaan: ringkas agar baris kemajuan muat satu baris di 360px dengan huruf besar. */
 function TitikPercobaan({ ke }: { ke: number }) {
   return (
-    <span className="flex items-center gap-1.5 whitespace-nowrap text-teks-2">
-      <span aria-hidden>Percobaan</span>
+    <span className="flex items-center gap-2 whitespace-nowrap">
+      <span aria-hidden className="tipe-keterangan font-semibold text-teks-2">
+        Percobaan
+      </span>
       <span className="sr-only">
         Percobaan {ke} dari {MAKS}
       </span>
@@ -484,7 +508,7 @@ function TitikPercobaan({ ke }: { ke: number }) {
         {Array.from({ length: MAKS }, (_, i) => (
           <span
             key={i}
-            className={`size-2.5 rounded-full border-2 border-primer ${i < ke ? 'bg-primer' : 'bg-white'}`}
+            className={`size-3 rounded-full border-2 border-primer transition-colors ${i < ke ? 'bg-primer' : 'bg-permukaan'}`}
           />
         ))}
       </span>
@@ -524,18 +548,64 @@ function Muncul({ children }: { children: ReactNode }) {
   return <div ref={ref}>{children}</div>;
 }
 
+type NadaUmpan = 'putih' | 'primer' | 'sukses' | 'peringatan' | 'aksen';
+
+/**
+ * Satu bentuk untuk semua umpan balik: ubin ikon + judul + isi di kartu bernada hasil. Makna selalu tertulis
+ * (judul), warna dan ikon hanya penguat (Bab 12).
+ */
+function KartuUmpan({
+  nada,
+  ikon,
+  judul,
+  children,
+  refIkon,
+}: {
+  nada: NadaUmpan;
+  ikon: ReactNode;
+  judul: ReactNode;
+  children?: ReactNode;
+  refIkon?: Ref<HTMLSpanElement>;
+}) {
+  return (
+    <Card nada={nada} className="flex items-start gap-3 py-3">
+      <span ref={refIkon} className="inline-flex shrink-0">
+        <IkonBingkai nada={nada === 'putih' ? 'primer' : 'putih'}>{ikon}</IkonBingkai>
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[1.35rem] font-extrabold leading-tight text-teks">{judul}</p>
+        {children}
+      </div>
+    </Card>
+  );
+}
+
+/** Petunjuk suku kata sebagai keping yang mudah dibaca, mis. "ma-kan". */
+function SukuKata({ children }: { children: string }) {
+  return (
+    <strong
+      lang="id"
+      className="inline-block rounded-kecil border border-garis-halus bg-permukaan px-2.5 py-0.5 text-[1.25rem] leading-snug font-extrabold tracking-wide whitespace-nowrap text-teks"
+    >
+      {children}
+    </strong>
+  );
+}
+
 /** Kartu Benar: ikon melonjak dan cahaya hijau lembut sekali, sebagai hadiah kecil. */
 function KartuBenar({ children }: { children: ReactNode }) {
   const kartu = useAnimasiMuncul<HTMLDivElement>(BINAR, 900, 120);
   const ikon = useAnimasiMuncul<HTMLSpanElement>(LONJAK, 450);
   return (
     <div ref={kartu} className="rounded-kartu">
-      <Card nada="sukses" className="flex items-center gap-3">
-        <span ref={ikon} className="inline-flex shrink-0">
-          <CheckCircle size={44} weight="fill" className="text-sukses" aria-hidden />
-        </span>
-        <div className="min-w-0">{children}</div>
-      </Card>
+      <KartuUmpan
+        nada="sukses"
+        refIkon={ikon}
+        ikon={<CheckCircle weight="fill" className="text-sukses" />}
+        judul={<span className="text-[1.6rem] text-sukses">Benar!</span>}
+      >
+        {children}
+      </KartuUmpan>
     </div>
   );
 }
@@ -556,29 +626,27 @@ function PanelUmpan({
   if (fase.jenis === 'mendengar') {
     return (
       <Muncul>
-        <Card nada="primer" className="py-3 text-center">
-          <p className="flex items-center justify-center gap-2 font-semibold text-primer">
-            <Microphone size={24} weight="fill" className="shrink-0 animate-pulse" aria-hidden />
-            Mendengarkan… ucapkan katanya.
-          </p>
-          {fase.sementara && <p className="mt-1 text-[1.4rem] font-bold">“{fase.sementara}”</p>}
-        </Card>
+        <KartuUmpan
+          nada="primer"
+          ikon={<Microphone weight="fill" className="animate-pulse" />}
+          judul="Mendengarkan…"
+        >
+          <p className="mt-0.5 text-[1.05rem] text-teks-2">Ucapkan katanya sekarang.</p>
+          {fase.sementara && <p className="mt-0.5 text-[1.4rem] leading-tight font-bold">“{fase.sementara}”</p>}
+        </KartuUmpan>
       </Muncul>
     );
   }
 
   if (fase.jenis === 'galat') {
-    const ikon =
-      fase.galat.kode === 'izin' || fase.galat.kode === 'mikrofon' ? (
-        <MicrophoneSlash size={28} weight="bold" className="mt-0.5 shrink-0" aria-hidden />
-      ) : (
-        <ArrowCounterClockwise size={28} weight="bold" className="mt-0.5 shrink-0" aria-hidden />
-      );
+    const mikrofon = fase.galat.kode === 'izin' || fase.galat.kode === 'mikrofon';
     return (
       <Muncul>
-        <Card nada={fase.galat.kode === 'tidak-terdengar' ? 'putih' : 'peringatan'} className="flex gap-3">
-          {ikon}
-          <p className="min-w-0 text-[1.05rem]">
+        <Card nada={fase.galat.kode === 'tidak-terdengar' ? 'putih' : 'peringatan'} className="flex items-start gap-3 py-3">
+          <IkonBingkai nada={fase.galat.kode === 'tidak-terdengar' ? 'primer' : 'putih'}>
+            {mikrofon ? <MicrophoneSlash weight="bold" className="text-peringatan" /> : <ArrowCounterClockwise weight="bold" />}
+          </IkonBingkai>
+          <p className="min-w-0 self-center text-[1.05rem]">
             {tawarkanMandiri && !fase.galat.sarankanMandiri
               ? 'Masih belum terdengar. Coba lagi, atau pakai Mode Latihan Mandiri.'
               : fase.galat.pesan}
@@ -591,15 +659,13 @@ function PanelUmpan({
   if (fase.jenis === 'siap') {
     return (
       <p className="text-center text-[1.05rem] text-teks-2">
-        {modeMandiri
-          ? 'Ucapkan dengan keras.'
-          : 'Ucapkan nama gambar ini.'}
+        {modeMandiri ? 'Ucapkan nama gambar ini dengan keras.' : 'Ucapkan nama gambar ini.'}
       </p>
     );
   }
 
   const terdengar =
-    fase.teks && !modeMandiri ? <p className="mt-0.5 text-teks-2">Terdengar: “{fase.teks}”</p> : null;
+    fase.teks && !modeMandiri ? <p className="mt-1 text-teks-2">Terdengar: “{fase.teks}”</p> : null;
   const waktu =
     modeUji && fase.latensiMs !== null ? (
       <p className="mt-0.5 text-[0.95rem] text-teks-2">
@@ -610,8 +676,7 @@ function PanelUmpan({
   if (fase.hasil === 'benar') {
     return (
       <KartuBenar>
-        <p className="text-[1.6rem] font-extrabold leading-tight text-sukses">Benar!</p>
-        <p className="font-semibold">{fase.nomor === 1 ? 'Hebat, langsung tepat.' : 'Berhasil! Usaha Anda terbayar.'}</p>
+        <p className="mt-0.5 font-semibold">{fase.nomor === 1 ? 'Hebat, langsung tepat.' : 'Berhasil! Usaha Anda terbayar.'}</p>
         {terdengar}
         {waktu}
       </KartuBenar>
@@ -621,18 +686,23 @@ function PanelUmpan({
   if (fase.akhir) {
     return (
       <Muncul>
-        <Card nada="aksen" className="flex gap-3">
-          <Sparkle size={34} weight="fill" className="shrink-0 text-aksen" aria-hidden />
-          <div className="min-w-0">
-            <p className="text-[1.3rem] font-bold leading-tight">
-              {fase.hasil === 'hampir' ? 'Sudah hampir!' : 'Tidak apa-apa.'}
-            </p>
-            <p className="mt-0.5 text-[1.05rem]">
-              Kita ulang besok, ya. Suku katanya:{' '}
-              <strong className="whitespace-nowrap">{petunjuk}</strong>
-            </p>
-          </div>
-        </Card>
+        <KartuUmpan
+          nada="aksen"
+          ikon={<Sparkle weight="fill" className="text-aksen" />}
+          judul={
+            fase.hasil === 'hampir' ? (
+              'Sudah hampir!'
+            ) : (
+              <>
+                Tidak <span className="whitespace-nowrap">apa-apa.</span>
+              </>
+            )
+          }
+        >
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[1.05rem]">
+            Kita ulang besok, ya. <SukuKata>{petunjuk}</SukuKata>
+          </p>
+        </KartuUmpan>
       </Muncul>
     );
   }
@@ -640,35 +710,30 @@ function PanelUmpan({
   if (fase.hasil === 'hampir') {
     return (
       <Muncul>
-        <Card nada="peringatan" className="flex gap-3">
-          <CircleHalf size={34} weight="fill" className="shrink-0 text-peringatan" aria-hidden />
-          <div className="min-w-0">
-            <p className="text-[1.4rem] font-extrabold leading-tight">Hampir! Sedikit lagi.</p>
-            <p className="mt-0.5 text-[1.1rem]">
-              Coba ucapkan: <strong className="whitespace-nowrap text-[1.25rem]">{petunjuk}</strong>
-            </p>
-            {terdengar}
-            {waktu}
-          </div>
-        </Card>
+        <KartuUmpan
+          nada="peringatan"
+          ikon={<CircleHalf weight="fill" className="text-peringatan" />}
+          judul="Hampir! Sedikit lagi."
+        >
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[1.05rem]">
+            Coba ucapkan: <SukuKata>{petunjuk}</SukuKata>
+          </p>
+          {terdengar}
+          {waktu}
+        </KartuUmpan>
       </Muncul>
     );
   }
 
   return (
     <Muncul>
-      <Card className="flex gap-3">
-        <ArrowCounterClockwise size={32} weight="bold" className="shrink-0 text-primer" aria-hidden />
-        <div className="min-w-0">
-          <p className="text-[1.3rem] font-bold leading-tight">Coba lagi, ya.</p>
-          <p className="mt-0.5 text-[1.05rem]">
-            {modeMandiri ? 'Ucapkan pelan-pelan: ' : 'Dengar contohnya, lalu ucapkan: '}
-            <strong className="whitespace-nowrap">{petunjuk}</strong>
-          </p>
-          {terdengar}
-          {waktu}
-        </div>
-      </Card>
+      <KartuUmpan nada="putih" ikon={<ArrowCounterClockwise weight="bold" />} judul="Coba lagi, ya.">
+        <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[1.05rem]">
+          {modeMandiri ? 'Ucapkan pelan-pelan:' : 'Dengar, lalu ucapkan:'} <SukuKata>{petunjuk}</SukuKata>
+        </p>
+        {terdengar}
+        {waktu}
+      </KartuUmpan>
     </Muncul>
   );
 }

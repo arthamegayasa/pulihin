@@ -48,9 +48,9 @@ export function PhonePlacement({ def }: { def: Pick<ExerciseDefinition, 'posisi'
   };
 
   return (
-    <section className="rounded-kartu border border-garis bg-white p-4 shadow-tipis">
-      <h2 className="mb-3 flex items-center gap-2 text-[1.15rem] font-bold">
-        <DeviceMobile size={26} weight="bold" className="text-primer" aria-hidden />
+    <section className="rounded-kartu border border-garis-halus bg-permukaan p-4 shadow-tipis">
+      <h2 className="tipe-subjudul mb-3 flex items-center gap-2 text-teks">
+        <DeviceMobile size={24} weight="bold" className="shrink-0 text-primer" aria-hidden />
         Letak ponsel
       </h2>
       {/* Isi aliran figure = SVG + padding bawah (ruang setengah label jarak), jadi posisi label dihitung dari koordinat SVG. Pojok kiri atas gambar selalu kosong. */}

@@ -11,9 +11,9 @@ import type { Kata, KategoriKata } from './types';
  *   2 = ada gugus konsonan, ng/nc/mp, atau tiga suku kata (pin-tu, ta-ngan, jen-de-la),
  *   3 = empat suku kata atau lebih, atau dua kata (te-le-vi-si, si-kat gi-gi).
  *
- * Emoji dipilih dari Unicode ≤ 13.0 agar tampil di Android lama. Kata yang tidak punya emoji tepat
- * (meja, gelas, handuk, bantal, kipas, gula) digambar sebagai SVG oleh `GambarKata`; emoji di sini
- * hanya cadangan bila SVG tidak dipakai.
+ * Gambar utama tiap kata adalah ilustrasi `public/ilustrasi/kata/<id>.webp` (`GambarKata`). Emoji di sini
+ * hanya cadangan bila ilustrasi gagal dimuat (luring sebelum tersimpan di cache), dipilih dari Unicode ≤ 13.0
+ * agar tampil di Android lama.
  *
  * Kolom `suku` ditulis dengan tanda '-' antar suku kata dan spasi antar kata.
  */

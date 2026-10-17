@@ -1,15 +1,16 @@
-import { ArrowCounterClockwise, CheckCircle, House, Lightbulb, Target as IkonTarget, XCircle } from '@phosphor-icons/react';
+import { ArrowCounterClockwise, ArrowsClockwise, CheckCircle, House, Info, Lightbulb, Target as IkonTarget, Timer, XCircle } from '@phosphor-icons/react';
 import { Navigate, useParams } from 'react-router';
 import { BigLink } from '@/components/BigButton';
 import { NonDiagnosisNote } from '@/components/NonDiagnosisNote';
 import { PageHeader } from '@/components/PageHeader';
+import { IkonBingkai, KartuStat, Kerangka, KerangkaGrup } from '@/components/premium';
 import { ScoreRing } from '@/components/ScoreRing';
 import { getSession, listRepLogs } from '@/data/db';
 import { useLiveQuery } from '@/data/useLiveQuery';
+import { IlustrasiPotong } from '@/features/pasien/IlustrasiPotong';
 import { getExercise } from '@/features/pose/exerciseDefinitions';
 import { RENTANG_PENUH, urlDetail } from '@/features/pose/sesiParams';
 import { ambangAtasRentang, normalisasiRentang } from '@/features/pose/tracker';
-import { formatDurasi } from '@/lib/date';
 import { usePrefs } from '@/lib/prefs';
 import { clamp, labelSkor } from '@/lib/score';
 import { berandaUntukPeran, PATHS } from '@/router-paths';
@@ -37,9 +38,15 @@ export default function RingkasanSesi() {
 
   if (loading && !sesi) {
     return (
-      <section aria-busy="true">
+      <section>
         <PageHeader judul="Ringkasan Latihan" />
-        <div className="mx-auto size-[184px] animate-pulse rounded-full bg-primer-terang" />
+        <KerangkaGrup label="Memuat ringkasan latihan..." className="space-y-4">
+          <Kerangka bentuk="kotak" className="h-[236px] rounded-kartu" />
+          <div className="grid grid-cols-2 gap-3">
+            <Kerangka bentuk="kotak" className="h-[104px] rounded-kartu" />
+            <Kerangka bentuk="kotak" className="h-[104px] rounded-kartu" />
+          </div>
+        </KerangkaGrup>
       </section>
     );
   }
@@ -58,58 +65,86 @@ export default function RingkasanSesi() {
   const nama = def?.nama ?? 'Latihan gerak';
   const namaSisi = sesi.sisi === 'kanan' ? 'sisi kanan' : sesi.sisi === 'kiri' ? 'sisi kiri' : null;
   const rentang = normalisasiRentang(sesi.rentangPersen);
+  // Perayaan (ilustrasi) hanya bila sesi selesai dan target tercapai atau skor >= 60; selain itu tenang, tanpa perayaan.
+  const rayakan = sesi.selesai && (sesi.repetisiTercapai >= sesi.repetisiTarget || sesi.skor >= 60);
+  const durasi = Math.max(0, Math.round(sesi.durasiDetik));
+  const menit = Math.floor(durasi / 60);
+  const detik = durasi % 60;
 
   return (
     <section className="space-y-5">
       <PageHeader judul={judulHangat(sesi)} sub={`${nama}${namaSisi ? `, ${namaSisi}` : ''}`} kembali={false} />
 
       {!sesi.selesai && (
-        <p className="rounded-kartu border border-peringatan/30 bg-peringatan-terang p-4">
+        <p className="flex gap-3 rounded-kartu border border-peringatan/30 bg-peringatan-terang p-4">
+          <Info size={24} weight="bold" className="mt-0.5 shrink-0 text-peringatan" aria-hidden />
           Sesi ini terhenti sebelum selesai, jadi belum dihitung sebagai latihan hari ini.
         </p>
       )}
 
+      {/* Kartu utama: skor (dan ilustrasi perayaan bila pantas). Bertumpuk bila sempit (Huruf Lebih Besar). */}
+      <div
+        className={`@container overflow-hidden rounded-kartu border shadow-sedang ${rayakan ? 'border-primer-garis/70 bg-ilustrasi' : 'border-garis-halus bg-permukaan'}`}
+      >
+        <div className={`flex flex-col items-center gap-3 p-5 ${rayakan ? '@min-[17rem]:flex-row @min-[17rem]:justify-around @min-[17rem]:py-4 @min-[17rem]:pl-4 @min-[17rem]:pr-2' : ''}`}>
+          <div className="flex flex-col items-center gap-1">
+            <ScoreRing skor={sesi.skor} ukuran={rayakan ? 150 : 172} />
+            <p className="tipe-keterangan text-teks-2">Skor latihan</p>
+          </div>
+          {rayakan ? (
+            <IlustrasiPotong
+              ilustrasi={{ jenis: 'momen', nama: 'selebrasi' }}
+              potong={{ x: 90, y: 60, sisi: 500 }}
+              prioritas
+              className="order-first size-[136px] rounded-kontrol @min-[17rem]:order-none"
+            />
+          ) : (
+            <p className="tipe-isi max-w-[22rem] text-center text-teks">Pelan pelan saja. Setiap latihan tetap berarti, coba lagi saat Anda siap.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <KartuStat
+          label="Repetisi"
+          nilai={sesi.repetisiTercapai}
+          satuan={`dari ${sesi.repetisiTarget}`}
+          nada={sesi.repetisiTercapai >= sesi.repetisiTarget ? 'sukses' : 'putih'}
+          ikon={sesi.repetisiTercapai >= sesi.repetisiTarget ? <CheckCircle weight="fill" /> : <ArrowsClockwise weight="bold" />}
+        />
+        <KartuStat
+          label="Durasi"
+          nilai={menit > 0 ? menit : detik}
+          satuan={menit > 0 ? `menit${detik > 0 ? ` ${detik} detik` : ''}` : 'detik'}
+          ikon={<Timer weight="bold" />}
+        />
+      </div>
+
       {rentang < RENTANG_PENUH && (
         <p className="flex items-center gap-3 rounded-kartu border border-primer-garis bg-primer-terang p-4 font-bold">
-          <IkonTarget size={26} weight="bold" className="shrink-0 text-primer" aria-hidden />
+          <IkonTarget size={24} weight="bold" className="shrink-0 text-primer" aria-hidden />
           Target rentang dari terapis: {rentang}%
         </p>
       )}
 
-      <div className="rounded-kartu border border-garis bg-white p-5 shadow-tipis">
-        <ScoreRing skor={sesi.skor} />
-        <p className="mt-1 text-center text-teks-2">Skor latihan</p>
-        <dl className="mt-5 grid grid-cols-2 gap-3 text-center">
-          <div className="rounded-xl bg-primer-terang p-3">
-            <dt className="text-[0.95rem] text-teks-2">Repetisi</dt>
-            <dd className="tabular text-[1.6rem] font-extrabold text-teks">
-              {sesi.repetisiTercapai}
-              <span className="text-[1.1rem] font-bold text-teks-2"> / {sesi.repetisiTarget}</span>
-            </dd>
-          </div>
-          <div className="rounded-xl bg-primer-terang p-3">
-            <dt className="text-[0.95rem] text-teks-2">Durasi</dt>
-            <dd className="text-[1.25rem] font-extrabold leading-tight text-teks">{formatDurasi(sesi.durasiDetik)}</dd>
-          </div>
-        </dl>
-      </div>
-
       {sesi.skorKomponen && (
-        <section className="rounded-kartu border border-garis bg-white p-5 shadow-tipis">
-          <h2 className="mb-3 text-[1.15rem] font-bold">Rincian skor</h2>
-          <ul className="space-y-4">
+        <section aria-labelledby="judul-rincian" className="rounded-kartu border border-garis-halus bg-permukaan p-4 shadow-tipis">
+          <h2 id="judul-rincian" className="tipe-subjudul mb-3 text-teks">
+            Rincian skor
+          </h2>
+          <ul className="space-y-3.5">
             {KOMPONEN.map(({ kunci, label }) => {
               const nilai = Math.round(clamp(sesi.skorKomponen![kunci], 0, 100));
               return (
                 <li key={kunci}>
                   <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                    <span className="whitespace-nowrap font-semibold">{label}</span>
+                    <span className="whitespace-nowrap font-semibold text-teks">{label}</span>
                     <span className="ml-auto font-bold text-primer">
-                      {labelSkor(nilai)} <span className="tabular text-teks-2">· {nilai}</span>
+                      {labelSkor(nilai)} <span className="tabular font-semibold text-teks-2">· {nilai}</span>
                     </span>
                   </div>
-                  <div className="mt-1.5 h-3 overflow-hidden rounded-full bg-primer-terang" aria-hidden>
-                    <div className="h-full rounded-full bg-primer" style={{ width: `${nilai}%` }} />
+                  <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-cekung" aria-hidden>
+                    <div className="h-full rounded-full bg-primer inset-shadow-sorot" style={{ width: `${nilai}%` }} />
                   </div>
                 </li>
               );
@@ -122,10 +157,12 @@ export default function RingkasanSesi() {
 
       {sesi.saran && (
         <div className="flex gap-3 rounded-kartu border border-aksen/30 bg-aksen-terang p-4">
-          <Lightbulb size={28} weight="fill" className="mt-0.5 shrink-0 text-aksen" aria-hidden />
-          <div>
-            <p className="font-bold">Saran untuk sesi berikutnya</p>
-            <p>{sesi.saran}</p>
+          <IkonBingkai nada="putih">
+            <Lightbulb weight="fill" className="text-aksen" />
+          </IkonBingkai>
+          <div className="min-w-0">
+            <p className="tipe-label text-aksen-teks">Saran untuk sesi berikutnya</p>
+            <p className="mt-0.5 text-teks">{sesi.saran}</p>
           </div>
         </div>
       )}
@@ -174,9 +211,9 @@ function StripRepetisi({
   const tinggiAmbang = (ambangAtas / skalaMaks) * 100;
   const label = satuan === '°' ? 'Sudut puncak tiap gerakan' : 'Nilai puncak tiap gerakan';
   return (
-    <section className="rounded-kartu border border-garis bg-white p-5 shadow-tipis">
-      <h2 className="text-[1.15rem] font-bold">{label}</h2>
-      <p className="mb-3 text-[0.95rem] text-teks-2">
+    <section className="rounded-kartu border border-garis-halus bg-permukaan p-4 shadow-tipis">
+      <h2 className="tipe-subjudul text-teks">{label}</h2>
+      <p className="tipe-keterangan mb-3 mt-0.5 text-teks-2">
         Diukur kamera: {terhitung} dari {logs.length} gerakan terhitung. Garis putus-putus = batas hitung{' '}
         {Math.round(ambangAtas)}
         {satuan}
@@ -186,7 +223,7 @@ function StripRepetisi({
         <ol className="relative flex min-w-max items-end gap-1.5 pt-6" aria-label={label}>
           {/* Di bawah batang: baris nomor (mt-1 + h-6) dan baris ikon (h-6) = 3,25rem. */}
           <li
-            className="pointer-events-none absolute inset-x-0 border-t-2 border-dashed border-aksen/70"
+            className="pointer-events-none absolute inset-x-0 z-10 border-t-2 border-dashed border-aksen/80"
             style={{ bottom: `calc(3.25rem + ${tinggiAmbang / 100} * 8rem)` }}
             aria-hidden
           />
@@ -202,9 +239,9 @@ function StripRepetisi({
                   {nilai}
                   {satuan}
                 </span>
-                <div className="flex h-32 w-full items-end" aria-hidden>
+                <div className="flex h-32 w-full items-end rounded-t-[8px] bg-cekung/70" aria-hidden>
                   <div
-                    className={`w-full rounded-t-md ${l.dihitung ? 'bg-primer' : 'border-2 border-dashed border-teks-2/60 bg-primer-terang'}`}
+                    className={`w-full rounded-t-[8px] ${l.dihitung ? 'bg-primer inset-shadow-sorot' : 'border-2 border-dashed border-teks-2/60 bg-primer-terang'}`}
                     style={{ height: `${Math.max(4, (clamp(l.sudutPuncak, 0, skalaMaks) / skalaMaks) * 100)}%` }}
                   />
                 </div>
@@ -225,12 +262,12 @@ function StripRepetisi({
       </div>
       <ul className="mt-2 flex flex-col gap-1 text-[0.95rem]" aria-hidden>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3.5 shrink-0 rounded-sm bg-primer" />
+          <span className="inline-block size-3.5 shrink-0 rounded-[4px] bg-primer" />
           <CheckCircle size="1.25rem" weight="fill" className="shrink-0 text-primer" />
           Terhitung
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3.5 shrink-0 rounded-sm border-2 border-dashed border-teks-2/60 bg-primer-terang" />
+          <span className="inline-block size-3.5 shrink-0 rounded-[4px] border-2 border-dashed border-teks-2/60 bg-primer-terang" />
           <XCircle size="1.25rem" weight="bold" className="shrink-0 text-teks-2" />
           Belum terhitung (terlalu cepat atau kurang jauh)
         </li>

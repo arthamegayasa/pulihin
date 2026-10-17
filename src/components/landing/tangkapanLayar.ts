@@ -15,32 +15,32 @@ const UKURAN = { lebar: 824, tinggi: 1830 } as const;
 export const LAYAR = {
   beranda: {
     src: '/landing/beranda.webp',
-    alt: 'Tangkapan layar Beranda pasien: sapaan untuk Pak Budi, pengingat latihan gerak, daftar Latihan Hari Ini dengan status tiap latihan, dan tombol besar Mulai: Tekuk Siku.',
+    alt: 'Tangkapan layar Beranda pasien: kartu sapaan "Selamat pagi, Pak Budi" dengan ilustrasi, daftar Latihan Hari Ini dengan gambar peraga 3D dan status tiap latihan, tombol Mulai: Tekuk Siku, dan tombol Untuk Keluarga.',
     ...UKURAN,
   },
   ringkasan: {
     src: '/landing/ringkasan.webp',
-    alt: 'Tangkapan layar Ringkasan Sesi: ucapan terima kasih, skor latihan 67 berlabel Baik, repetisi 7 dari 8, durasi, dan rincian skor.',
+    alt: 'Tangkapan layar Ringkasan Sesi: skor latihan 67 berlabel Baik dengan ilustrasi selebrasi, repetisi 7 dari 8, durasi 38 detik, dan rincian skor.',
     ...UKURAN,
   },
   afasia: {
     src: '/landing/afasia-kata.webp',
-    alt: 'Tangkapan layar Latihan Bicara: gambar dan tulisan kata "buku", tombol Dengar, dan tombol Sebutkan Kata.',
+    alt: 'Tangkapan layar Latihan Bicara: gambar ilustrasi dan tulisan kata "sabun", tombol Dengar, dan tombol Sebutkan Kata.',
     ...UKURAN,
   },
   keluarga: {
     src: '/landing/keluarga.webp',
-    alt: 'Tangkapan layar Untuk Keluarga: penanda "Sudah 3 hari belum latihan", status latihan hari ini, dan grafik sesi terjadwal 7 hari terakhir.',
+    alt: 'Tangkapan layar Untuk Keluarga: penanda Penting "Sudah 3 hari belum latihan", kartu Pak Budi dengan status belum latihan hari ini, dan status latihan gerak serta bicara hari ini.',
     ...UKURAN,
   },
   detail: {
     src: '/landing/detail-latihan.webp',
-    alt: 'Tangkapan layar Detail Latihan "Angkat Lengan ke Depan": video peraga 3D dengan otot bahu yang bekerja ditandai oranye, pilihan sisi, dan tombol Mulai dengan Kamera.',
+    alt: 'Tangkapan layar Detail Latihan "Angkat Lengan ke Depan": pilihan sisi Kanan/Kiri, contoh gerakan peraga 3D dalam dua posisi (Mulai dan Puncak) dengan otot bahu ditandai oranye, dan tombol Mulai dengan Kamera.',
     ...UKURAN,
   },
   klinisi: {
     src: '/landing/klinisi.webp',
-    alt: 'Tangkapan layar Dashboard Terapis di laptop: daftar pasien contoh dengan kepatuhan 7 hari, hari beruntun, latihan terakhir, rata-rata skor, dan penanda perlu perhatian.',
+    alt: 'Tangkapan layar Dashboard Terapis di laptop: ringkasan minggu ini (3 pasien, 1 perlu perhatian, kepatuhan rata-rata), lalu daftar pasien contoh dengan kepatuhan 7 hari, hari beruntun, latihan terakhir, rata-rata skor, dan penanda perlu perhatian.',
     lebar: 1280,
     tinggi: 800,
   },
