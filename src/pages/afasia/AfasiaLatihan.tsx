@@ -70,7 +70,7 @@ export default function AfasiaLatihan() {
   const [params] = useSearchParams();
   const kategoriParam = params.get('kategori');
   const kategori = isKategoriKata(kategoriParam) ? kategoriParam : null;
-  const judul = kategori ? (getKategori(kategori)?.nama ?? 'Latihan Bicara') : 'Latihan Hari Ini';
+  const judul = kategori ? (getKategori(kategori)?.nama ?? 'Latihan Bicara') : 'Latihan Bicara Hari Ini';
   // Info teknis (latensi penilaian) hanya untuk penguji: tambahkan ?uji=1 di alamat.
   const modeUji = params.get('uji') === '1';
 
@@ -88,7 +88,7 @@ export default function AfasiaLatihan() {
   const [galatSimpan, setGalatSimpan] = useState<string | null>(null);
   const [penjaga] = useState(buatPenjagaUcapan);
   // Berapa kali berturut-turut ucapan tidak terdengar; setelah dua kali, tawarkan Mode Latihan Mandiri sebagai jalan keluar
-  // (mis. layanan pengenal suara diam tanpa hasil maupun galat).
+  // (mis. layanan pengenalan suara diam tanpa hasil maupun galat).
   const [diamBeruntun, setDiamBeruntun] = useState(0);
 
   const catatanRef = useRef<PercobaanRingkas[]>([]);

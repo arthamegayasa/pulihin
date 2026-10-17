@@ -3,17 +3,18 @@ import { useState } from 'react';
 import { getExercise } from '@/features/pose/exerciseDefinitions';
 import { asetPeraga } from '@/features/pose/asetPose';
 
-/** Poster peraga 3D berukuran 720x720 (`public/peraga/<id>-mulai.webp`, satu cache dengan VideoPeraga). */
-const SISI_POSTER = 720;
+/** Gambar kecil peraga 3D berukuran 256x256 (`public/peraga/<id>-kartu.webp`, dibuat `node peraga3d/buat.mjs <id> --kartu`). */
+const SISI_KARTU = 256;
 
 /**
- * Gambar kecil latihan dari poster peraga 3D (posisi awal). Dekoratif: nama latihan selalu tertulis di sebelahnya.
- * Ukuran ditentukan `className` (mis. `size-[56px]`); gambar sedikit diperbesar agar sosok mengisi bingkai.
- * Lazy bawaan; berkas gagal (luring sebelum tersimpan di cache) → ubin ikon tenang seukuran bingkai.
+ * Gambar kecil latihan: peraga 3D pada pose puncak (otot kerja menyala), dibingkai rapat pada bagian tubuh yang
+ * bergerak, di atas latar rata warna ilustrasi (#EEF4F2) sehingga menyatu dengan ubin ilustrasi lain. Dekoratif: nama
+ * latihan selalu tertulis di sebelahnya. Ukuran ditentukan `className` (mis. `size-[56px]`). Di-precache service
+ * worker (tersedia luring); berkas gagal → ubin ikon tenang seukuran bingkai.
  */
 export function PosterLatihan({ latihanId, className = 'size-[56px]', prioritas = false }: { latihanId: string; className?: string; prioritas?: boolean }) {
   const def = getExercise(latihanId);
-  const src = def ? asetPeraga(def.animasiAtauVideo).mulai : null;
+  const src = def ? asetPeraga(def.animasiAtauVideo).kartu : null;
   const [gagal, setGagal] = useState<string | null>(null);
   const bingkai = `relative block shrink-0 overflow-hidden rounded-[12px] ${className}`;
 
@@ -25,16 +26,16 @@ export function PosterLatihan({ latihanId, className = 'size-[56px]', prioritas 
     );
   }
   return (
-    <span aria-hidden className={`${bingkai} bg-cekung`}>
+    <span aria-hidden className={`${bingkai} bg-ilustrasi`}>
       <img
         src={src}
-        width={SISI_POSTER}
-        height={SISI_POSTER}
+        width={SISI_KARTU}
+        height={SISI_KARTU}
         alt=""
         loading={prioritas ? 'eager' : 'lazy'}
         decoding="async"
         draggable={false}
-        className="size-full scale-[1.22] object-cover select-none"
+        className="size-full object-cover select-none"
         onError={() => setGagal(src)}
       />
     </span>

@@ -32,7 +32,7 @@ export function Hero() {
             </BigLink>
             <a
               href="#cara-kerja"
-              className="inline-flex min-h-[48px] items-center font-bold text-primer underline decoration-2 underline-offset-4 hover:text-primer-tua"
+              className="inline-flex min-h-[56px] items-center font-bold text-primer underline decoration-2 underline-offset-4 hover:text-primer-tua"
             >
               Lihat cara kerja
             </a>

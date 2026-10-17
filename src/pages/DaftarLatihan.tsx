@@ -27,7 +27,7 @@ export default function DaftarLatihan() {
               Latihan inti
             </span>
           }
-          sub="Hitungan kameranya paling teliti diuji. Cocok untuk mulai."
+          sub="Hitungan kamera paling banyak diuji. Cocok untuk memulai."
         />
         <ul className="space-y-2.5">
           {INTI.map((def) => (
@@ -59,7 +59,7 @@ function KartuLatihan({ def, prioritas = false }: { def: ExerciseDefinition; pri
           <PosterLatihan latihanId={def.id} prioritas={prioritas} className="size-[56px]" />
           {/* Bintang = latihan inti; artinya tertulis di judul bagian "Latihan inti" (bentuk, bukan warna saja). */}
           {def.inti && (
-            <span aria-hidden className="absolute -left-1 -top-1 grid size-[26px] place-items-center rounded-[9px] border border-aksen/35 bg-aksen-terang text-aksen shadow-tipis">
+            <span aria-hidden className="absolute -bottom-1 -left-1 grid size-[26px] place-items-center rounded-[9px] border border-aksen/35 bg-aksen-terang text-aksen shadow-tipis">
               <Star size={16} weight="fill" />
             </span>
           )}

@@ -20,7 +20,7 @@ export interface Kata {
   sukuKata: string[];
   /**
    * Ejaan lain yang juga diterima sebagai Benar (bentuk tidak baku yang lazim atau keluaran
-   * pengenal suara), mis. ['mie'] untuk 'mi'. Opsional.
+   * pengenalan suara), mis. ['mie'] untuk 'mi'. Opsional.
    */
   varian?: string[];
 }

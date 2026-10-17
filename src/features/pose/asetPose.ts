@@ -31,10 +31,17 @@ export interface AsetPeraga {
   video: string;
   mulai: string;
   puncak: string;
+  /** Gambar kecil daftar latihan 256x256 (pose puncak, latar ilustrasi #EEF4F2); di-precache service worker. */
+  kartu: string;
 }
 
 export function asetPeraga(basePath: string): AsetPeraga {
-  return { video: `${basePath}.mp4`, mulai: `${basePath}-mulai.webp`, puncak: `${basePath}-puncak.webp` };
+  return {
+    video: `${basePath}.mp4`,
+    mulai: `${basePath}-mulai.webp`,
+    puncak: `${basePath}-puncak.webp`,
+    kartu: `${basePath}-kartu.webp`,
+  };
 }
 
 /** Penghemat Data aktif atau jaringan 2G: jangan mengunduh besar atau memutar video otomatis. */

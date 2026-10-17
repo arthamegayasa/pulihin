@@ -81,7 +81,7 @@ export function Teknologi() {
             href="https://github.com/arthamegayasa/pulihin#hasil-uji"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 inline-flex min-h-12 items-center gap-2 font-bold text-primer underline underline-offset-4"
+            className="mt-6 inline-flex min-h-[56px] items-center gap-2 font-bold text-primer underline underline-offset-4"
           >
             Lihat rincian hasil uji di GitHub
             <ArrowSquareOut size={20} weight="bold" aria-hidden />

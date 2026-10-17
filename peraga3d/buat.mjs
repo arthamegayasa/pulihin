@@ -1,12 +1,16 @@
 // Satu perintah per latihan: bangun adegan, render, encode aset aplikasi, lembar tinjauan.
 //
 //   node peraga3d/buat.mjs <id> [--uji] [--dasar] [--lewati-render] [--sampel N]
+//   node peraga3d/buat.mjs <id> --kartu [--lewati-render] [--sampel N]
 //
 //   <id>              id latihan (src/features/pose/exerciseDefinitions.ts), modul peraga3d/latihan/<id_>.py
 //   --uji             render cepat (sampel rendah, hanya frame strip/tengah/puncak + close-up otot) -> out/<id>/uji/,
 //                     tanpa menulis public/peraga
 //   --dasar           bangun ulang karakter dasar (out/dasar.blend; otomatis bila belum ada)
 //   --lewati-render   pakai frame yang sudah ada di out/<id>/frames (encode ulang saja)
+//   --kartu           gambar kecil daftar latihan dari adegan yang sudah ada (out/<id>/adegan.blend): satu frame
+//                     puncak, pendar menyala, latar rata #EEF4F2, bingkai rapat (peraga3d/kartu.py)
+//                     -> public/peraga/<id>-kartu.webp 256x256 <= 15 KB; video & poster tidak disentuh
 //
 // Keluaran penuh (kontrak src/features/pose/VideoPeraga.tsx):
 //   public/peraga/<id>.mp4          720x720, 30 fps, satu siklus loop mulus, H.264 main yuv420p faststart tanpa audio, <= 400 KB
@@ -14,6 +18,7 @@
 //   public/peraga/<id>-puncak.webp  tengah fase tahan, <= 40 KB
 // Tinjauan: out/<id>/lembar.png (mulai | tengah naik | puncak | close-up pendar), out/<id>/strip.png (8 frame),
 //           out/<id>/laporan.json (ukuran, crf/kualitas terpilih, waktu render, pemeriksaan pendar).
+// Kartu: out/<id>/kartu/kartu.png (512 px), kartu.json (kamera, latar terukur), laporan-kartu.json.
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -24,10 +29,12 @@ const PUBLIK = join(DIR, '..', 'public', 'peraga');
 const FONT = 'C\\:/Windows/Fonts/segoeui.ttf';
 const BATAS_MP4 = 400 * 1024;
 const BATAS_WEBP = 40 * 1024;
+const BATAS_KARTU = 15 * 1024;
+const SISI_KARTU = 256;
 
 const argv = process.argv.slice(2);
 const id = argv.find((a) => !a.startsWith('--'));
-if (!id) throw new Error('pakai: node peraga3d/buat.mjs <id> [--uji] [--dasar] [--lewati-render] [--sampel N]');
+if (!id) throw new Error('pakai: node peraga3d/buat.mjs <id> [--uji | --kartu] [--dasar] [--lewati-render] [--sampel N]');
 const uji = argv.includes('--uji');
 const sampelIdx = argv.indexOf('--sampel');
 const sampel = sampelIdx >= 0 ? ['--sampel', argv[sampelIdx + 1]] : [];
@@ -41,7 +48,13 @@ const kb = (p) => +(statSync(p).size / 1024).toFixed(1);
 
 const t0 = Date.now();
 const dasar = join(DIR, 'out', 'dasar.blend');
-if (argv.includes('--dasar') || !existsSync(dasar)) blender('-P', join(DIR, 'dasar.py'));
+if (argv.includes('--dasar') || (!existsSync(dasar) && !(argv.includes('--kartu') && existsSync(join(AKAR, 'adegan.blend'))))) {
+  blender('-P', join(DIR, 'dasar.py'));
+}
+if (argv.includes('--kartu')) {
+  buatKartu();
+  process.exit(0);
+}
 if (!argv.includes('--lewati-render')) {
   blender(dasar, '-P', join(DIR, 'adegan.py'), '--', '--id', id);
   blender(join(AKAR, 'adegan.blend'), '-P', join(DIR, 'render.py'), '--', '--id', id, ...(uji ? ['--uji'] : []), ...sampel);
@@ -132,3 +145,35 @@ if (!uji) {
 laporan.totalDetikPipa = Math.round((Date.now() - t0) / 1000);
 writeFileSync(join(AKAR, uji ? 'laporan-uji.json' : 'laporan.json'), JSON.stringify(laporan, null, 2));
 console.log(JSON.stringify(laporan, null, 2));
+
+function buatKartu() {
+  const KR = join(AKAR, 'kartu');
+  if (!argv.includes('--lewati-render')) {
+    if (!existsSync(join(AKAR, 'adegan.blend'))) blender(dasar, '-P', join(DIR, 'adegan.py'), '--', '--id', id);
+    blender(join(AKAR, 'adegan.blend'), '-P', join(DIR, 'kartu.py'), '--', '--id', id, ...sampel);
+  }
+  mkdirSync(PUBLIK, { recursive: true });
+  const keluar = join(PUBLIK, `${id}-kartu.webp`);
+  let q = 90;
+  for (;; q -= 4) {
+    ffmpeg(
+      '-i', join(KR, 'kartu.png'), '-vf', `scale=${SISI_KARTU}:${SISI_KARTU}:flags=lanczos`,
+      '-c:v', 'libwebp', '-quality', String(q), '-compression_level', '6', '-preset', 'picture', keluar,
+    );
+    if (statSync(keluar).size <= BATAS_KARTU || q <= 40) break;
+  }
+  if (statSync(keluar).size > BATAS_KARTU) throw new Error(`${keluar} melebihi 15 KB`);
+  // Verifikasi: ukuran 256x256 dan sudut kiri atas = latar #EEF4F2 (selisih <= 3 per kanal).
+  const probe = JSON.parse(execFileSync('ffprobe', ['-v', 'error', '-show_streams', '-of', 'json', keluar], { encoding: 'utf8' }));
+  const { width, height } = probe.streams[0];
+  const sudut = execFileSync('ffmpeg', ['-v', 'error', '-i', keluar, '-vf', 'crop=4:4:2:2,scale=1:1:flags=area', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-']);
+  const latar = [...sudut.subarray(0, 3)];
+  const selisih = Math.max(...latar.map((c, i) => Math.abs(c - [0xee, 0xf4, 0xf2][i])));
+  if (width !== SISI_KARTU || height !== SISI_KARTU || selisih > 3) {
+    throw new Error(`kartu tidak sesuai kontrak: ${width}x${height}, latar ${latar}`);
+  }
+  const laporan = { id, kb: kb(keluar), kualitas: q, ukuran: `${width}x${height}`, latarSudut: latar,
+    render: JSON.parse(readFileSync(join(KR, 'kartu.json'), 'utf8')) };
+  writeFileSync(join(AKAR, 'laporan-kartu.json'), JSON.stringify(laporan, null, 2));
+  console.log(JSON.stringify(laporan, null, 2));
+}

@@ -1,4 +1,5 @@
-import { ArrowCounterClockwise, ArrowsClockwise, CheckCircle, House, Info, Lightbulb, Target as IkonTarget, Timer, XCircle } from '@phosphor-icons/react';
+import { ArrowCounterClockwise, ArrowRight, ArrowsClockwise, CheckCircle, House, Info, Lightbulb, Target as IkonTarget, Timer, XCircle } from '@phosphor-icons/react';
+import { useEffect, useRef, useState } from 'react';
 import { Navigate, useParams } from 'react-router';
 import { BigLink } from '@/components/BigButton';
 import { NonDiagnosisNote } from '@/components/NonDiagnosisNote';
@@ -205,6 +206,20 @@ function StripRepetisi({
   rentang: number;
 }) {
   const { data: logs } = useLiveQuery(() => listRepLogs(sessionId), [sessionId]);
+  const geserRef = useRef<HTMLDivElement>(null);
+  const [bisaGeser, setBisaGeser] = useState(false);
+  const jumlah = logs?.length ?? 0;
+  // Petunjuk geser hanya bila batang benar-benar melebihi lebar kartu (banyak gerakan / Huruf Lebih Besar).
+  useEffect(() => {
+    const el = geserRef.current;
+    if (!el) return;
+    const cek = () => setBisaGeser(el.scrollWidth - el.clientWidth > 1);
+    cek();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(cek);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [jumlah]);
   if (!logs || logs.length === 0) return null;
   const terhitung = logs.filter((l) => l.dihitung).length;
   const skalaMaks = Math.max(ambangAtas * 1.15, ...logs.map((l) => l.sudutPuncak));
@@ -219,8 +234,17 @@ function StripRepetisi({
         {satuan}
         {rentang < RENTANG_PENUH ? ` (target rentang dari terapis ${rentang}%)` : ''}.
       </p>
-      <div className="overflow-x-auto pb-1">
-        <ol className="relative flex min-w-max items-end gap-1.5 pt-6" aria-label={label}>
+      {/* Batang menyusut mengisi lebar kartu (min 2rem tiap batang); bila tetap tidak muat, kartu bisa digeser dan diberi petunjuk. */}
+      <div ref={geserRef} className="overflow-x-auto pb-1">
+        <ol
+          className="relative grid items-end gap-1 pt-6"
+          style={{
+            gridTemplateColumns: `repeat(${logs.length}, minmax(0, 1fr))`,
+            minWidth: `calc(${logs.length} * 2rem + ${logs.length - 1} * 0.25rem)`,
+            maxWidth: `calc(${logs.length} * 3.5rem)`,
+          }}
+          aria-label={label}
+        >
           {/* Di bawah batang: baris nomor (mt-1 + h-6) dan baris ikon (h-6) = 3,25rem. */}
           <li
             className="pointer-events-none absolute inset-x-0 z-10 border-t-2 border-dashed border-aksen/80"
@@ -232,10 +256,10 @@ function StripRepetisi({
             return (
               <li
                 key={l.nomor}
-                className="flex w-10 flex-col items-center"
+                className="flex min-w-0 flex-col items-center"
                 aria-label={`Gerakan ${l.nomor}: puncak ${nilai}${satuan === '°' ? ' derajat' : ' persen'}, ${l.dihitung ? 'terhitung' : 'belum terhitung'}`}
               >
-                <span className="tabular whitespace-nowrap text-[0.95rem] font-bold leading-tight text-teks-2" aria-hidden>
+                <span className="tabular whitespace-nowrap text-[0.8rem] font-bold leading-tight text-teks-2" aria-hidden>
                   {nilai}
                   {satuan}
                 </span>
@@ -260,6 +284,12 @@ function StripRepetisi({
           })}
         </ol>
       </div>
+      {bisaGeser && (
+        <p className="tipe-keterangan mt-1 flex items-center gap-1.5 font-semibold text-teks-2">
+          Geser ke samping untuk melihat semua gerakan
+          <ArrowRight size="1.1rem" weight="bold" className="shrink-0 text-primer" aria-hidden />
+        </p>
+      )}
       <ul className="mt-2 flex flex-col gap-1 text-[0.95rem]" aria-hidden>
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3.5 shrink-0 rounded-[4px] bg-primer" />

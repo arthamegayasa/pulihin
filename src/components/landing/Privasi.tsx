@@ -21,7 +21,7 @@ const POIN: { Ikon: Icon; judul: string; isi: string }[] = [
   {
     Ikon: CloudArrowUp,
     judul: 'Catatan jujur soal suara',
-    isi: 'Di sebagian browser, termasuk Chrome, pengenalan ucapan memakai layanan penyedia browser. Mode Latihan Mandiri tersedia tanpa pengenalan ucapan.',
+    isi: 'Di sebagian browser, termasuk Chrome, pengenalan suara memakai layanan penyedia browser. Mode Latihan Mandiri tersedia tanpa pengenalan suara.',
   },
 ];
 

@@ -25,8 +25,9 @@ import type { ExerciseDefinition } from '@/features/pose/types';
 import { formatJam, formatTanggalPendek, toISODate } from '@/lib/date';
 import type { Program } from '@/types';
 
+// 56 px seperti BigButton (min-h-12 hanya 54 px pada akar 18 px).
 const TOMBOL_KECIL =
-  'inline-flex min-h-12 items-center justify-center gap-1.5 rounded-kontrol border-2 px-3 text-[0.95rem] font-bold transition-colors duration-(--durasi-cepat) disabled:pointer-events-none disabled:opacity-40';
+  'inline-flex min-h-[56px] items-center justify-center gap-1.5 rounded-kontrol border-2 px-3 text-[0.95rem] font-bold transition-colors duration-(--durasi-cepat) disabled:pointer-events-none disabled:opacity-40';
 
 /**
  * Penyunting Resep Program (Bab 10.2): pilih latihan dari pustaka, target repetisi, set, target rentang, dan
@@ -202,7 +203,7 @@ export function EditorResep({
                     </p>
                   </div>
                   {dipilih ? (
-                    <span className="inline-flex min-h-12 shrink-0 items-center gap-1 px-2 text-[0.95rem] font-bold text-teks">
+                    <span className="inline-flex min-h-[56px] shrink-0 items-center gap-1 px-2 text-[0.95rem] font-bold text-teks">
                       <Check size={20} weight="bold" className="text-sukses" aria-hidden />
                       Dipilih
                     </span>
@@ -253,6 +254,8 @@ export function EditorResep({
 /**
  * Target rentang per latihan (persen ambang atas, docs/algoritma.md "Target rentang personal"). Kalimat bantu
  * menyebut ambang yang benar-benar dipakai penghitung, mis. "Dihitung bila gerakan mencapai 72°".
+ * Empat pilihan sebaris hanya bila tiap pilihan selebar >= 3.75rem ("100%" + ruang napas); lebih sempit (ponsel
+ * 360 px, Huruf Lebih Besar) jadi 2 x 2. Ambang container query dalam rem, jadi ikut membesar bersama hurufnya.
  */
 function TargetRentang({
   def,
@@ -273,12 +276,16 @@ function TargetRentang({
   );
   const adaTanpaEfek = tanpaEfek.includes(true);
   return (
-    <div>
+    <div className="@container">
       <p id={id} className="text-[0.95rem] font-bold text-teks-2">
         Target rentang
       </p>
       <p className="mb-1 text-[0.95rem] leading-snug text-teks-2">Untuk pasien yang belum bisa bergerak penuh.</p>
-      <div className="grid grid-cols-4 gap-1.5 rounded-kontrol border border-primer-garis/60 bg-primer-terang p-1" role="radiogroup" aria-labelledby={id}>
+      <div
+        className="grid grid-cols-2 gap-2 rounded-kontrol border border-primer-garis/60 bg-primer-terang p-1 @min-[17.5rem]:grid-cols-4"
+        role="radiogroup"
+        aria-labelledby={id}
+      >
         {PILIHAN_RENTANG.map((p, idx) => {
           const aktif = nilai === p;
           const mati = !aktif && tanpaEfek[idx];
@@ -290,7 +297,7 @@ function TargetRentang({
               aria-checked={aktif}
               disabled={mati}
               onClick={() => onPilih(p)}
-              className={`min-h-12 rounded-[10px] px-1 text-[1rem] font-bold tabular transition-colors duration-(--durasi-cepat) ${aktif ? 'bg-primer text-white shadow-angkat inset-shadow-sorot' : mati ? 'cursor-not-allowed text-teks-2 opacity-50' : 'text-primer hover:bg-permukaan'}`}
+              className={`min-h-[56px] rounded-[10px] px-1 text-[1rem] font-bold tabular transition-colors duration-(--durasi-cepat) ${aktif ? 'bg-primer text-white shadow-angkat inset-shadow-sorot' : mati ? 'cursor-not-allowed text-teks-2 opacity-50' : 'text-primer hover:bg-permukaan'}`}
             >
               {p}%
             </button>

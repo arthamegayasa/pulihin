@@ -18,14 +18,15 @@ export default function PilihPeran() {
   // Huruf Lebih Besar: judul dan gambar sedikit lebih kecil agar ketiga pilihan tetap terlihat tanpa banyak menggulir.
   const { hurufBesar: padat } = usePrefs();
   return (
-    <section className="flex min-h-[calc(100dvh-7rem)] flex-col">
+    // Desktop: intro dan kartu peran dirapatkan menjadi satu blok di tengah layar (tanpa pita kosong di antaranya).
+    <section className="flex min-h-[calc(100dvh-7rem)] flex-col lg:justify-center">
       <div className="animate-naik">
         <p className={`tipe-label text-primer ${padat ? 'sr-only' : ''}`}>Selamat datang di PULIHIN</p>
         <h1 className={`mt-1 text-balance text-teks ${padat ? 'tipe-judul' : 'tipe-display'}`}>Teman latihan di rumah</h1>
         <p className={`mt-2 text-teks-2 ${padat ? 'tipe-keterangan' : 'tipe-isi'}`}>Pendamping latihan untuk pasien stroke, keluarga, dan terapis.</p>
       </div>
 
-      <div className={`mt-auto ${padat ? 'pt-4' : 'pt-5'}`}>
+      <div className={`mt-auto lg:mt-0 ${padat ? 'pt-4' : 'pt-5 lg:pt-8'}`}>
         <h2 className={`tipe-subjudul text-teks ${padat ? 'mb-2' : 'mb-3'}`}>Siapa yang memakai ponsel ini?</h2>
         <ul className={padat ? 'space-y-2' : 'space-y-3'}>
           {PERAN.map(({ role, judul, sub, potong }) => (

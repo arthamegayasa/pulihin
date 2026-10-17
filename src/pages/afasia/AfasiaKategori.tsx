@@ -30,6 +30,7 @@ export default function AfasiaKategori() {
         ilustrasi={{ jenis: 'momen', nama: 'bicara' }}
         judul="Sebut nama benda"
         sub="Lihat gambarnya, lalu ucapkan namanya."
+        potong={{ samping: { x: 455, y: 90, w: 505, h: 330 }, tumpuk: { x: 455, y: 95, w: 505, h: 230 } }}
       />
 
       {/* Mode penilaian yang sedang berlaku + sakelarnya dalam satu kartu agar hubungannya jelas. */}
@@ -51,7 +52,7 @@ export default function AfasiaKategori() {
           <div className="mt-2 border-t border-garis-halus pt-1">
             <Toggle
               label="Pakai Mode Latihan Mandiri"
-              keterangan="Tanpa pengenal suara."
+              keterangan="Tanpa pengenalan suara."
               aktif={mandiriDipilih}
               onUbah={setModeMandiriDipilih}
             />
@@ -121,7 +122,7 @@ export default function AfasiaKategori() {
           </p>
         )}
         <BigLink to={PATHS.afasiaLatihan()} ukuran="besar" ikon={<Microphone weight="fill" aria-hidden />}>
-          Latihan Hari Ini ({JUMLAH_KATA_SESI} kata)
+          Latihan Bicara Hari Ini ({JUMLAH_KATA_SESI} kata)
         </BigLink>
       </div>
     </section>

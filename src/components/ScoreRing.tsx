@@ -26,8 +26,15 @@ export function ScoreRing({ skor, ukuran = 184 }: { skor: number; ukuran?: numbe
             className="transition-[stroke-dashoffset] duration-700 ease-lembut"
           />
         </svg>
+        {/* Ukuran angka diturunkan dari ukuran cincin dalam px (bukan rem), agar "100" tetap muat di dalam
+            diameter dalam cincin (75% ukuran) dengan jarak lega, juga saat Huruf Lebih Besar aktif. */}
         <div className="absolute inset-0 grid place-items-center">
-          <span className="tabular text-[3.4rem] font-extrabold leading-none tracking-[-0.03em] text-primer">{nilai}</span>
+          <span
+            className="tabular font-extrabold leading-none tracking-[-0.03em] text-primer"
+            style={{ fontSize: Math.round(ukuran * 0.27) }}
+          >
+            {nilai}
+          </span>
         </div>
       </div>
       <p className="text-[1.3rem] font-bold text-teks">

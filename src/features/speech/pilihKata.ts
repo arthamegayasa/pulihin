@@ -12,7 +12,7 @@ export interface RiwayatAfasia {
 }
 
 export interface OpsiPilihKata {
-  /** null = Latihan Hari Ini (campuran semua kategori). */
+  /** null = Latihan Bicara Hari Ini (campuran semua kategori). */
   kategori: KategoriKata | null;
   riwayat: RiwayatAfasia;
   /** Benih acak agar susunan stabil dalam satu hari, mis. tanggal hari ini. */

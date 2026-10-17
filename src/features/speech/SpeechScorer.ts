@@ -102,7 +102,7 @@ function nilaiSatuFrasa(target: TargetPenilaian, frasa: string, k: KonfigPenilai
 }
 
 /**
- * Nilai satu percobaan terhadap SEMUA alternatif dari pengenal suara; alternatif terbaik menang
+ * Nilai satu percobaan terhadap SEMUA alternatif dari pengenalan suara; alternatif terbaik menang
  * (Benar > Hampir > Belum, lalu kemiripan tertinggi).
  */
 export function nilaiUcapan(

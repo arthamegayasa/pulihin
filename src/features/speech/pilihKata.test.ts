@@ -5,7 +5,7 @@ import { kataPerKategori } from './wordBank';
 const kosong = { kataBenar: new Set<string>(), kataUlang: [] };
 
 describe('pilihKataSesi', () => {
-  it('Latihan Hari Ini berisi 10 kata unik, mudah lebih dulu, dan stabil untuk benih yang sama', () => {
+  it('Latihan Bicara Hari Ini berisi 10 kata unik, mudah lebih dulu, dan stabil untuk benih yang sama', () => {
     const a = pilihKataSesi({ kategori: null, riwayat: kosong, benih: '2026-10-13' });
     const b = pilihKataSesi({ kategori: null, riwayat: kosong, benih: '2026-10-13' });
     expect(a).toHaveLength(JUMLAH_KATA_SESI);

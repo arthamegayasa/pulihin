@@ -208,7 +208,7 @@ export function VideoPeraga({ nama, basePath, sisi, tempoDetik }: VideoPeragaPro
           type="button"
           onClick={() => setDijeda((v) => !v)}
           aria-label={dijeda ? 'Putar contoh gerakan' : 'Jeda contoh gerakan'}
-          className="absolute top-2 right-2 inline-flex min-h-12 min-w-12 items-center justify-center gap-1.5 rounded-full bg-white/95 px-3.5 text-[1rem] font-bold text-primer shadow-tipis hover:bg-white"
+          className="absolute top-2 right-2 inline-flex min-h-[56px] min-w-[56px] items-center justify-center gap-1.5 rounded-full bg-white/95 px-3.5 text-[1rem] font-bold text-primer shadow-tipis hover:bg-white"
         >
           {dijeda ? <Play size={22} weight="fill" aria-hidden /> : <Pause size={22} weight="fill" aria-hidden />}
           <span>{dijeda ? 'Putar' : 'Jeda'}</span>

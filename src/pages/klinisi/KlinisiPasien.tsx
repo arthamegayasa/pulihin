@@ -162,7 +162,7 @@ function HalamanPasien({ patientId }: { patientId: string }) {
             <KartuStat
               label="Kepatuhan"
               nilai={`${lap.kepatuhan.persen}%`}
-              keterangan={`${lap.kepatuhan.selesai} dari ${lap.kepatuhan.target} latihan`}
+              keterangan={`${lap.kepatuhan.selesai} dari ${lap.kepatuhan.target} sesi`}
               ikon={<CalendarCheck weight="bold" />}
               className="h-full"
             />
@@ -216,7 +216,7 @@ function HalamanPasien({ patientId }: { patientId: string }) {
           <BagianGrafik
             id="judul-kepatuhan"
             judul="Kepatuhan 7 hari terakhir"
-            sub={`${lap.kepatuhan.selesai} dari ${lap.kepatuhan.target} latihan terjadwal sudah dikerjakan.`}
+            sub={`${lap.kepatuhan.selesai} dari ${lap.kepatuhan.target} sesi terjadwal sudah dikerjakan.`}
           >
             <WeeklyChart data={lap.batang} className="mx-auto max-w-md" />
           </BagianGrafik>

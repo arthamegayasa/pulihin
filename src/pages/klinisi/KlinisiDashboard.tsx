@@ -141,7 +141,7 @@ function BarisPasien({ p, today }: { p: RingkasanPasienKlinisi; today: string })
           </div>
 
           <dl className="grid flex-1 grid-cols-2 gap-x-3 gap-y-3 rounded-kontrol bg-latar p-3 sm:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.4fr)] sm:gap-x-4 lg:bg-transparent lg:p-0">
-            <Angka label={<>Kepatuhan<span className="hidden sm:inline"> 7 hari</span></>} nilai={`${k.persen}%`} keterangan={`${k.selesai} dari ${k.target} latihan`}>
+            <Angka label={<>Kepatuhan<span className="hidden sm:inline"> 7 hari</span></>} nilai={`${k.persen}%`} keterangan={`${k.selesai} dari ${k.target} sesi`}>
               <span className="mt-1.5 block h-2 overflow-hidden rounded-full bg-cekung" aria-hidden>
                 <span className="block h-full rounded-full bg-primer" style={{ width: `${Math.min(100, k.persen)}%` }} />
               </span>
@@ -198,7 +198,7 @@ function BarisPasien({ p, today }: { p: RingkasanPasienKlinisi; today: string })
           ) : (
             <TanpaRedFlag />
           )}
-          <span className="flex min-h-12 items-center justify-center gap-1 rounded-kontrol border-2 border-primer font-bold text-primer transition-colors group-hover:bg-primer-terang lg:hidden">
+          <span className="flex min-h-[56px] items-center justify-center gap-1 rounded-kontrol border-2 border-primer font-bold text-primer transition-colors group-hover:bg-primer-terang lg:hidden">
             Buka progres & resep
             <CaretRight size={20} weight="bold" aria-hidden />
           </span>

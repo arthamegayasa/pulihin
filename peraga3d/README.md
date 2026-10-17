@@ -9,6 +9,7 @@ fungsi pose** di `latihan/`. Semua dari skrip, tanpa aset manual.
 node peraga3d/buat.mjs fleksi-siku --uji   # ±30 dtk: frame strip + close-up pendar, sampel rendah -> out/<id>/uji/
 node peraga3d/buat.mjs fleksi-siku         # ±5-8 mnt: render penuh + encode ke public/peraga/ + lembar tinjauan
 node peraga3d/buat.mjs fleksi-siku --lewati-render   # encode ulang dari frame yang sudah ada
+node peraga3d/buat.mjs fleksi-siku --kartu          # ±10 dtk: gambar kecil daftar latihan -> public/peraga/<id>-kartu.webp
 ```
 
 Opsi: `--dasar` (bangun ulang karakter, otomatis bila `out/dasar.blend` belum ada), `--sampel N`.
@@ -24,11 +25,22 @@ Keluaran (kontrak `src/features/pose/VideoPeraga.tsx`, diverifikasi `ffprobe` ol
 | `out/<id>/lembar.png` | mulai · tengah naik · puncak · close-up pendar otot |
 | `out/<id>/strip.png` | 8 frame merata satu siklus (tinjau tembus objek, kaku, siluet) |
 | `out/<id>/laporan.json` | ukuran, crf/kualitas, waktu render, pemeriksaan pendar |
+| `public/peraga/<id>-kartu.webp` | (`--kartu`) 256x256, ≤ 15 KB, gambar kecil `PosterLatihan` (Beranda, Daftar Latihan); di-precache SW |
 
 Sisi kanan anatomis saja; aplikasi mencerminkan (`scaleX(-1)`) untuk sisi kiri, jadi tanpa teks/logo di video.
 
 Prasyarat: Blender 5.2 portabel dengan MPFB 2.0.18 + paket aset sistem MakeHuman (lihat
 `docs/video/produksi-3d.md`), GPU NVIDIA (OptiX), ffmpeg/ffprobe (dengan libwebp) dan Node di PATH.
+
+### Gambar kecil daftar latihan (`--kartu`, `kartu.py`)
+
+Satu frame dari `out/<id>/adegan.blend` yang sudah ada (dibangun bila belum ada; video & poster tidak disentuh):
+pose PUNCAK dengan otot kerja menyala dan cincin sendi, latar rata `#EEF4F2` (warna ubin ilustrasi `bg-ilustrasi`,
+jadi tepi gambar menyatu dengan ubin aplikasi; warna linear dikalibrasi terhadap AgX, `buat.mjs` memeriksa piksel
+sudut ±3), bayangan lantai lembut dari cyclorama sebagai penangkap bayangan, bingkai rapat pada bagian tubuh yang
+bergerak (`KARTU` di `kartu.py`: `pita` tinggi figur, `isi`, `geser`, sudut kamera opsional), eksposur lebih rendah
+(figur resin tidak pudar di latar terang) dengan pendar dikuatkan sebanding, cahaya pinggir sedikit lebih kuat.
+Render 512 px, diperkecil Lanczos ke 256 px. Tinjauan: `out/<id>/kartu/kartu.png`, `kartu.json`, `laporan-kartu.json`.
 
 ## Alur & berkas
 
@@ -44,6 +56,7 @@ Prasyarat: Blender 5.2 portabel dengan MPFB 2.0.18 + paket aset sistem MakeHuman
 | `adegan.py` | per latihan: pose + keyframe, posisi (duduk / berdiri di belakang kursi / duduk-berdiri dengan meja) & perabot, cincin sendi, kamera dengan bingkai otomatis, kamera close-up otot → `out/<id>/adegan.blend` + `info.json` |
 | `tampilan.py` | tampilan V3: bahan, cahaya (kunci, isi, 2 pinggir, atas, latar), latar gradien, AgX, kompositor pendar |
 | `render.py` | render frame + close-up otot + **pemeriksaan pendar** (dengan vs tanpa kompositor; gagal keras bila tak terlihat) |
+| `kartu.py` | gambar kecil daftar latihan: frame puncak, latar rata `#EEF4F2` + bayangan lembut, bingkai rapat per latihan (`KARTU`) |
 | `buat.mjs` | menjalankan semuanya, encode, lembar tinjauan, laporan |
 
 Siklus = tempo tengah `(min+max)/2` dibatasi 2–6 dtk, dibulatkan 0,5 dtk — rumus yang sama dengan teks

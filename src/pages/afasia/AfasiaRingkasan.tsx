@@ -61,7 +61,7 @@ export default function AfasiaRingkasan() {
   }
 
   const kataUlang = ringkasan.kataUlang.map((id) => getKata(id)).filter((k): k is Kata => k !== undefined);
-  const namaSesi = sesi.kategoriKata ? (getKategori(sesi.kategoriKata)?.nama ?? 'Latihan Bicara') : 'Latihan Hari Ini';
+  const namaSesi = sesi.kategoriKata ? (getKategori(sesi.kategoriKata)?.nama ?? 'Latihan Bicara') : 'Latihan Bicara Hari Ini';
   const jumlahKata = ringkasan.benar + ringkasan.hampir + ringkasan.belum;
 
   return (
@@ -78,7 +78,7 @@ export default function AfasiaRingkasan() {
           <p className="tipe-label text-primer">Skor latihan</p>
           <p className="tabular text-[4.25rem] leading-none font-extrabold tracking-[-0.03em] text-primer">{sesi.skor}</p>
           <p className="mt-1 tipe-subjudul text-teks">{labelSkor(sesi.skor)}</p>
-          <Lencana nada="netral" ikon={<Clock weight="bold" />} className="mt-2">
+          <Lencana nada="netral" ikon={<Clock weight="bold" />} className="mt-2 whitespace-nowrap">
             <span className="sr-only">Durasi </span>
             {formatDurasi(sesi.durasiDetik)}
           </Lencana>
@@ -109,7 +109,7 @@ export default function AfasiaRingkasan() {
         <JudulBagian
           id="judul-ulang"
           judul="Kata untuk diulang besok"
-          sub={kataUlang.length > 0 ? 'Akan muncul lagi di Latihan Hari Ini.' : undefined}
+          sub={kataUlang.length > 0 ? 'Akan muncul lagi di Latihan Bicara Hari Ini.' : undefined}
         />
         {kataUlang.length === 0 ? (
           <p className="flex items-center gap-2 rounded-kartu border border-garis-halus bg-permukaan p-4 font-semibold shadow-tipis">

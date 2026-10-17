@@ -48,13 +48,15 @@ export default defineConfig({
         // PoseEngine) atau saat sesi pertama, lalu dilayani CacheFirst: sesi kamera tetap bisa dimulai dalam
         // mode pesawat setelah aplikasi termuat sekali (Bab 11, Ketahanan). Video peraga + poster (±0,5 MB per
         // latihan) juga tidak di-precache: masuk cache saat Beranda pasien (program hari ini) atau Detail Latihan.
+        // Kecuali gambar kecil daftar latihan peraga/*-kartu.webp (10 x ±5 KB): dipakai Beranda dan Daftar Latihan,
+        // jadi ikut precache agar tampil luring.
         // Ilustrasi (public/ilustrasi): peran/* (3), kategori/* (5) dan momen/luring (7 KB, dipakai layar galat saat
         // luring) kecil dan perlu tersedia tanpa jaringan, ikut precache; kata/*, momen/* lainnya, landing/* masuk
         // cache runtime saat pertama kali tampil.
         globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2,json}', 'ilustrasi/momen/luring.webp'],
         globIgnores: [
           'mediapipe/**',
-          'peraga/**',
+          'peraga/!(*-kartu.webp)',
           'landing/og.jpg',
           'ilustrasi/kata/**',
           'ilustrasi/momen/!(luring).webp',

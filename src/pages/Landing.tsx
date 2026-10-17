@@ -37,7 +37,7 @@ export default function Landing() {
               <li key={n.href}>
                 <a
                   href={n.href}
-                  className="inline-flex min-h-[44px] items-center rounded-kontrol px-3 font-semibold text-teks-2 hover:bg-primer-terang hover:text-primer"
+                  className="inline-flex min-h-[56px] items-center rounded-kontrol px-3 font-semibold text-teks-2 hover:bg-primer-terang hover:text-primer"
                 >
                   {n.label}
                 </a>
@@ -46,7 +46,7 @@ export default function Landing() {
           </ul>
           <Link
             to={PATHS.app}
-            className="ml-2 inline-flex min-h-[44px] items-center whitespace-nowrap rounded-kontrol border-2 border-primer bg-permukaan px-3.5 text-[0.95rem] font-bold text-primer shadow-tipis transition-colors hover:bg-primer-terang active:translate-y-px sm:px-4 sm:text-base"
+            className="ml-2 inline-flex min-h-[56px] items-center whitespace-nowrap rounded-kontrol border-2 border-primer bg-permukaan px-3.5 text-[0.95rem] font-bold text-primer shadow-tipis transition-colors hover:bg-primer-terang active:translate-y-px sm:px-4 sm:text-base"
           >
             Buka Aplikasi
           </Link>
