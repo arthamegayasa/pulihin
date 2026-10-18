@@ -213,7 +213,7 @@ Diisi pemilik produk. Nilai yang tampil di aplikasi dikumpulkan di `src/config/i
 - Model HP uji kelas bawah dan versi Chrome; hasil uji 50 repetisi dan fps di perangkat; tanggal uji.
 - Jam pengingat default (saat ini saran spec: 08.00 gerak, 16.00 bicara).
 - Video peraga dari terapis sendiri bila pemilik produk ingin mengganti video peraga 3D bawaan (`public/peraga/`, dibuat dari `peraga3d/`).
-- Tautan YouTube video demo (video tanpa rekaman manusia: karakter 3D + narasi sintetis, lihat `docs/video/README.md`).
+- Tautan YouTube video demo (adegan pasien & keluarga video AI berlabel, layar aplikasi asli, narasi sintetis; lihat `docs/video/README.md`).
 
 ## Laporan serah terima (Bab 19.4)
 
@@ -228,9 +228,11 @@ Akurasi repetisi: rekaman manusia nyata 14 dari 14 repetisi yang dimulai setelah
                   2 sengaja tidak dihitung karena dimulai sebelum Siap), 0 ganda; perangkat target [DIISI] dari 50
 Frame rate pose : emulasi desktop GPU 21-25 fps (1 orang, CPU 1x-6x); perangkat target [DIISI] fps
 Uji otomatis    : 29 berkas, 283 uji lulus
-Video           : tanpa rekaman manusia & tanpa dokter (karakter 3D Blender menggerakkan aplikasi asli via kamera palsu
-                  Chrome; narasi sintetis Microsoft Azure neural id-ID). Final lokal video/out/pulihin-demo-final.mp4 (+ -final-en.mp4, subtitle EN tertanam)
-                  (tidak di repo; 1920x1080, 30 fps, H.264+AAC, 4:03,6, 63,7 MB / 64,2 MB). Render ulang: `cd video && npm run render:final`
+Video           : adegan pasien & keluarga = video AI HeyGen berlabel "Adegan dibuat dengan AI, bukan pasien sungguhan";
+                  layar = rekaman asli aplikasi produksi (sesi kamera: video POV AI sebagai kamera Chrome); suara aplikasi =
+                  klip aplikasi sendiri pada detik tercatat; narasi ElevenLabs Eleven v4; musik Google Lyria 3 Pro.
+                  Final lokal video/out/pulihin-demo-final.mp4 (+ -final-en.mp4, subtitle EN tertanam) (tidak di repo;
+                  1920x1080, 30 fps, H.264+AAC, 4:22,0, 118,1 MB / 118,6 MB). Render ulang: `cd video && npm run render:final`
                   dan `npm run render:final-en`. Alur: docs/video/README.md
 Yang belum      : uji perangkat target (AC-F1-2, AC-F1-4, AC-F3-2)
 [DIISI] kosong  : lihat bagian "Isian [DIISI] yang masih kosong"

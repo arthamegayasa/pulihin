@@ -1,0 +1,30 @@
+{
+  "fps": 30,
+  "durasiDetik": 49.257,
+  "berkas": {
+    "layar": "layar-02-sesi-tekuk-siku.mp4"
+  },
+  "kameraMulaiDetik": 6.846,
+  "siapDetik": 8.05,
+  "repetisiDetik": [
+    10.668,
+    13.259,
+    16.608,
+    20.608,
+    24.103,
+    26.905,
+    32.614,
+    36.066,
+    40.805,
+    43.42
+  ],
+  "koreksi": [
+    {
+      "teks": "Rilekskan bahu, turunkan bahu Anda",
+      "mulaiDetik": 30.218,
+      "selesaiDetik": 31.85
+    }
+  ],
+  "selesaiDetik": 43.42,
+  "ringkasanDetik": 45.253
+}

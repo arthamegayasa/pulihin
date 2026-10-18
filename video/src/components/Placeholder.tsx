@@ -1,6 +1,6 @@
 import type React from 'react';
 import { AbsoluteFill } from 'remotion';
-import { DARI_BLENDER, OTOMATIS, type SlotRekaman } from '../timeline.ts';
+import { OTOMATIS, type SlotRekaman } from '../timeline.ts';
 import { FONT, WARNA } from '../theme.ts';
 
 /**
@@ -12,7 +12,7 @@ import { FONT, WARNA } from '../theme.ts';
 export type TataPlaceholder = 'layar' | 'desktop' | 'penuh' | 'split';
 
 const JUDUL: Record<SlotRekaman['jenis'], string> = {
-  render3d: 'Render 3D (karakter, Blender)',
+  ai: 'Video AI (HeyGen, FootageAI)',
   layar: 'Rekaman layar aplikasi',
   desktop: 'Rekaman layar desktop',
 };
@@ -36,11 +36,12 @@ export const Placeholder: React.FC<{ slot: SlotRekaman; detik: number; tata: Tat
         : tata === 'penuh'
           ? { left: 1120, right: 100, top: 0, bottom: 0, justifyContent: 'center' }
           : { left: 120, width: 760, top: 300 };
-  const cara = DARI_BLENDER[slot.berkas]
-    ? 'Dibuat agen Blender3D (video/blender, rekam-sesi-3d.mjs). Isi layar aplikasi wajib dari aplikasi asli.'
-    : OTOMATIS[slot.berkas]
-      ? 'Buat dengan: npm run rekam-layar (aplikasi produksi asli).'
-      : 'Rekaman layar aplikasi asli.';
+  const cara =
+    slot.jenis === 'ai'
+      ? 'Video AI dari FootageAI (kontrak footage di docs/video/README.md). Label AI wajib tampil.'
+      : OTOMATIS[slot.berkas]
+        ? 'Buat dengan: npm run rekam-layar / npm run rekam-sesi (aplikasi produksi asli).'
+        : 'Rekaman layar aplikasi asli.';
   return (
     <AbsoluteFill style={{ backgroundColor: WARNA.latar, fontFamily: FONT, color: WARNA.teks }}>
       <div

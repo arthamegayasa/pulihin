@@ -1,230 +1,268 @@
 1
-00:00:00,600 --> 00:00:02,911
+00:00:01,200 --> 00:00:03,773
 According to the Ministry of Health,
 
 2
-00:00:02,951 --> 00:00:06,216
+00:00:03,813 --> 00:00:07,443
 stroke causes 18.5 percent
 of deaths in Indonesia.
 
 3
-00:00:07,716 --> 00:00:12,314
+00:00:09,143 --> 00:00:14,524
 Yet only 49.2 percent of people
 with stroke have regular check-ups.
 
 4
-00:00:13,814 --> 00:00:17,379
+00:00:16,224 --> 00:00:20,196
 Therapists are scarce too:
 only 926 physical therapy
 
 5
-00:00:17,419 --> 00:00:21,233
+00:00:20,236 --> 00:00:24,479
 staff across more than 10,000
 community health centres.
 
 6
-00:00:22,733 --> 00:00:25,554
-Patients go home with an
-exercise programme on paper.
+00:00:26,179 --> 00:00:31,534
+After leaving hospital, the exercise
+programme is often just a sheet of paper.
 
 7
-00:00:27,133 --> 00:00:30,590
-At home, they are unsure whether
-they are moving correctly.
+00:00:33,234 --> 00:00:38,547
+At home, the question is simple
+but heavy: am I doing this right?
 
 8
-00:00:30,630 --> 00:00:32,645
-That is where guidance breaks off.
+00:00:38,587 --> 00:00:41,881
+That is where guidance often breaks off.
 
 9
-00:00:34,145 --> 00:00:37,726
-PULIHIN turns an ordinary phone
-into an exercise companion.
+00:00:43,581 --> 00:00:48,229
+With PULIHIN, an ordinary phone
+becomes a home exercise companion.
 
 10
-00:00:37,766 --> 00:00:41,694
-Once opened, Today's Exercises
-appear right away, in large type.
+00:00:48,269 --> 00:00:52,672
+Open it, and Today's Exercises
+are right there, in large type.
 
 11
-00:00:43,194 --> 00:00:46,741
+00:00:54,372 --> 00:00:58,214
 We start with one small
 movement: Elbow Flexion.
 
 12
-00:00:46,781 --> 00:00:49,879
-There is a movement demo, a safety notice,
+00:00:58,254 --> 00:01:03,672
+A 3D demonstration shows its rhythm,
+together with a safety notice.
 
 13
-00:00:49,919 --> 00:00:52,833
-then one big button: Start with Camera.
+00:01:05,372 --> 00:01:07,775
+The app shows where the phone goes:
 
 14
-00:00:54,333 --> 00:00:58,531
-The phone simply sits on a table,
+00:01:07,815 --> 00:01:11,334
+upright on a table,
 about one metre from the chair.
 
 15
-00:00:58,571 --> 00:01:02,744
-This is a demonstration with a
-3D character, not a real patient.
+00:01:11,374 --> 00:01:14,724
+Pak Budi in this video
+is an AI-generated scene.
 
 16
-00:01:04,244 --> 00:01:09,162
-The real app reads body landmarks right on
-the device, without uploading any video.
+00:01:16,424 --> 00:01:20,839
+This camera video is AI-generated too,
+played into the real app.
 
 17
-00:01:09,202 --> 00:01:14,040
-Repetitions are counted from the elbow
-angle: a full bend, then straighten again.
+00:01:21,924 --> 00:01:22,934
+[App] Position your body inside the frame.
 
 18
-00:01:15,540 --> 00:01:18,074
-Look at the count: five out of ten.
+00:01:22,974 --> 00:01:24,702
+[App] Body detected.
 
 19
-00:01:20,034 --> 00:01:21,680
-Now the shoulder hikes up.
+00:01:24,742 --> 00:01:28,681
+Remember, stop if you
+feel pain or dizziness.
 
 20
-00:01:22,030 --> 00:01:25,321
-[App voice] Relax your shoulder,
-lower your shoulder.
+00:01:28,721 --> 00:01:29,871
+Start slowly.
 
 21
-00:01:25,821 --> 00:01:30,680
-The app corrects right away, by voice
-and in large text, in Indonesian.
+00:01:30,221 --> 00:01:34,583
+Body landmarks are read right on
+the device, without uploading video.
 
 22
-00:01:32,180 --> 00:01:34,687
-So it is not just counting:
-it guards how each
+00:01:36,396 --> 00:01:38,852
+Listen: the app is counting.
 
 23
-00:01:34,727 --> 00:01:37,718
-movement is done, all the
-way to the tenth repetition.
+00:01:42,450 --> 00:01:44,749
+Now the shoulder hikes up.
 
 24
-00:01:39,218 --> 00:01:41,731
-At the end of the session there is a score
+00:01:45,149 --> 00:01:48,131
+[App] Relax your shoulder,
+lower your shoulder.
 
 25
-00:01:41,771 --> 00:01:44,587
-and a simple summary:
-repetitions and duration.
+00:01:49,249 --> 00:01:53,664
+The app reminds him right away,
+by voice and in large text.
 
 26
-00:01:44,627 --> 00:01:48,335
-The labels are easy to read,
-from Needs Support to Very Good.
+00:01:59,326 --> 00:02:00,336
+[App] Great!
 
 27
-00:01:52,718 --> 00:01:55,141
-There is one tip for the next session.
+00:02:00,376 --> 00:02:01,511
+Target reached.
 
 28
-00:01:55,181 --> 00:01:59,588
-This summary is not a diagnosis,
-and that disclaimer always appears.
+00:02:03,277 --> 00:02:07,056
+At the end of the session there
+is a score and a simple summary:
 
 29
-00:02:01,718 --> 00:02:06,114
-Back on the home screen, Elbow Flexion
-is marked done, with its score.
+00:02:07,096 --> 00:02:11,035
+repetitions and duration, with labels
+that are easy to understand.
 
 30
-00:02:06,154 --> 00:02:09,450
-The exercise is recorded,
-and the family can see it.
+00:02:14,277 --> 00:02:17,895
+There is one tip for the next
+session, and a disclaimer
 
 31
-00:02:11,718 --> 00:02:13,726
-The family no longer has to guess.
+00:02:17,935 --> 00:02:22,192
+that always appears: this is an
+exercise score, not a diagnosis.
 
 32
-00:02:13,766 --> 00:02:17,279
-The For Family page shows a flag
-when exercise has stopped,
+00:02:23,892 --> 00:02:27,455
+Back on the home screen,
+Elbow Flexion is marked done.
 
 33
-00:02:17,319 --> 00:02:20,391
-today's status, and a chart
-of the last seven days.
+00:02:27,495 --> 00:02:31,232
+The exercise is recorded,
+and the family can see it too.
 
 34
-00:02:26,218 --> 00:02:28,381
-The 14-day score trend is there too.
+00:02:32,932 --> 00:02:36,059
+Elsewhere, Rina,
+his daughter, no longer has
 
 35
-00:02:28,421 --> 00:02:33,193
-The weekly summary can be copied with
-one tap, ready to send to the therapist.
+00:02:36,099 --> 00:02:39,123
+to guess whether her father has exercised.
 
 36
-00:02:39,218 --> 00:02:42,275
-For patients with speech
-difficulties, or aphasia,
+00:02:40,823 --> 00:02:44,112
+The For Family page shows
+today's status, a flag
 
 37
-00:02:42,315 --> 00:02:46,898
-there is Speech Practice in Indonesian,
-with words used at home every day.
+00:02:44,152 --> 00:02:48,451
+when exercise has stopped,
+and a chart of the last seven days.
 
 38
-00:02:51,218 --> 00:02:54,901
-The example word can be heard first,
-then the word is spoken.
+00:02:52,823 --> 00:02:56,165
+The 14-day score trend is
+there too, and the weekly
 
 39
-00:02:55,401 --> 00:02:58,860
+00:02:56,205 --> 00:02:59,719
+summary can be copied with
+one tap for the therapist.
+
+40
+00:03:03,823 --> 00:03:06,281
+For speech difficulties, or aphasia,
+
+41
+00:03:06,321 --> 00:03:10,484
+there is Speech Practice in
+Indonesian, with everyday words.
+
+42
+00:03:11,034 --> 00:03:13,385
+The Listen button plays an example.
+
+43
+00:03:13,964 --> 00:03:15,620
+[App] sabun (soap)
+
+44
+00:03:15,660 --> 00:03:17,392
+[App] Wash your hands with soap.
+
+45
+00:03:21,723 --> 00:03:23,123
+[Pak Budi, AI] Sabun (soap).
+
+46
+00:03:23,462 --> 00:03:24,862
+[App] Correct!
+
+47
+00:03:24,902 --> 00:03:25,952
+Very good.
+
+48
+00:03:26,302 --> 00:03:30,075
 In Self-Practice Mode,
 the companion scores
 
-40
-00:02:58,900 --> 00:03:01,545
+49
+00:03:30,115 --> 00:03:33,042
 with one tap: Correct, or Repeat.
 
-41
-00:03:01,585 --> 00:03:03,212
-The result is saved.
-
-42
-00:03:08,718 --> 00:03:11,997
+50
+00:03:34,742 --> 00:03:38,386
 On the Therapist Dashboard,
-the therapist can set the programme
+the therapist sets the programme
 
-43
-00:03:12,037 --> 00:03:14,935
-and follow progress without
-waiting for the next visit.
+51
+00:03:38,426 --> 00:03:41,926
+and follows progress,
+without waiting for the next visit.
 
-44
-00:03:19,718 --> 00:03:22,486
-In this prototype,
-the programme the therapist saves
+52
+00:03:44,742 --> 00:03:47,850
+In this prototype, the programme
+the therapist saves becomes
 
-45
-00:03:22,526 --> 00:03:25,334
-becomes Today's Exercises on
-that patient's profile.
+53
+00:03:47,890 --> 00:03:50,724
+Today's Exercises on the
+patient's profile right away.
 
-46
-00:03:34,218 --> 00:03:36,485
+54
+00:03:55,742 --> 00:03:58,391
 PULIHIN does not replace the therapist.
 
-47
-00:03:36,525 --> 00:03:41,140
-It helps make sure that what the therapist
-teaches is truly practised at home.
+55
+00:03:58,431 --> 00:04:01,838
+It helps make sure that
+what the therapist teaches
 
-48
-00:03:41,640 --> 00:03:46,269
-This is still a competition prototype,
+56
+00:04:01,878 --> 00:04:04,911
+is truly practised at home,
+with the family.
+
+57
+00:04:05,461 --> 00:04:10,367
+This is a competition prototype,
 not a regulated medical device.
 
-49
-00:03:46,309 --> 00:03:48,510
+58
+00:04:10,407 --> 00:04:12,958
 Try it now at pulihin.vercel.app.

@@ -1,0 +1,110 @@
+{
+  "bagian": {
+    "latar-1": {
+      "model": "google/lyria-3-pro-preview",
+      "biayaUsd": 0.08,
+      "catatan": "Dibuat dengan versi awal prompt (struktur 5 bagian, 4:40); hasil 3:01.",
+      "dibuat": "2026-10-18T04:02:46.821Z",
+      "analisis": {
+        "vokal": false,
+        "instrumen": [
+          "piano",
+          "string ensemble"
+        ],
+        "suasana": "reflektif, hangat, dan emosional",
+        "bagian": [
+          {
+            "mulai": "0:00",
+            "selesai": "0:38",
+            "isi": "Intro piano yang lembut dengan iringan string tipis"
+          },
+          {
+            "mulai": "0:38",
+            "selesai": "1:15",
+            "isi": "Melodi string mulai masuk, membangun suasana hangat"
+          },
+          {
+            "mulai": "1:15",
+            "selesai": "1:50",
+            "isi": "Intensitas meningkat dengan arpeggio piano dan string yang lebih tebal"
+          },
+          {
+            "mulai": "1:50",
+            "selesai": "2:30",
+            "isi": "Klimaks emosional yang megah dengan aransemen string penuh"
+          },
+          {
+            "mulai": "2:30",
+            "selesai": "2:58",
+            "isi": "Outro piano yang perlahan mereda kembali ke keheningan"
+          }
+        ],
+        "akhir": "sustained chord",
+        "masalah": [
+          "loud swells"
+        ]
+      }
+    }
+  },
+  "ditolak": [
+    {
+      "berkas": "latar-2 (dengan suling)",
+      "biayaUsd": 0.08,
+      "alasan": "juri audio (Gemini) mendengar suara mirip vokal di tengah lagu; tidak dipakai"
+    },
+    {
+      "berkas": "latar-2 (tanpa suling)",
+      "biayaUsd": 0.08,
+      "alasan": "juri audio mendengar paduan suara (choir pad) 0:45-1:15; tidak dipakai",
+      "analisis": {
+        "vokal": true,
+        "instrumen": [
+          "piano",
+          "string ensemble",
+          "synthesizer pad",
+          "paduan suara (choir)",
+          "woodwinds"
+        ],
+        "suasana": "sinematik, emosional, damai, penuh harapan",
+        "bagian": [
+          {
+            "mulai": "0:00",
+            "selesai": "0:15",
+            "isi": "Intro piano solo yang lembut dengan latar belakang synth pad tipis"
+          },
+          {
+            "mulai": "0:15",
+            "selesai": "0:45",
+            "isi": "Melodi piano berlanjut diiringi masuknya string ensemble secara perlahan"
+          },
+          {
+            "mulai": "0:45",
+            "selesai": "1:15",
+            "isi": "Paduan suara (choir pad) masuk, menciptakan harmoni yang lebih megah dan emosional"
+          },
+          {
+            "mulai": "1:15",
+            "selesai": "1:45",
+            "isi": "Klimaks orkestrasi penuh dengan tambahan instrumen tiup kayu"
+          },
+          {
+            "mulai": "1:45",
+            "selesai": "2:10",
+            "isi": "Intensitas mereda, kembali ke permainan piano lembut hingga selesai"
+          }
+        ],
+        "akhir": "sustained chord, fade out",
+        "masalah": [
+          "lonjakan volume (loud swells) pada bagian klimaks (0:45 - 1:45) yang dapat menenggelamkan suara narator",
+          "frekuensi menengah (mid-range) dari string dan paduan suara yang cukup tebal berpotensi bentrok dengan vokal narasi"
+        ]
+      }
+    },
+    {
+      "berkas": "latar-2 percobaan seed 102",
+      "biayaUsd": 0,
+      "alasan": "400 dari penyedia, tidak ditagih"
+    }
+  ],
+  "totalBiayaUsd": 0.24
+}

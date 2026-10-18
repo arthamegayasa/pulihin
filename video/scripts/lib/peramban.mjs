@@ -13,7 +13,6 @@ import { dirname, join } from 'node:path';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer-core';
-import { getExercise, hitungSkor } from './skor-aplikasi.mjs';
 
 export const AKAR_VIDEO = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -115,14 +114,41 @@ const SKRIP_PENANDA = () => {
 };
 
 /**
+ * Pencatat suara aplikasi: setiap elemen audio/video yang diputar dicatat (event playing, pause, ended) di
+ * sessionStorage dengan jam dinding (ms). Hanya mengamati; tidak mengubah pemutaran. `catatanSuara()` lalu
+ * menerjemahkannya ke detik di dalam rekaman, untuk dicampur di Remotion pada detik yang sama.
+ */
+const SKRIP_SUARA = () => {
+  const simpan = (e) => {
+    const log = JSON.parse(sessionStorage.getItem('__logSuara') ?? '[]');
+    log.push(e);
+    sessionStorage.setItem('__logSuara', JSON.stringify(log));
+  };
+  const asli = HTMLMediaElement.prototype.play;
+  HTMLMediaElement.prototype.play = function (...argumen) {
+    const el = this;
+    if (!el.__pulihinDipantau) {
+      el.__pulihinDipantau = true;
+      for (const ev of ['playing', 'pause', 'ended']) {
+        el.addEventListener(ev, () => simpan({ ev, src: el.currentSrc || el.src, t: Date.now(), ct: el.currentTime }));
+      }
+    }
+    return asli.apply(this, argumen);
+  };
+};
+
+/**
  * Luncurkan Chrome tanpa jendela untuk satu perangkat (PONSEL atau DESKTOP) dengan profil
  * sementara yang bersih (tanpa riwayat, tanpa notifikasi). Mengembalikan
  * { halaman(), tutup(), zona }.
  *
  * --force-device-scale-factor wajib: tanpa itu screencast Chrome tanpa jendela hanya
  * mengirim frame seukuran piksel CSS (360x800), bukan piksel perangkat (1080x2400).
+ * --autoplay-policy: suara aplikasi (klip public/suara/) boleh diputar tanpa menunggu gestur, seperti di
+ * ponsel yang sudah disentuh pengguna; tanpa itu pemutar aplikasi jatuh ke speechSynthesis yang tidak terekam.
+ * `argTambahan`: mis. kamera palsu untuk sesi kamera (scripts/rekam-sesi.mjs).
  */
-export const luncurkan = async ({ chrome, jam = 9, base, perangkat }) => {
+export const luncurkan = async ({ chrome, jam = 9, base, perangkat, argTambahan = [] }) => {
   const profil = join(tmpdir(), `pulihin-rekam-${process.pid}-${perangkat.width}`);
   rmSync(profil, { recursive: true, force: true });
   const browser = await puppeteer.launch({
@@ -134,7 +160,9 @@ export const luncurkan = async ({ chrome, jam = 9, base, perangkat }) => {
       '--lang=id-ID',
       '--disable-notifications',
       '--force-color-profile=srgb',
+      '--autoplay-policy=no-user-gesture-required',
       `--force-device-scale-factor=${perangkat.deviceScaleFactor}`,
+      ...argTambahan,
     ],
     defaultViewport: null,
   });
@@ -148,6 +176,7 @@ export const luncurkan = async ({ chrome, jam = 9, base, perangkat }) => {
     await page.setViewport(perangkat);
     if (zona) await page.emulateTimezone(zona);
     await page.evaluateOnNewDocument(SKRIP_PENANDA);
+    await page.evaluateOnNewDocument(SKRIP_SUARA);
     page.on('pageerror', (e) => console.warn(`  [pageerror] ${e.message}`));
     return page;
   };
@@ -156,6 +185,55 @@ export const luncurkan = async ({ chrome, jam = 9, base, perangkat }) => {
     rmSync(profil, { recursive: true, force: true });
   };
   return { halaman, tutup, zona };
+};
+
+// ---------- suara aplikasi ----------
+
+const KATALOG_SUARA = JSON.parse(readFileSync(join(AKAR_VIDEO, '..', 'src', 'features', 'suara', 'katalogSuara.json'), 'utf8'));
+/** Nama berkas klip (public/suara/) -> teks segmen yang diucapkan, dari katalog aplikasi. */
+const TEKS_KLIP = Object.fromEntries(Object.entries(KATALOG_SUARA).map(([teks, e]) => [e.berkas, teks]));
+
+/** Kosongkan catatan suara (panggil tepat sebelum rekaman dimulai). */
+export const mulaiCatatanSuara = (page) => page.evaluate(() => sessionStorage.removeItem('__logSuara'));
+
+/**
+ * Klip suara aplikasi yang benar-benar berbunyi selama rekaman: [{ klip, detik, mulaiKlip, lama, teks }],
+ * `klip` = nama berkas di public/suara/ aplikasi, `detik` = detik di dalam rekaman saat mulai berbunyi
+ * (event playing), `mulaiKlip` = posisi awal di dalam klip, `lama` = sampai pause/ended (disela = lebih pendek
+ * dari klip). Hanya klip /suara/ (video peraga dan media lain diabaikan).
+ */
+export const catatanSuara = async (page, rek) => {
+  const log = await page.evaluate(() => JSON.parse(sessionStorage.getItem('__logSuara') ?? '[]'));
+  const hasil = [];
+  log.forEach((e, i) => {
+    if (e.ev !== 'playing' || !e.src.includes('/suara/')) return;
+    const akhir = log.slice(i + 1).find((x) => x.src === e.src && (x.ev === 'pause' || x.ev === 'ended'));
+    const klip = decodeURIComponent(new URL(e.src).pathname.split('/').pop());
+    const detik = (e.t - rek.t0) / 1000;
+    const lama = akhir ? (akhir.t - e.t) / 1000 : rek.durasi - detik;
+    if (detik < 0 || detik >= rek.durasi) return;
+    hasil.push({
+      klip,
+      detik: Math.round(detik * 1000) / 1000,
+      mulaiKlip: Math.round(e.ct * 1000) / 1000,
+      lama: Math.round(lama * 1000) / 1000,
+      teks: TEKS_KLIP[klip] ?? null,
+    });
+  });
+  return hasil;
+};
+
+/**
+ * Simpan catatan satu rekaman ke video/data/<nama> (kunci = nama berkas rekaman): suara-aplikasi.json
+ * (klip suara aplikasi) dan ketukan.json (detik ketukan, untuk bunyi ketukan dan penjajaran adegan).
+ */
+export const simpanCatatan = (nama, berkas, isi) => {
+  const jalur = join(AKAR_VIDEO, 'data', nama);
+  mkdirSync(dirname(jalur), { recursive: true });
+  const semua = existsSync(jalur) ? JSON.parse(readFileSync(jalur, 'utf8')) : {};
+  semua[berkas] = isi;
+  const urut = Object.fromEntries(Object.keys(semua).sort().map((k) => [k, semua[k]]));
+  writeFileSync(jalur, `${JSON.stringify(urut, null, 1)}\n`);
 };
 
 // ---------- interaksi ----------
@@ -298,7 +376,7 @@ export const buka = async (page, base, jalur, teksTunggu) => {
 // ---------- persiapan data (lewat tombol aplikasi sendiri) ----------
 
 /**
- * Peran Pasien lewat layar Pilih Peran, petunjuk suara dimatikan lewat Pengaturan, lalu
+ * Peran Pasien lewat layar Pilih Peran, petunjuk suara DINYALAKAN lewat Pengaturan (suara aplikasi ikut direkam), lalu
  * Pengaturan > Data Demo > "Ada tanda perlu perhatian" > Setel Ulang Data Demo.
  */
 export const siapkanDemo = async (page, base) => {
@@ -308,7 +386,7 @@ export const siapkanDemo = async (page, base) => {
     await jeda(800);
   }
   await buka(page, base, '/app/pengaturan', 'Pengaturan dan Demo');
-  await aturSaklar(page, 'Petunjuk suara', false);
+  await aturSaklar(page, 'Petunjuk suara', true);
   await ketukDiam(page, 'Pasien', { cocok: 'sama' });
   await ketukDiam(page, 'Ada tanda perlu perhatian', { cocok: 'awal' });
   await ketukDiam(page, 'Setel Ulang Data Demo');
@@ -341,18 +419,8 @@ export const pilihPeran = async (page, base, label) => {
   await jeda(600);
 };
 
-/**
- * Sesi Tekuk Siku hari ini yang SELESAI untuk Pak Budi, disiapkan untuk adegan Ringkasan
- * Sesi / Beranda / Untuk Keluarga tanpa menyalakan kamera.
- *
- * Jalur data sepenuhnya milik aplikasi: Pengaturan > Simpan cadangan (berkas .json) mengunduh cadangan
- * data demo; skrip menambahkan SATU sesi gerak berlabel demo (isDemo: true) beserta catatan
- * per repetisinya; skor, komponen skor, dan saran dihitung dengan `hitungSkor` milik aplikasi
- * (src/features/pose/scoring.ts) dari catatan repetisi itu; lalu Pengaturan > Pulihkan dari cadangan
- * memulihkan berkas itu lewat validasi aplikasi. Berkas cadangan yang diimpor disimpan di
- * `jalurSalinan` agar dapat diperiksa.
- */
-export const imporSesiDemo = async (page, base, jalurSalinan) => {
+/** Unduh cadangan data lewat Pengaturan > Simpan cadangan (berkas .json); mengembalikan isinya. */
+export const unduhCadangan = async (page, base) => {
   const unduhan = join(tmpdir(), `pulihin-unduh-${process.pid}`);
   rmSync(unduhan, { recursive: true, force: true });
   mkdirSync(unduhan, { recursive: true });
@@ -365,79 +433,41 @@ export const imporSesiDemo = async (page, base, jalurSalinan) => {
     await jeda(200);
     berkas = readdirSync(unduhan).find((n) => n.endsWith('.json'));
   }
+  await cdp.detach();
   if (!berkas) throw new Error('Simpan cadangan tidak menghasilkan berkas');
-  const bundel = JSON.parse(readFileSync(join(unduhan, berkas), 'utf8'));
+  const isi = JSON.parse(readFileSync(join(unduhan, berkas), 'utf8'));
+  rmSync(unduhan, { recursive: true, force: true });
+  return isi;
+};
 
-  // "Hari ini" dan jam menurut peramban (zona waktu yang sama dengan aplikasi).
+/** Sesi kamera asli yang direkam scripts/rekam-sesi.mjs (sesi + catatan repetisi dari cadangan aplikasi). */
+export const JALUR_SESI_ASLI = join(AKAR_VIDEO, 'data', 'sesi-asli.json');
+
+/**
+ * Sesi Tekuk Siku hari ini yang SELESAI untuk Pak Budi, untuk adegan Ringkasan Sesi / Beranda / Untuk Keluarga
+ * tanpa menyalakan kamera lagi. Isinya = sesi kamera ASLI yang direkam `npm run rekam-sesi` (skor, komponen,
+ * saran, durasi, dan catatan per repetisi persis seperti yang dihitung aplikasi saat itu), hanya tanggal dan
+ * jamnya dipindah ke hari ini dan diberi label demo (isDemo: true).
+ *
+ * Jalur data sepenuhnya milik aplikasi: Pengaturan > Simpan cadangan mengunduh cadangan data demo, skrip
+ * menambahkan sesi itu, lalu Pengaturan > Pulihkan dari cadangan memulihkannya lewat validasi aplikasi.
+ * Berkas cadangan yang diimpor disimpan di `jalurSalinan` agar dapat diperiksa.
+ */
+export const imporSesiDemo = async (page, base, jalurSalinan) => {
+  if (!existsSync(JALUR_SESI_ASLI)) throw new Error('data/sesi-asli.json belum ada: jalankan npm run rekam-sesi lebih dulu');
+  const asli = JSON.parse(readFileSync(JALUR_SESI_ASLI, 'utf8'));
+  const bundel = await unduhCadangan(page, base);
+
+  // "Hari ini" dan jam menurut peramban (zona waktu yang sama dengan aplikasi): sesi dimulai 25 menit lalu.
   const { hariIni, mulaiAt } = await page.evaluate(() => {
     const d = new Date();
     const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    // Sesi dimulai 25 menit lalu (tetap di hari yang sama).
     const mulai = Math.max(new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 5).getTime(), Date.now() - 25 * 60_000);
     return { hariIni: iso, mulaiAt: mulai };
   });
-
-  const budi = bundel.profiles.find((p) => p.id === 'budi');
-  const def = getExercise('fleksi-siku');
-  const program = bundel.programs.find((p) => p.patientId === 'budi');
-  const item = program?.items.find((i) => i.latihanId === 'fleksi-siku');
-  const target = item?.targetRepetisi ?? def.targetRepetisiDefault;
   const id = `demo-video-budi-${hariIni}-fleksi-siku`;
-
-  // Sama dengan sesi kamera 3D yang benar-benar direkam (video/blender/out/sesi-meta.json; Ringkasan
-  // aplikasi di layar-02: skor 100, 10/10, 37 detik): sepuluh repetisi terhitung berirama ±3,3 dtk,
-  // satu koreksi bahu pada repetisi ke-7. Sudut dalam derajat fleksi siku, durasi siklus dalam detik.
-  const RENCANA = [
-    { sudut: 127, durasi: 3.3 },
-    { sudut: 130, durasi: 3.3 },
-    { sudut: 126, durasi: 3.3 },
-    { sudut: 131, durasi: 3.3 },
-    { sudut: 128, durasi: 3.3 },
-    { sudut: 129, durasi: 3.4 },
-    { sudut: 124, durasi: 3.3, koreksi: ['bahu-terangkat'] },
-    { sudut: 130, durasi: 3.3 },
-    { sudut: 127, durasi: 3.3 },
-    { sudut: 129, durasi: 3.3 },
-  ];
-  /** Durasi sesi yang tampil di Ringkasan sesi 3D asli. */
-  const DURASI_SESI_DETIK = 37;
-  const repLogs = RENCANA.map((r, i) => ({
-    sessionId: id,
-    nomor: i + 1,
-    dihitung: r.dihitung ?? true,
-    sudutPuncak: r.sudut,
-    durasiSiklusDetik: r.durasi,
-    koreksi: r.koreksi ?? [],
-  }));
-  const tercapai = Math.min(target, repLogs.filter((l) => l.dihitung).length);
-  const skor = hitungSkor({
-    repLogs,
-    targetRepetisi: target,
-    ambangAtas: def.ambangAtas,
-    ambangBawah: def.ambangBawah,
-    tempoTargetDetik: def.tempoTargetDetik,
-  });
-  const durasiDetik = DURASI_SESI_DETIK;
-  const sesi = {
-    id,
-    patientId: 'budi',
-    tanggal: hariIni,
-    mulaiAt,
-    selesaiAt: mulaiAt + durasiDetik * 1000,
-    jenis: 'gerak',
-    latihanId: 'fleksi-siku',
-    kategoriKata: null,
-    repetisiTarget: target,
-    repetisiTercapai: tercapai,
-    skor: skor.skor,
-    skorKomponen: skor.skorKomponen,
-    ringkasanAfasia: null,
-    durasiDetik,
-    selesai: true,
-    saran: skor.saran,
-    sisi: budi?.sisiLemah ?? 'kanan',
-    isDemo: true,
-  };
+  const sesi = { ...asli.sesi, id, tanggal: hariIni, mulaiAt, selesaiAt: mulaiAt + (asli.sesi.selesaiAt - asli.sesi.mulaiAt), isDemo: true };
+  const repLogs = asli.repLogs.map((l) => ({ ...l, sessionId: id }));
   bundel.sessions = bundel.sessions.filter((s) => s.id !== id).concat(sesi);
   bundel.repLogs = bundel.repLogs.filter((l) => l.sessionId !== id).concat(repLogs);
 
@@ -451,9 +481,7 @@ export const imporSesiDemo = async (page, base, jalurSalinan) => {
   await tungguTeks(page, 'Pulihkan dari berkas cadangan?');
   await ketukDiam(page, 'Ya, Pulihkan');
   await jeda(1500);
-  rmSync(unduhan, { recursive: true, force: true });
-  await cdp.detach();
-  return { sesi, label: skor.label };
+  return { sesi };
 };
 
 // ---------- perekam layar (CDP screencast -> H.264) ----------
@@ -502,7 +530,10 @@ export class Perekam {
       requestAnimationFrame(() => requestAnimationFrame(() => d.remove()));
     });
     await adaPertama;
-    this.t0 = Date.now();
+    // Jam rekaman = stempel waktu frame pertama (detik sejak epoch) bila tersedia: video frame k = t0 + k/30,
+    // sehingga detik ketukan dan suara aplikasi sejajar dengan gambar, bukan dengan saat frame tiba di Node.
+    const ts0 = this.frame[0].ts * 1000;
+    this.t0 = Math.abs(ts0 - Date.now()) < 3000 ? ts0 : Date.now();
   }
 
   /** Tunggu sampai detik ke-`detik` rekaman (jadwal ketukan dibuat dalam detik berkas). */
@@ -527,13 +558,14 @@ export class Perekam {
   /**
    * Susun MP4 di `keluar` (panggil setelah peramban ditutup agar memori cukup). Untuk setiap
    * frame keluaran (1/30 dtk) dipakai frame screencast terakhir yang sudah tampil pada saat
-   * itu, lalu dialirkan ke ffmpeg sebagai image2pipe 30 fps (CFR). Dicoba ulang dua kali bila
+   * itu, lalu dialirkan ke ffmpeg sebagai image2pipe 30 fps (CFR). `ukuran` = ukuran berkas keluaran
+   * (bawaan ukuran tangkapan; ponsel disimpan 720x1600 agar render hemat memori). Dicoba ulang dua kali bila
    * ffmpeg gagal (mis. memori sistem sedang penuh). Mengembalikan { durasi, frameSumber }.
    */
-  async susun(keluar, ffmpeg) {
+  async susun(keluar, ffmpeg, ukuran = { lebar: this.lebar, tinggi: this.tinggi }) {
     const lebarAsli = lebarJpeg(await readFile(join(this.kerja, this.frame[0].nama)));
-    const skala = lebarAsli === this.lebar ? [] : [`scale=${this.lebar}:${this.tinggi}:flags=lanczos`];
-    if (skala.length) console.warn(`  [peringatan] frame ${lebarAsli} px, diskalakan ke ${this.lebar} px (kurang tajam)`);
+    if (lebarAsli !== this.lebar) console.warn(`  [peringatan] frame ${lebarAsli} px, bukan ${this.lebar} px (kurang tajam)`);
+    const skala = lebarAsli === ukuran.lebar ? [] : [`scale=${ukuran.lebar}:${ukuran.tinggi}:flags=lanczos`];
     mkdirSync(dirname(keluar), { recursive: true });
     for (let percobaan = 1; ; percobaan++) {
       try {
@@ -555,9 +587,9 @@ export class Perekam {
       [
         '-hide_banner', '-loglevel', 'error', '-y',
         '-framerate', String(FPS_REKAM), '-f', 'image2pipe', '-c:v', 'mjpeg', '-i', 'pipe:0',
-        '-vf', [...skala, 'format=yuv420p'].join(','),
+        '-vf', [...skala, 'format=yuv420p'].join(','), '-color_range', 'tv',
         '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-tune', 'stillimage',
-        '-threads', '2', '-rc-lookahead', '20',
+        '-threads', '2', '-rc-lookahead', '20', '-g', '30', '-keyint_min', '30', '-sc_threshold', '0',
         '-r', String(FPS_REKAM), '-movflags', '+faststart', '-an',
         keluar,
       ],

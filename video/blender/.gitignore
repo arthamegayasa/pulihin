@@ -1,4 +1,0 @@
-# Render, rekaman, y4m, dan frame PNG dibuat ulang dari skrip (lihat docs/video/produksi-3d.md).
-out/
-*.blend1
-__pycache__/

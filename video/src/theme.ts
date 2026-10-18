@@ -4,9 +4,14 @@ export const WARNA = {
   primer: '#0B4F4A',
   latar: '#EAF2F0',
   aksen: '#C46A1B',
+  /** Aksen di atas footage gelap (oranye lebih terang agar kontras). */
+  aksenTerang: '#E8954A',
   teks: '#1A2B2E',
+  teksLembut: '#4B5D60',
   putih: '#FFFFFF',
   bezel: '#121A1C',
+  /** Latar sinematik gelap (teal sangat tua) di bawah footage AI. */
+  malam: '#0A1A19',
 } as const;
 
 export const FONT = "'Plus Jakarta Sans', system-ui, sans-serif";

@@ -16,8 +16,10 @@
     "paper": "node --disable-warning=ExperimentalWarning scripts/tangkap-paper.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "narasi": "node --disable-warning=ExperimentalWarning scripts/narasi.mjs",
-    "render:final": "npm run scan && remotion render src/index.ts PulihinDemo out/pulihin-demo-final.mp4 --codec=h264 --crf=18 --audio-codec=aac --audio-bitrate=192k --concurrency=2 --gl=angle --props=props/tanpa-subtitle.json",
-    "render:final-en": "npm run scan && remotion render src/index.ts PulihinDemo out/pulihin-demo-final-en.mp4 --codec=h264 --crf=18 --audio-codec=aac --audio-bitrate=192k --concurrency=2 --gl=angle"
+    "rekam-sesi": "node --disable-warning=ExperimentalWarning scripts/rekam-sesi.mjs",
+    "musik": "node --disable-warning=ExperimentalWarning scripts/musik.mjs",
+    "render:final": "npm run scan && remotion render src/index.ts PulihinDemo out/pulihin-demo-final.mp4 --codec=h264 --crf=18 --audio-codec=aac --audio-bitrate=192k --concurrency=2 --gl=angle --props=props/tanpa-subtitle.json && node scripts/normalisasi-audio.mjs out/pulihin-demo-final.mp4",
+    "render:final-en": "npm run scan && remotion render src/index.ts PulihinDemo out/pulihin-demo-final-en.mp4 --codec=h264 --crf=18 --audio-codec=aac --audio-bitrate=192k --concurrency=2 --gl=angle && node scripts/normalisasi-audio.mjs out/pulihin-demo-final-en.mp4"
   },
   "dependencies": {
     "@fontsource-variable/plus-jakarta-sans": "5.3.0",

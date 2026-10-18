@@ -1,0 +1,121 @@
+{
+  "sesi": {
+    "id": "sesi-mvdcfdyf-066e8ac2",
+    "patientId": "budi",
+    "tanggal": "2026-10-18",
+    "mulaiAt": 1792298796275,
+    "selesaiAt": 1792298832804,
+    "jenis": "gerak",
+    "latihanId": "fleksi-siku",
+    "kategoriKata": null,
+    "repetisiTarget": 10,
+    "repetisiTercapai": 10,
+    "skor": 96,
+    "skorKomponen": {
+      "repetisi": 100,
+      "rentang": 100,
+      "tempo": 78
+    },
+    "ringkasanAfasia": null,
+    "durasiDetik": 36,
+    "selesai": true,
+    "saran": "Gerakan sudah hati-hati. Besok coba jaga irama yang sama di setiap gerakan.",
+    "sisi": "kanan",
+    "rentangPersen": 100,
+    "isDemo": false
+  },
+  "repLogs": [
+    {
+      "nomor": 1,
+      "dihitung": true,
+      "sudutPuncak": 178.2,
+      "durasiSiklusDetik": 1.7,
+      "koreksi": [],
+      "sessionId": "sesi-mvdcfdyf-066e8ac2",
+      "id": 1465
+    },
+    {
+      "nomor": 2,
+      "dihitung": true,
+      "sudutPuncak": 178.1,
+      "durasiSiklusDetik": 1.56,
+      "koreksi": [],
+      "sessionId": "sesi-mvdcfdyf-066e8ac2",
+      "id": 1466
+    },
+    {
+      "nomor": 3,
+      "dihitung": true,
+      "sudutPuncak": 179.3,
+      "durasiSiklusDetik": 1.63,
+      "koreksi": [],
+      "sessionId": "sesi-mvdcfdyf-066e8ac2",
+      "id": 1467
+    },
+    {
+      "nomor": 4,
+      "dihitung": true,
+      "sudutPuncak": 178,
+      "durasiSiklusDetik": 1.97,
+      "koreksi": [],
+      "sessionId": "sesi-mvdcfdyf-066e8ac2",
+      "id": 1468
+    },
+    {
+      "nomor": 5,
+      "dihitung": true,
+      "sudutPuncak": 171.4,
+      "durasiSiklusDetik": 1.69,
+      "koreksi": [],
+      "sessionId": "sesi-mvdcfdyf-066e8ac2",
+      "id": 1469
+    },
+    {
+      "nomor": 6,
+      "dihitung": true,
+      "sudutPuncak": 171,
+      "durasiSiklusDetik": 1.61,
+      "koreksi": [],
+      "sessionId": "sesi-mvdcfdyf-066e8ac2",
+      "id": 1470
+    },
+    {
+      "nomor": 7,
+      "dihitung": true,
+      "sudutPuncak": 170.1,
+      "durasiSiklusDetik": 4,
+      "koreksi": [
+        "bahu-terangkat"
+      ],
+      "sessionId": "sesi-mvdcfdyf-066e8ac2",
+      "id": 1471
+    },
+    {
+      "nomor": 8,
+      "dihitung": true,
+      "sudutPuncak": 170.5,
+      "durasiSiklusDetik": 1.56,
+      "koreksi": [],
+      "sessionId": "sesi-mvdcfdyf-066e8ac2",
+      "id": 1472
+    },
+    {
+      "nomor": 9,
+      "dihitung": true,
+      "sudutPuncak": 178.2,
+      "durasiSiklusDetik": 1.68,
+      "koreksi": [],
+      "sessionId": "sesi-mvdcfdyf-066e8ac2",
+      "id": 1473
+    },
+    {
+      "nomor": 10,
+      "dihitung": true,
+      "sudutPuncak": 178.1,
+      "durasiSiklusDetik": 1.57,
+      "koreksi": [],
+      "sessionId": "sesi-mvdcfdyf-066e8ac2",
+      "id": 1474
+    }
+  ]
+}

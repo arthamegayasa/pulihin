@@ -1,227 +1,353 @@
 {
-  "dipindai": "2026-10-15T05:40:21.909Z",
+  "dipindai": "2026-10-18T05:07:12.281Z",
   "footage": {
-    "broll-kertas-program.mp4": {
-      "bytes": 3642996,
-      "durasi": 10,
+    "ai-01-pagi.mp4": {
+      "bytes": 28005014,
+      "durasi": 23.933,
       "lebar": 1920,
       "tinggi": 1080
     },
-    "broll-pemeran-ragu.mp4": {
-      "bytes": 3943142,
-      "durasi": 11,
+    "ai-02-kertas.mp4": {
+      "bytes": 9297907,
+      "durasi": 6.533,
       "lebar": 1920,
       "tinggi": 1080
     },
-    "kamera-afasia-lebar.mp4": {
-      "bytes": 3597788,
-      "durasi": 22,
-      "lebar": 1280,
-      "tinggi": 720
+    "ai-03-ragu.mp4": {
+      "bytes": 9135595,
+      "durasi": 8,
+      "lebar": 1920,
+      "tinggi": 1080
     },
-    "kamera-sesi-lebar.mp4": {
-      "bytes": 7373963,
-      "durasi": 48.8,
-      "lebar": 1280,
-      "tinggi": 720
+    "ai-04-pasang-ponsel.mp4": {
+      "bytes": 10019188,
+      "durasi": 8,
+      "lebar": 1920,
+      "tinggi": 1080
+    },
+    "ai-05-latihan-lebar.mp4": {
+      "bytes": 18396313,
+      "durasi": 16.633,
+      "lebar": 1920,
+      "tinggi": 1080
+    },
+    "ai-06-rina.mp4": {
+      "bytes": 8186895,
+      "durasi": 8,
+      "lebar": 1920,
+      "tinggi": 1080
+    },
+    "ai-07-bicara.mp4": {
+      "bytes": 9304466,
+      "durasi": 8,
+      "lebar": 1920,
+      "tinggi": 1080
+    },
+    "ai-07-bicara.wav": {
+      "bytes": 1536078,
+      "durasi": 8,
+      "lebar": null,
+      "tinggi": null
+    },
+    "ai-08-penutup.mp4": {
+      "bytes": 30605025,
+      "durasi": 20.2,
+      "lebar": 1920,
+      "tinggi": 1080
     },
     "layar-01-beranda-detail.mp4": {
-      "bytes": 3384997,
-      "durasi": 21.5,
+      "bytes": 3990025,
+      "durasi": 34.5,
       "lebar": 720,
       "tinggi": 1600
     },
     "layar-02-sesi-tekuk-siku.mp4": {
-      "bytes": 7630594,
-      "durasi": 48.8,
+      "bytes": 13135588,
+      "durasi": 49.267,
       "lebar": 720,
       "tinggi": 1600
     },
     "layar-03-ringkasan-beranda.mp4": {
-      "bytes": 6931850,
-      "durasi": 51,
-      "lebar": 720,
-      "tinggi": 1600
-    },
-    "layar-04-keluarga.mp4": {
-      "bytes": 8114797,
+      "bytes": 4610164,
       "durasi": 31,
       "lebar": 720,
       "tinggi": 1600
     },
+    "layar-04-keluarga.mp4": {
+      "bytes": 4597416,
+      "durasi": 25.5,
+      "lebar": 720,
+      "tinggi": 1600
+    },
     "layar-05-afasia.mp4": {
-      "bytes": 2304619,
-      "durasi": 31.5,
+      "bytes": 2345948,
+      "durasi": 32,
       "lebar": 720,
       "tinggi": 1600
     },
     "layar-06-klinisi.mp4": {
-      "bytes": 5543429,
-      "durasi": 26,
-      "lebar": 1280,
-      "tinggi": 720
-    },
-    "penutup-3d.mp4": {
-      "bytes": 9005043,
-      "durasi": 27,
+      "bytes": 6180646,
+      "durasi": 23,
       "lebar": 1920,
       "tinggi": 1080
+    },
+    "pov-tekuk-siku.mp4": {
+      "bytes": 12462929,
+      "durasi": 30.133,
+      "lebar": 768,
+      "tinggi": 768
     }
   },
   "audio": {
-    "aplikasi/N11-app.mp3": {
-      "bytes": 66396,
-      "durasi": 3.291,
+    "aplikasi/0e4c9fa5de79-7bea7b.mp3": {
+      "bytes": 43930,
+      "durasi": 2.168,
+      "lebar": null,
+      "tinggi": null
+    },
+    "aplikasi/272b34f0b556-723381.mp3": {
+      "bytes": 20943,
+      "durasi": 1.019,
+      "lebar": null,
+      "tinggi": null
+    },
+    "aplikasi/40a13c0f62f6-900179.mp3": {
+      "bytes": 34526,
+      "durasi": 1.698,
+      "lebar": null,
+      "tinggi": null
+    },
+    "aplikasi/4a9019e82a4e-712f08.mp3": {
+      "bytes": 18853,
+      "durasi": 0.914,
+      "lebar": null,
+      "tinggi": null
+    },
+    "aplikasi/69234ae90aa5-bea565.mp3": {
+      "bytes": 59604,
+      "durasi": 2.952,
+      "lebar": null,
+      "tinggi": null
+    },
+    "aplikasi/6a102d29c868-cfcc1e.mp3": {
+      "bytes": 49155,
+      "durasi": 2.429,
+      "lebar": null,
+      "tinggi": null
+    },
+    "aplikasi/74c143a625fb-82bbf0.mp3": {
+      "bytes": 13628,
+      "durasi": 0.653,
+      "lebar": null,
+      "tinggi": null
+    },
+    "aplikasi/81cc0f7859fb-d20f36.mp3": {
+      "bytes": 12583,
+      "durasi": 0.601,
+      "lebar": null,
+      "tinggi": null
+    },
+    "aplikasi/a8408674c19e-bdae94.mp3": {
+      "bytes": 11538,
+      "durasi": 0.549,
+      "lebar": null,
+      "tinggi": null
+    },
+    "aplikasi/b2b57c0f660d-4e5677.mp3": {
+      "bytes": 28779,
+      "durasi": 1.411,
+      "lebar": null,
+      "tinggi": null
+    },
+    "aplikasi/b48eba6533e7-5b2b43.mp3": {
+      "bytes": 137971,
+      "durasi": 6.87,
+      "lebar": null,
+      "tinggi": null
+    },
+    "aplikasi/c347fc36eb15-2bdb8b.mp3": {
+      "bytes": 17285,
+      "durasi": 0.836,
+      "lebar": null,
+      "tinggi": null
+    },
+    "aplikasi/ecb381cfa2df-4918aa.mp3": {
+      "bytes": 13106,
+      "durasi": 0.627,
+      "lebar": null,
+      "tinggi": null
+    },
+    "aplikasi/f3234ada1ffb-e76933.mp3": {
+      "bytes": 19375,
+      "durasi": 0.94,
+      "lebar": null,
+      "tinggi": null
+    },
+    "aplikasi/fdd7ff23bbff-2b5132.mp3": {
+      "bytes": 49677,
+      "durasi": 2.456,
+      "lebar": null,
+      "tinggi": null
+    },
+    "musik/latar-1.mp3": {
+      "bytes": 4360215,
+      "durasi": 181.42,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N01.mp3": {
-      "bytes": 112894,
-      "durasi": 5.616,
+      "bytes": 125432,
+      "durasi": 6.243,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N02.mp3": {
-      "bytes": 92518,
-      "durasi": 4.598,
+      "bytes": 108192,
+      "durasi": 5.381,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N03.mp3": {
-      "bytes": 148943,
-      "durasi": 7.419,
+      "bytes": 165661,
+      "durasi": 8.255,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N04.mp3": {
-      "bytes": 56992,
-      "durasi": 2.821,
+      "bytes": 107669,
+      "durasi": 5.355,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N05.mp3": {
-      "bytes": 110804,
-      "durasi": 5.512,
+      "bytes": 173498,
+      "durasi": 8.647,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N06.mp3": {
-      "bytes": 151555,
-      "durasi": 7.549,
+      "bytes": 182379,
+      "durasi": 9.091,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N07.mp3": {
-      "bytes": 193351,
-      "durasi": 9.639,
+      "bytes": 186559,
+      "durasi": 9.3,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N08.mp3": {
-      "bytes": 168796,
-      "durasi": 8.411,
+      "bytes": 187604,
+      "durasi": 9.352,
       "lebar": null,
       "tinggi": null
     },
-    "narasi/N09.mp3": {
-      "bytes": 196485,
-      "durasi": 9.796,
+    "narasi/N09a.mp3": {
+      "bytes": 88861,
+      "durasi": 4.415,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N09b.mp3": {
+      "bytes": 87816,
+      "durasi": 4.362,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N10.mp3": {
-      "bytes": 51245,
-      "durasi": 2.534,
+      "bytes": 49677,
+      "durasi": 2.456,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N11a.mp3": {
-      "bytes": 33481,
-      "durasi": 1.646,
+      "bytes": 46543,
+      "durasi": 2.299,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N11b.mp3": {
-      "bytes": 97743,
-      "durasi": 4.859,
-      "lebar": null,
-      "tinggi": null
-    },
-    "narasi/N13.mp3": {
-      "bytes": 111326,
-      "durasi": 5.538,
+      "bytes": 88861,
+      "durasi": 4.415,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N14.mp3": {
-      "bytes": 182902,
-      "durasi": 9.117,
+      "bytes": 155734,
+      "durasi": 7.758,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N15.mp3": {
-      "bytes": 137971,
-      "durasi": 6.87,
+      "bytes": 158869,
+      "durasi": 7.915,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N16.mp3": {
-      "bytes": 155212,
-      "durasi": 7.732,
+      "bytes": 147375,
+      "durasi": 7.34,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N17.mp3": {
-      "bytes": 174020,
-      "durasi": 8.673,
+      "bytes": 124387,
+      "durasi": 6.191,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N18.mp3": {
-      "bytes": 140061,
-      "durasi": 6.975,
+      "bytes": 153122,
+      "durasi": 7.628,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N19.mp3": {
-      "bytes": 154167,
-      "durasi": 7.68,
+      "bytes": 138494,
+      "durasi": 6.896,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N20a.mp3": {
-      "bytes": 74232,
-      "durasi": 3.683,
+      "bytes": 133792,
+      "durasi": 6.661,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N20b.mp3": {
-      "bytes": 156779,
-      "durasi": 7.811,
+      "bytes": 47587,
+      "durasi": 2.351,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N21.mp3": {
-      "bytes": 124910,
-      "durasi": 6.217,
+      "bytes": 135359,
+      "durasi": 6.74,
       "lebar": null,
       "tinggi": null
     },
     "narasi/N22.mp3": {
-      "bytes": 112894,
-      "durasi": 5.616,
+      "bytes": 144241,
+      "durasi": 7.184,
       "lebar": null,
       "tinggi": null
     },
-    "narasi/N23a.mp3": {
-      "bytes": 139016,
-      "durasi": 6.922,
+    "narasi/N23.mp3": {
+      "bytes": 120208,
+      "durasi": 5.982,
       "lebar": null,
       "tinggi": null
     },
-    "narasi/N23b.mp3": {
-      "bytes": 137971,
-      "durasi": 6.87,
+    "narasi/N24a.mp3": {
+      "bytes": 183947,
+      "durasi": 9.169,
+      "lebar": null,
+      "tinggi": null
+    },
+    "narasi/N24b.mp3": {
+      "bytes": 150510,
+      "durasi": 7.497,
       "lebar": null,
       "tinggi": null
     },

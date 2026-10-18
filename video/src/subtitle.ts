@@ -1,9 +1,9 @@
 /**
- * Pembentuk isyarat (cue) subtitle dari timeline.ts. Dipakai oleh CaptionTrack
- * (subtitle tertanam) dan scripts/build-srt.mjs (berkas SRT), sehingga
- * keduanya selalu identik.
+ * Pembentuk isyarat (cue) subtitle dari timeline.ts: narasi, plus suara penting aplikasi dan ucapan di video AI
+ * (diberi penanda pembicara). Dipakai oleh CaptionTrack (subtitle tertanam) dan scripts/build-srt.mjs (berkas
+ * SRT), sehingga keduanya selalu identik.
  */
-import { ADEGAN, type Adegan, type BarisNarasi } from './timeline.ts';
+import { ADEGAN, semuaSuaraPenting, type Adegan, type BarisNarasi } from './timeline.ts';
 
 export type Bahasa = 'id' | 'en';
 
@@ -139,15 +139,42 @@ const isyaratBaris = (adegan: Adegan, baris: BarisNarasi, bahasa: Bahasa): Omit<
   });
 };
 
+/** Isyarat untuk suara penting (klip aplikasi, ucapan video AI), diberi penanda pembicara. */
+const isyaratSuara = (bahasa: Bahasa): Omit<Isyarat, 'nomor'>[] =>
+  semuaSuaraPenting().flatMap((s) => {
+    const teks = bahasa === 'id' ? s.teks : s.teksEn;
+    if (!teks) return [];
+    const penanda = s.sumber === 'aplikasi' ? (bahasa === 'id' ? '[Aplikasi]' : '[App]') : '[Pak Budi, AI]';
+    const isi = `${penanda} ${teks}`;
+    const [mulai, akhir] = s.ucapan;
+    const lama = Math.max(akhir - mulai, 1.2);
+    // Kalimat panjang (mis. pengingat keselamatan) dipecah seperti narasi, sebanding panjang teksnya.
+    const { potongan, durasi } = pecah(isi, lama);
+    let t = mulai;
+    return potongan.map((p, i) => {
+      const baris = bungkus(p);
+      if (!baris) throw new Error(`Isyarat suara tidak muat 2 baris: "${p}"`);
+      const isyarat = { mulai: bulat(t), selesai: bulat(t + Math.min(durasi[i], MAKS_DETIK_ISYARAT)), baris, barisNarasiId: `suara-${s.adeganId}`, adeganId: s.adeganId };
+      t += durasi[i];
+      return isyarat;
+    });
+  });
+
 export const buatIsyarat = (bahasa: Bahasa): Isyarat[] => {
-  const semua = ADEGAN.flatMap((a) => a.narasi.flatMap((b) => isyaratBaris(a, b, bahasa)));
+  const semua = [...ADEGAN.flatMap((a) => a.narasi.flatMap((b) => isyaratBaris(a, b, bahasa))), ...isyaratSuara(bahasa)];
   semua.sort((x, y) => x.mulai - y.mulai);
-  return semua.map((s, i) => {
+  const hasil = semua.map((s, i) => {
     const berikut = semua[i + 1];
     const selesai =
       berikut && s.selesai > berikut.mulai - JARAK_ANTAR_ISYARAT ? bulat(berikut.mulai - JARAK_ANTAR_ISYARAT) : s.selesai;
     return { ...s, selesai, nomor: i + 1 };
   });
+  // Isyarat yang terpotong isyarat berikut menjadi < 1 dtk dimulai sedikit lebih awal (bila ada ruang).
+  hasil.forEach((s, i) => {
+    const sebelum = hasil[i - 1];
+    if (s.selesai - s.mulai < MIN_DETIK_ISYARAT) s.mulai = bulat(Math.max(s.selesai - MIN_DETIK_ISYARAT - 0.01, sebelum ? sebelum.selesai + JARAK_ANTAR_ISYARAT : 0));
+  });
+  return hasil;
 };
 
 /** Periksa aturan keterbacaan. Mengembalikan daftar pelanggaran (kosong = lolos). */

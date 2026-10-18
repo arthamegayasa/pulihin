@@ -1,69 +1,63 @@
 {
   "N02": {
-    "hash": "bf66daf7d0626958",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Namun, hanya empat puluh sembilan koma dua persen penyandang stroke yang kontrol rutin."
+    "hash": "531e2eb692c5110c",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[calmly] Namun, hanya empat puluh sembilan koma dua persen penyandang stroke yang kontrol rutin."
   },
   "N01": {
-    "hash": "8638e64ff83aee0e",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Menurut Kementerian Kesehatan, stroke menyebabkan delapan belas koma lima persen kematian di Indonesia."
+    "hash": "f2058796bb72f6d7",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[calmly] Menurut Kementerian Kesehatan, stroke menyebabkan delapan belas koma lima persen kematian di Indonesia."
   },
   "N04": {
-    "hash": "4cd4e9d605287995",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Pasien pulang membawa program latihan di atas kertas."
+    "hash": "5d85b23122aa80be",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[thoughtfully] Sepulang dari rumah sakit, program latihan sering hanya berupa selembar kertas."
   },
   "N03": {
-    "hash": "3e075bc3fed775be",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Tenaga terapi pun terbatas: hanya sembilan ratus dua puluh enam tenaga keterapian fisik, di lebih dari sepuluh ribu puskesmas."
+    "hash": "1c6e64ebee7465e5",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[calmly] Tenaga terapi pun terbatas: hanya sembilan ratus dua puluh enam tenaga keterapian fisik, di lebih dari sepuluh ribu puskesmas."
   },
   "N05": {
-    "hash": "d315ed52d64f0991",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Di rumah, mereka ragu apakah gerakannya sudah benar. Di situlah pendampingan terputus."
+    "hash": "6ac831b6289fb86d",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[thoughtfully] Di rumah, pertanyaannya sederhana tetapi berat: apakah gerakannya sudah benar? Di situlah pendampingan sering terputus."
   },
   "N06": {
-    "hash": "fcb2cdf10a955474",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Pulihin mengubah ponsel biasa menjadi pendamping latihan. Begitu dibuka, Latihan Hari Ini langsung tampil dalam huruf besar."
+    "hash": "bc78a7ed16f21465",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Dengan Pulihin, ponsel biasa menjadi pendamping latihan di rumah. Begitu dibuka, Latihan Hari Ini langsung terlihat, berhuruf besar."
   },
   "N08": {
-    "hash": "4cea566a54b07d51",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Ponsel cukup diletakkan di meja, sekitar satu meter dari kursi. Ini peragaan dengan karakter tiga dimensi, bukan pasien sungguhan."
+    "hash": "e24d7394261c9770",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Aplikasi menunjukkan letak ponsel: tegak di meja, sekitar satu meter di depan kursi. Pak Budi di video ini adalah adegan buatan AI."
   },
   "N07": {
-    "hash": "6b61aaa26f23bde6",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Kita mulai dari satu gerakan kecil: Tekuk Siku. Ada contoh gerakan, pesan keselamatan, lalu satu tombol besar: Mulai dengan Kamera."
+    "hash": "4c9fab1a6b78fb15",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Kita mulai dari satu gerakan kecil: Tekuk Siku. Contoh gerakan tiga dimensi memperlihatkan iramanya, lengkap dengan pesan keselamatan."
   },
   "N10": {
-    "hash": "ee05ee9ed3a4bdbd",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Lihat angkanya: lima dari sepuluh."
-  },
-  "N09": {
-    "hash": "cf5040f680324820",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Aplikasi asli membaca titik-titik tubuh langsung di perangkat, tanpa mengunggah video. Repetisi dihitung dari sudut siku: tekuk penuh, lalu luruskan lagi."
+    "hash": "7938da28b28a4355",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Dengarkan, aplikasinya menghitung."
   },
   "N11a": {
-    "hash": "5855bc6f07930eff",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Sekarang bahunya ikut terangkat."
+    "hash": "40c1df5fe72e43dc",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[calmly] Sekarang bahunya ikut terangkat."
   },
   "N11-app": {
     "hash": "0ff7d6f587570d73",
@@ -72,87 +66,103 @@
     "ucapan": "Rilekskan bahu, turunkan bahu Anda."
   },
   "N11b": {
-    "hash": "d9726f74be42ae4a",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Aplikasi langsung mengoreksi, dengan suara dan teks besar dalam Bahasa Indonesia."
-  },
-  "N13": {
-    "hash": "ec88337d04c59166",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Jadi bukan sekadar menghitung, melainkan menjaga cara geraknya, sampai repetisi kesepuluh."
+    "hash": "ca3b21511f740b0a",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Aplikasi langsung mengingatkan, dengan suara dan teks besar."
   },
   "N15": {
-    "hash": "1a9e159cecee05b7",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Ada satu saran untuk sesi berikutnya. Ringkasan ini bukan diagnosis, dan kalimat batasan itu selalu tampil."
+    "hash": "e6ee6f4c096bf9c7",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Ada satu saran untuk sesi berikutnya, dan kalimat batasan yang selalu tampil: ini skor latihan, bukan diagnosis."
   },
   "N14": {
-    "hash": "c2a44ed57af54a61",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Di akhir sesi ada skor dan ringkasan sederhana: jumlah repetisi dan durasi. Labelnya mudah dipahami, dari Perlu Pendampingan sampai Sangat Baik."
+    "hash": "71039a6779f0b644",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Di akhir sesi ada skor dan ringkasan sederhana: jumlah repetisi dan durasi, dengan label yang mudah dipahami."
   },
   "N16": {
-    "hash": "01b762c7ddfdaecc",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Kembali ke Beranda, Tekuk Siku sudah bertanda selesai beserta skornya. Latihannya tercatat, dan keluarga bisa melihatnya."
+    "hash": "3d74c4b766101031",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Kembali ke Beranda, Tekuk Siku sudah bertanda selesai. Latihannya tercatat, dan keluarga bisa ikut melihat."
   },
   "N17": {
-    "hash": "5e9932cc3f730428",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Keluarga tidak lagi menebak. Halaman Untuk Keluarga menunjukkan tanda bila latihan sempat terhenti, status hari ini, dan grafik tujuh hari terakhir."
+    "hash": "7fd4e164312dd3ee",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Di tempat lain, Rina, putrinya, tidak perlu lagi menebak apakah ayahnya sudah berlatih."
   },
   "N19": {
-    "hash": "3a8c687d7dceb2c1",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Untuk pasien dengan gangguan bicara atau afasia, ada Latihan Bicara berbahasa Indonesia, dengan kata yang dipakai di rumah setiap hari."
+    "hash": "64c77a5849a124e3",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Tren skor empat belas hari juga terlihat, dan ringkasan mingguan bisa disalin dengan satu ketukan untuk terapis."
   },
   "N18": {
-    "hash": "5078993a471e9ece",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Tren skor empat belas hari juga terlihat. Ringkasan mingguan bisa disalin dengan satu ketukan, siap dikirim ke terapis."
+    "hash": "37479d3f2d8dba35",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Halaman Untuk Keluarga menunjukkan status hari ini, tanda bila latihan sempat terhenti, dan grafik tujuh hari terakhir."
   },
   "N20a": {
-    "hash": "9d18ca7e3ad2e92d",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Contoh kata bisa didengar lebih dulu, lalu katanya diucapkan."
+    "hash": "d410b643d7118584",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Untuk gangguan bicara atau afasia, ada Latihan Bicara berbahasa Indonesia, dengan kata-kata sehari-hari."
   },
   "N21": {
-    "hash": "739b244ba9d4a091",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Di Dashboard Terapis, terapis dapat menyusun program dan mengikuti kemajuan tanpa menunggu kunjungan berikutnya."
+    "hash": "84ce85cb8af9b070",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Dalam Mode Latihan Mandiri, pendamping menilai dengan satu ketukan: Sudah Benar, atau Ulangi."
   },
   "N20b": {
-    "hash": "2460ef1df058a486",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Di Mode Latihan Mandiri, pendamping menilai dengan satu ketukan: Sudah Benar, atau Ulangi. Hasilnya tercatat."
+    "hash": "ddac0272247ff2ca",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Tombol Dengar memutar contohnya."
   },
   "N22": {
-    "hash": "9e2c9dbe0c2227b0",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Di prototipe ini, program yang disimpan terapis menjadi Latihan Hari Ini pada profil pasien tersebut."
+    "hash": "3b181351d5a84101",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Di Dashboard Terapis, terapis menyusun program dan mengikuti kemajuan, tanpa menunggu kunjungan berikutnya."
   },
-  "N23a": {
-    "hash": "a1aaa046bca09bce",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Pulihin tidak menggantikan terapis. Pulihin membantu memastikan, yang diajarkan terapis benar-benar dilatih di rumah."
+  "N09a": {
+    "hash": "2b51cc5ca3c80914",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Video kamera ini pun buatan AI, diputar ke aplikasi yang asli."
   },
-  "N23b": {
-    "hash": "b72e1ceed76f26e2",
-    "penyedia": "azure-edge",
-    "suara": "id-ID-ArdiNeural",
-    "ucapan": "Ini masih prototipe kompetisi, bukan alat kesehatan teregulasi. Coba sekarang di pulihin titik vercel titik app."
+  "N09b": {
+    "hash": "f4a6a99571b6b43b",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Titik-titik tubuh dibaca langsung di perangkat, tanpa mengunggah video."
+  },
+  "N23": {
+    "hash": "aec21b4a423eb834",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Di prototipe ini, program yang disimpan terapis langsung menjadi Latihan Hari Ini di profil pasien."
+  },
+  "N24a": {
+    "hash": "9aadaf79a8a7fe8f",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Pulihin tidak menggantikan terapis. Pulihin membantu, agar yang diajarkan terapis benar-benar dilatih di rumah, bersama keluarga."
+  },
+  "N24b": {
+    "hash": "f139ca3d7cbc45f5",
+    "penyedia": "openrouter",
+    "suara": "daniel",
+    "teks": "[warmly] Ini prototipe kompetisi, bukan alat kesehatan teregulasi. Coba sekarang di pulihin titik vercel titik app."
+  },
+  "_biaya": {
+    "openrouterUsd": 0.144,
+    "karakter": 3599
   }
 }
