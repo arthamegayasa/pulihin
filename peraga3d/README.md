@@ -1,15 +1,16 @@
-# Peraga 3D – video contoh gerakan di Detail Latihan (gaya V3 "Klinis/anatomis")
+# Peraga 3D – video contoh gerakan di Detail Latihan (gaya S2 "Flat editorial")
 
-Satu karakter MPFB/MakeHuman CC0 (laki-laki ±53 th), satu kerangka kerja: tiap latihan hanyalah **satu modul data +
-fungsi pose** di `latihan/`. Semua dari skrip, tanpa aset manual.
+Satu karakter Pak Budi (MPFB/MakeHuman CC0, laki-laki ±57 th), satu kerangka kerja: tiap latihan hanyalah **satu
+modul data + fungsi pose** di `latihan/`. Semua dari skrip, tanpa aset manual. Tampilan sama keluarga dengan ilustrasi
+aplikasi (`public/ilustrasi/`), lihat "Tampilan S2" di bawah.
 
 ## Satu perintah
 
 ```bash
-node peraga3d/buat.mjs fleksi-siku --uji   # ±30 dtk: frame strip + close-up pendar, sampel rendah -> out/<id>/uji/
-node peraga3d/buat.mjs fleksi-siku         # ±5-8 mnt: render penuh + encode ke public/peraga/ + lembar tinjauan
+node peraga3d/buat.mjs fleksi-siku --uji   # ±30 dtk: frame strip + close-up sorot otot, sampel rendah -> out/<id>/uji/
+node peraga3d/buat.mjs fleksi-siku         # ±2,5 mnt: render penuh + encode ke public/peraga/ + lembar tinjauan
 node peraga3d/buat.mjs fleksi-siku --lewati-render   # encode ulang dari frame yang sudah ada
-node peraga3d/buat.mjs fleksi-siku --kartu          # ±10 dtk: gambar kecil daftar latihan -> public/peraga/<id>-kartu.webp
+node peraga3d/buat.mjs fleksi-siku --kartu          # ±5 dtk: gambar kecil daftar latihan -> public/peraga/<id>-kartu.webp
 ```
 
 Opsi: `--dasar` (bangun ulang karakter, otomatis bila `out/dasar.blend` belum ada), `--sampel N`.
@@ -22,41 +23,41 @@ Keluaran (kontrak `src/features/pose/VideoPeraga.tsx`, diverifikasi `ffprobe` ol
 | `public/peraga/<id>.mp4` | 720x720, 30 fps, satu siklus (frame 1..N; frame N+1 = frame 1 → loop mulus), H.264 Main yuv420p, faststart, tanpa audio, ≤ 400 KB (crf terkecil yang muat) |
 | `public/peraga/<id>-mulai.webp` | frame 1, ≤ 40 KB |
 | `public/peraga/<id>-puncak.webp` | tengah fase tahan (`T_PUNCAK`), ≤ 40 KB |
-| `out/<id>/lembar.png` | mulai · tengah naik · puncak · close-up pendar otot |
-| `out/<id>/strip.png` | 8 frame merata satu siklus (tinjau tembus objek, kaku, siluet) |
-| `out/<id>/laporan.json` | ukuran, crf/kualitas, waktu render, pemeriksaan pendar |
+| `out/<id>/lembar.png` | mulai · tengah naik · puncak · close-up sorot otot |
+| `out/<id>/strip.png` | 8 frame merata satu siklus (tinjau tembus objek, kaku, siluet, sorot mengikuti fase) |
+| `out/<id>/laporan.json` | ukuran, crf/kualitas, waktu render, pemeriksaan sorot otot |
 | `public/peraga/<id>-kartu.webp` | (`--kartu`) 256x256, ≤ 15 KB, gambar kecil `PosterLatihan` (Beranda, Daftar Latihan); di-precache SW |
 
 Sisi kanan anatomis saja; aplikasi mencerminkan (`scaleX(-1)`) untuk sisi kiri, jadi tanpa teks/logo di video.
 
 Prasyarat: Blender 5.2 portabel dengan MPFB 2.0.18 + paket aset sistem MakeHuman (lihat
-`docs/video/produksi-3d.md`), GPU NVIDIA (OptiX), ffmpeg/ffprobe (dengan libwebp) dan Node di PATH.
+`docs/video/produksi-3d.md`), GPU untuk EEVEE, ffmpeg/ffprobe (dengan libwebp) dan Node di PATH.
 
 ### Gambar kecil daftar latihan (`--kartu`, `kartu.py`)
 
-Satu frame dari `out/<id>/adegan.blend` yang sudah ada (dibangun bila belum ada; video & poster tidak disentuh):
-pose PUNCAK dengan otot kerja menyala dan cincin sendi, latar rata `#EEF4F2` (warna ubin ilustrasi `bg-ilustrasi`,
-jadi tepi gambar menyatu dengan ubin aplikasi; warna linear dikalibrasi terhadap AgX, `buat.mjs` memeriksa piksel
-sudut ±3), bayangan lantai lembut dari cyclorama sebagai penangkap bayangan, bingkai rapat pada bagian tubuh yang
-bergerak (`KARTU` di `kartu.py`: `pita` tinggi figur, `isi`, `geser`, sudut kamera opsional), eksposur lebih rendah
-(figur resin tidak pudar di latar terang) dengan pendar dikuatkan sebanding, cahaya pinggir sedikit lebih kuat.
-Render 512 px, diperkecil Lanczos ke 256 px. Tinjauan: `out/<id>/kartu/kartu.png`, `kartu.json`, `laporan-kartu.json`.
+Satu frame dari `out/<id>/adegan.blend` yang sudah ada (dibangun bila belum ada; video & poster tidak disentuh, jadi
+setelah `--dasar` atau perubahan modul latihan jalankan render penuh dulu): pose PUNCAK dengan sorot otot penuh,
+tampilan S2 yang sama dengan video (latar rata `#EEF4F2` = warna ubin ilustrasi `bg-ilustrasi`, jadi tepi gambar
+menyatu dengan ubin aplikasi; `buat.mjs` memeriksa piksel sudut ±3), bingkai rapat pada bagian tubuh yang bergerak
+(`KARTU` di `kartu.py`: `pita` tinggi figur, `isi`, `geser`, sudut kamera opsional; arah cahaya mengikuti kamera
+kartu). Render 512 px tanpa blur gerak, diperkecil Lanczos ke 256 px. Tinjauan: `out/<id>/kartu/kartu.png`,
+`kartu.json`, `laporan-kartu.json`. Sorot otot harus terbaca pada ubin 56 px.
 
 ## Alur & berkas
 
 | Berkas | Isi |
 |---|---|
-| `dasar.py` | karakter sekali pakai → `out/dasar.blend`: badan + rig `game_engine`, polo (kerah, plaket) + celana + sepatu, rambut gumpal beruban, kunci bentuk kedip |
-| `pakaian.py`, `rambut.py` | pembantu `dasar.py` (polo dari kaos MakeHuman, atribut `lengan`; helai rambut) |
+| `dasar.py` | karakter sekali pakai → `out/dasar.blend`: Pak Budi (badan + rig `game_engine`, senyum lembut), polo (kerah, plaket) + celana + sepatu, rambut gumpal hitam dengan pelipis abu, kumis, kunci bentuk kedip |
+| `pakaian.py`, `rambut.py` | pembantu `dasar.py` (polo dari kaos MakeHuman; helai rambut + atribut `uban`/`pelipis`, kumis) |
 | `latihan/__init__.py` | pemuat + validasi modul latihan; **siklus dari `tempoTargetDetik`** (dibaca langsung dari `exerciseDefinitions.ts`) |
 | `latihan/<id_>.py` | data & pose satu latihan (lihat di bawah) |
 | `gerak.py` | kurva minimum-jerk, napas, kedip, matematika rig, tangan/jari (rileks, genggam rel), IK dua tulang, tungkai IK & telapak terkunci, `Animator` (duduk / berdiri) |
 | `bantu_duduk.py` | pembantu pose latihan duduk: lengan IK yang ikut bingkai dada (tangan bersilang di dada, dipakai `putar_badan.py`) |
-| `otot.py` | wilayah otot (atribut `otot`, `otot_b`) dari bobot tulang, "jendela" tembus di pakaian di atasnya, grup Mask kulit |
-| `adegan.py` | per latihan: pose + keyframe, posisi (duduk / berdiri di belakang kursi / duduk-berdiri dengan meja) & perabot, cincin sendi, kamera dengan bingkai otomatis, kamera close-up otot → `out/<id>/adegan.blend` + `info.json` |
-| `tampilan.py` | tampilan V3: bahan, cahaya (kunci, isi, 2 pinggir, atas, latar), latar gradien, AgX, kompositor pendar |
-| `render.py` | render frame + close-up otot + **pemeriksaan pendar** (dengan vs tanpa kompositor; gagal keras bila tak terlihat) |
-| `kartu.py` | gambar kecil daftar latihan: frame puncak, latar rata `#EEF4F2` + bayangan lembut, bingkai rapat per latihan (`KARTU`) |
+| `otot.py` | wilayah otot (atribut `otot`, `otot_b`) dari bobot tulang, dan sorot di pakaian di atasnya (`jendela`, `jendela_b`) |
+| `adegan.py` | per latihan: pose + keyframe, posisi (duduk / berdiri di belakang kursi / duduk-berdiri dengan meja) & perabot, kekuatan sorot per frame, kamera dengan bingkai otomatis, kamera close-up otot → `out/<id>/adegan.blend` + `info.json` |
+| `tampilan.py` | tampilan S2: palet & bahan toon rata, dua cahaya matahari terpisah per kanal warna, latar rata, EEVEE + view Standard |
+| `render.py` | render frame + **pemeriksaan sorot otot** (close-up & bingkai video, dengan vs tanpa sorot; gagal keras bila tak terlihat) |
+| `kartu.py` | gambar kecil daftar latihan: frame puncak, tampilan S2, bingkai rapat per latihan (`KARTU`) |
 | `buat.mjs` | menjalankan semuanya, encode, lembar tinjauan, laporan |
 
 Siklus = tempo tengah `(min+max)/2` dibatasi 2–6 dtk, dibulatkan 0,5 dtk — rumus yang sama dengan teks
@@ -75,14 +76,13 @@ Siklus = tempo tengah `(min+max)/2` dibatasi 2–6 dtk, dibulatkan 0,5 dtk — r
 | `T_KEDIP` | fraksi awal kedipan (saat istirahat) |
 | `KAMERA` | `{"azimut", "elevasi", "lensa", "isi"}`: azimut 0 = depan karakter, + = ke sisi kanan karakter (90 = samping kanan). Jarak & geser dihitung otomatis sehingga figur (semua frame) mengisi `isi` (0,83) tinggi bingkai |
 | `OTOT` | daftar wilayah otot (spesifikasi di `otot.py`): tulang, grup bobot, pita `s` sepanjang tulang, `arah` pusat sektor, `lebar`, `jari`; opsional `"kanal": "b"` (otot kedua dengan fase sendiri, dinyalakan kanal b dari `kuat()`) |
-| `CINCIN` | `{"tulang", "jari", "geser"}` atau daftarnya (beberapa sendi): cincin tipis di kepala tulang, digeser `geser` m sepanjang `anim.sumbu_cincin`; opsional `"kanal": "b"` |
 | `BADAN` | gerak ikutan pada puncak (derajat): `ekstensi` (condong belakang), `rotasi` (ke sisi kerja), `miring` (lateral menjauhi sisi kerja), `klavikula` (elevasi kecil bahu kerja; ≤ 3° agar "bahu tidak terangkat") |
 | `KEPALA` | `yaw` (− = menoleh ke kanan karakter), `pitch` (+ = menunduk), `lirik_*` tambahan mengikuti gerak |
 | `TANGAN_ISTIRAHAT` | sisi yang tangannya bertumpu/berpegangan (IK terkunci, gerak mikro): duduk `("l",)` = di paha; berdiri & duduk-berdiri `("l", "r")` = rel sandaran / meja |
-| `pose(anim, t, ops)` | isi `ops[nama tulang] = [operasi...]` untuk anggota tubuh yang bekerja dan **wajib** set `anim.sumbu_cincin` (vektor sumbu gerak sendi target, menghadap kamera; atau daftar per cincin). Boleh set `anim.sendi_cincin` (posisi cincin pengganti) |
+| `pose(anim, t, ops)` | isi `ops[nama tulang] = [operasi...]` untuk anggota tubuh yang bekerja (boleh kosong bila semua gerak lewat `tubuh()`) |
 
 Opsional: `tubuh(anim, t)` → dict untuk posisi berdiri (`geser` panggul, `condong`, `miring_panggul`, `tumit`,
-`kepala_pitch`; lihat `Animator.ops_berdiri`), `kuat(anim, t)` → kekuatan pendar 0..1 atau `(a, b)` per kanal
+`kepala_pitch`; lihat `Animator.ops_berdiri`), `kuat(anim, t)` → kekuatan sorot otot 0..1 atau `(a, b)` per kanal
 (bawaan: mengikuti `KUNCI`), `CELAH_SANDARAN` (m, duduk tegak tanpa bersandar; bawaan 0,012).
 
 Alat untuk `pose()` (ruang armature: karakter menghadap −Y, kanan anatomis = −X, atas = +Z):
@@ -96,20 +96,20 @@ telapak, tekuk jari), `gerak.rotasi(v, sumbu, derajat)`, `gerak.putar/arahkan/or
 
 Animator sudah menambahkan: posisi dasar (duduk tegak, atau berdiri dengan telapak terkunci), napas satu kali per
 siklus (buang napas habis di `T_PUNCAK`), goyang mikro tulang belakang (berdiri: juga goyang postural panggul
-beberapa mm), kepala, kedip, jari dengan gerak mikro, kekuatan pendar (`kuat_otot`/`kuat_otot_b`, sedikit mendahului
-sudut), loop mulus (keyframe tiap frame + modifier Cycles).
+beberapa mm), kepala, kedip, jari dengan gerak mikro, kekuatan sorot otot (`kuat_otot`/`kuat_otot_b`, sedikit
+mendahului sudut), loop mulus (keyframe tiap frame + modifier Cycles).
 
 2. `node peraga3d/buat.mjs <id> --uji` → periksa `out/<id>/lembar-uji.png` dan `strip-uji.png`: bentuk benar sesuai
-   `panduanLangkah`, tanpa tembus kursi/badan, tangan rileks, wilayah otot tepat (close-up), cincin di sendi.
+   `panduanLangkah`, tanpa tembus kursi/badan, tangan rileks, wilayah otot tepat dan tersorot (close-up).
    Pelajaran bentuk dari tiga latihan pertama:
    - Gunakan sumbu anatomis MURNI untuk gerak lengan lurus (fleksi: −X, abduksi: +Y). Sumbu `ATAS_0 × arah` ikut
      miring karena lengan menggantung sudah ±11° menjauh dari badan, sehingga lengan menyilang ke tengah di atas
      horizontal (fleksi) atau melewati setinggi bahu (abduksi; puncak 79° + 11° awal = 90°).
    - Sudut 3/4 membuat lengan bawah yang bergerak sagital tampak menyilang dada; untuk gerak sagital pakai
      azimut 78–80°, untuk gerak frontal ±10°.
-   - Cincin harus berada di luar permukaan (geser ≥ jari-jari sendi + 5 cm), bila tidak sebagian terbenam.
-   - Pemeriksaan pendar < 1 % berarti wilayah otot menghadap menjauhi kamera atau terlalu sempit: arahkan `arah`
-     ke sisi yang terlihat kamera / perlebar `lebar`.
+   - Pemeriksaan sorot di bawah ambang berarti wilayah otot tertutup / menghadap menjauhi kamera atau terlalu
+     sempit: arahkan `arah` ke sisi yang terlihat kamera / perlebar `lebar` (mis. Tekuk Siku: sektor biseps condong
+     ke sisi luar = brakialis, karena di puncak lengan bawah menutupi sisi depan). Periksa juga ubin kartu 56 px.
 3. `node peraga3d/buat.mjs <id>` → aset final + `laporan.json`. Lalu master mengubah `animasiAtauVideo` latihan.
 
 Titik awal `OTOT` untuk latihan lain (ilustratif, setel dengan `--uji`; nama tulang rig `game_engine`):
@@ -123,8 +123,8 @@ Titik awal `OTOT` untuk latihan lain (ilustratif, setel dengan `--uji`; nama tul
 | oblik perut | `spine_02` | `spine_01`, `spine_02`, `pelvis` | (−0.6, −0.3, 1.0, 1.4) | (−1, −0.6, 0) |
 | fleksor pinggul | `thigh_r` | `thigh_r`, `pelvis` | (−0.15, 0.0, 0.25, 0.4) | (0, −1, 0.2) |
 
-Pakaian di atas wilayah otot otomatis mendapat jendela tembus (polo maupun celana), dan kulit di bawahnya tidak
-dihapus. Untuk dua wilayah (mis. kuadriseps + gluteus) cukup dua entri di `OTOT`.
+Pakaian di atas wilayah otot otomatis ikut disorot (polo maupun celana, atribut `jendela`). Untuk dua wilayah (mis.
+kuadriseps + gluteus) cukup dua entri di `OTOT`.
 
 ### Posisi berdiri (`"berdiri"`, `"duduk-berdiri"`)
 
@@ -146,16 +146,27 @@ dihapus. Untuk dua wilayah (mis. kuadriseps + gluteus) cukup dua entri di `OTOT`
 - `"duduk-berdiri"`: duduk di tepi kursi (tinggi dudukan dari celana), meja kokoh di depan dengan tinggi & jarak
   yang dicari otomatis agar kedua telapak tetap di meja sepanjang siklus (lengan tidak terkunci lurus, siku tidak
   terlipat berlebihan).
-- Cahaya membidik tinggi bahu figur (`adegan.atur_cahaya`; duduk = nilai V3 semula).
 
-## Tampilan V3 (ringkas)
+## Tampilan S2 "Flat editorial" (`tampilan.py`)
 
-Latar cyclorama gradien radial teal muda (koordinat layar; sebagian nada dipancarkan sendiri agar stabil), figur resin
-abu-biru semi-tembus dengan tepi fresnel + dua cahaya pinggir, bayangan kontak dari cahaya atas, wajah netral (mata
-satu warna, tanpa bulu mata), polo putih / celana abu kebiruan, lengan baju & jendela otot tembus seperti kaca buram,
-otot kerja oranye `#C46A1B` × kontraksi, cincin sendi tipis, pendar = kompositor (blur dua skala dari pass Emission;
-hanya otot & cincin yang memancar). AgX Medium High Contrast, eksposur −0,5, Cycles 96 sampel + denoise OptiX,
-blur gerak 0,35.
+Sama keluarga dengan ilustrasi aplikasi (`public/ilustrasi/`, lembar karakter Pak Budi):
 
-`render.py` selalu me-render close-up otot (kamera `KameraOtot`, frame puncak) dengan dan tanpa kompositor; bila
-pendar menambah cahaya oranye di < 1 % bingkai, render gagal (`out/<id>/frames/pendar.json`).
+- Bidang warna rata dengan paling banyak tiga nada lembut per bahan (bayang / dasar / terang, `PALET`), tanpa garis
+  kontur, tanpa bahan tembus/realistis. Semua bahan memancarkan warna palet (Emission) dengan view transform
+  Standard, jadi piksel = warna palet persis. Nada dari Shader to RGB (EEVEE) atas Diffuse putih: ambang `BAYANG`
+  0,1 dan `TERANG` 0,85 (sebagian besar permukaan nada dasar seperti ilustrasi); kulit hampir tanpa nada terang
+  (wajah dua nada).
+- Dua matahari terpisah per kanal warna (tanpa light linking): kunci MERAH dari kiri-atas kamera (nada figur &
+  perabot, bayangan jatuh ikut terbaca), atas HIJAU hampir tegak bersudut lebar yang hanya dibaca lantai → bayangan
+  kontak sangat lembut di bawah kursi & sepatu. Arah cahaya relatif terhadap kamera (video maupun kartu).
+- Latar dinding & lantai cyclorama rata `#EEF4F2`; lantai hanya digelapkan bayangan kontak.
+- Pak Budi: kulit sawo matang hangat (`#D69060`, bayang `#B5704A`), rambut hitam pendek dengan pelipis abu, kumis
+  rapi, senyum lembut bibir tertutup, mata titik gelap, polo teal `#3F8584`, celana krem pasir, sepatu cokelat tua;
+  kursi/meja kayu jati hangat.
+- Otot kerja: oranye `#C46A1B` (dengan nada bayang/terangnya) × kontraksi (`kuat_otot`), di kulit (`otot`) dan di
+  kain di atasnya (`jendela`), tepi lembut pendek (`TEPI_OTOT`). Tanpa pendar/bloom dan tanpa penanda sendi.
+- EEVEE 64 sampel, blur gerak 0,3; ±1,4 dtk/frame.
+
+`render.py` selalu memeriksa sorot pada frame puncak: close-up otot (kamera `KameraOtot`) dan bingkai video, masing-
+masing dengan & tanpa sorot (properti adegan `nyala_otot` = 0). Piksel yang berubah nyata dan tampil oranye dihitung;
+bila porsinya < 1 % (close-up) atau < 0,1 % (bingkai 720 px), render gagal (`out/<id>/frames/sorot.json`).

@@ -7,8 +7,6 @@ Telapak berputar di sendi pangkal jari (jari kaki tetap rata di lantai, tidak te
 setinggi pergelangan kaki dan sedikit maju di atas ujung kaki (pusat massa di atas tumpuan), lutut tetap lurus,
 tangan tetap menggenggam sandaran (siku sedikit meluruskan).
 """
-from mathutils import Vector
-
 ID = "jinjit"
 POSISI = "berdiri"
 
@@ -35,8 +33,6 @@ OTOT = [
     {"tulang": "calf_l", "grup": ("calf_l",), "s": (0.04, 0.16, 0.55, 0.75), "arah": (-0.3, 1.0, 0.0),
      "lebar": 70.0, "jari": 0.09},
 ]
-# Cincin di sisi luar pergelangan kaki kanan, sumbu mediolateral (= sumbu plantarfleksi), menghadap kamera.
-CINCIN = {"tulang": "foot_r", "jari": 0.05, "geser": 0.075}
 
 BADAN = {"ekstensi": 0.0, "rotasi": 0.0, "miring": 0.0, "klavikula": 0.0}
 KEPALA = {"yaw": -3.0, "pitch": 1.0, "lirik_yaw": 0.0, "lirik_pitch": -1.5, "lirik_roll": 0.0}
@@ -54,4 +50,4 @@ def tubuh(anim, t):
 
 def pose(anim, t, ops):
     # Tungkai & badan diatur Animator lewat tubuh(); tidak ada anggota tubuh lain yang bekerja.
-    anim.sumbu_cincin = Vector((-1.0, 0.0, 0.0))  # mediolateral, ke kamera (sisi kanan)
+    pass

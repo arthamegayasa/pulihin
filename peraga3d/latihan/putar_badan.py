@@ -29,8 +29,8 @@ KUNCI = [
 T_PUNCAK = 0.50
 T_KEDIP = 0.92
 
-# Depan-atas, sedikit dari kanan: wajah dan garis bahu (dengan cincin di sekelilingnya) terbaca berputar terhadap
-# lutut dan panggul yang tetap menghadap depan, dan posisi duduk (paha, kursi) tetap terbaca.
+# Depan-atas, sedikit dari kanan: wajah dan garis bahu terbaca berputar terhadap lutut dan panggul yang tetap
+# menghadap depan, dan posisi duduk (paha, kursi) tetap terbaca.
 KAMERA = {"azimut": 14.0, "elevasi": 22.0, "lensa": 55.0, "isi": 0.83}
 
 # Duduk tegak tanpa bersandar: celah ke sandaran agar belikat yang berputar ke belakang tidak menembusnya.
@@ -44,8 +44,6 @@ OTOT = [
     {"tulang": "spine_02", "grup": ("spine_01", "spine_02", "spine_03", "pelvis"), "s": (-1.6, -0.8, 2.6, 3.4),
      "arah": (1.0, -0.45, 0.0), "lebar": 30.0, "jari": 0.22},
 ]
-# Cincin datar mengelilingi batang tubuh setinggi garis bahu (sumbu = sumbu putar, vertikal).
-CINCIN = {"tulang": "spine_03", "jari": 0.30, "geser": 0.225}
 
 # Rotasi utama diatur pose() (bukan gerak ikutan); badan duduk lebih tinggi sedikit saat berputar.
 BADAN = {"ekstensi": 0.5, "rotasi": 0.0, "miring": 0.4, "klavikula": 0.0}
@@ -81,4 +79,3 @@ def pose(anim, t, ops):
         ops[nama].append(putar_belakang(-a * w))
     for sisi, L in LENGAN.items():
         bantu_duduk.lengan_ke_dada(anim, ops, t, sisi, Vector(L["pergelangan"]), L["kutub"], L["jari"], L["palmar"])
-    anim.sumbu_cincin = Vector((0.0, 0.0, 1.0))

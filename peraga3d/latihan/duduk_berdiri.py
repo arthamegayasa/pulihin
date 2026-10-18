@@ -68,11 +68,6 @@ OTOT = [
     {"tulang": "thigh_l", "grup": ("thigh_l", "pelvis"), "s": (-0.42, -0.28, 0.12, 0.26), "arah": (-0.1, 1.0, 0.0),
      "lebar": 50.0, "jari": 0.17},
 ]
-# Cincin lutut & pinggul kanan, sumbu mediolateral (sumbu fleksi-ekstensi), menghadap kamera.
-CINCIN = [
-    {"tulang": "calf_r", "jari": 0.062, "geser": 0.11},
-    {"tulang": "thigh_r", "jari": 0.075, "geser": 0.17},
-]
 
 BADAN = {"ekstensi": 0.0, "rotasi": 0.0, "miring": 0.0, "klavikula": 0.0}
 KEPALA = {"yaw": -3.0, "pitch": 2.0, "lirik_yaw": 0.0, "lirik_pitch": 0.0, "lirik_roll": 0.0}
@@ -116,5 +111,6 @@ def kuat(anim, t):
 
 
 def pose(anim, t, ops):
-    # Tungkai, panggul & badan diatur Animator lewat tubuh(); tangan bertumpu di meja (tangan istirahat).
-    anim.sumbu_cincin = Vector((-1.0, 0.0, 0.0))  # mediolateral, ke kamera (sisi kanan)
+    # Tungkai, panggul & badan diatur Animator lewat tubuh(); tangan bertumpu di meja (tangan istirahat). Tidak ada
+    # anggota tubuh lain yang bekerja.
+    pass

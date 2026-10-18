@@ -1,12 +1,13 @@
-"""Render satu latihan dari peraga3d/out/<id>/adegan.blend dengan tampilan V3.
+"""Render satu latihan dari peraga3d/out/<id>/adegan.blend dengan tampilan S2 (flat editorial).
 
   blender -b peraga3d/out/<id>/adegan.blend -P peraga3d/render.py -- --id <id> [--uji] [--sampel N] [--frame 1,40]
 
 Penuh  : semua frame unik 1..N -> out/<id>/frames/NNNN.png (frame N+1 = frame 1, tidak dirender -> loop mulus)
 --uji  : hanya frame strip + tengah + puncak, sampel rendah -> out/<id>/uji/
-Selalu : close-up otot (kamera KameraOtot, frame puncak) -> <keluar>/otot.png, plus pemeriksaan pendar:
-         close-up yang sama tanpa kompositor -> otot-tanpa-pendar.png; selisihnya dicatat di <keluar>/pendar.json
-         (gagal keras bila pendar tidak terlihat). Waktu per frame -> <keluar>/waktu.json.
+Selalu : pemeriksaan sorot otot pada frame puncak, close-up (kamera KameraOtot -> <keluar>/otot.png) dan bingkai
+         video (<keluar>/sorot-bingkai.png), masing-masing dengan & tanpa sorot (`nyala_otot` = 0 ->
+         *-tanpa-sorot.png). Piksel yang berubah nyata DAN tampil oranye dihitung; gagal keras bila porsinya di bawah
+         ambang (sorot tidak terlihat). Hasil -> <keluar>/sorot.json, waktu per frame -> <keluar>/waktu.json.
 """
 import argparse
 import json
@@ -20,6 +21,10 @@ import numpy as np
 DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, DIR)
 import tampilan  # noqa: E402
+
+# Porsi bingkai minimum yang tampil oranye karena sorot: close-up otot (1 %), dan bingkai video 720 px (0,1 % =
+# ±520 piksel, mis. 23 x 23 px). Di bawahnya sorot praktis tak terlihat (otot tertutup / menghadap menjauhi kamera).
+AMBANG = {"dekat": 0.01, "bingkai": 0.001}
 
 
 def rentang(teks):
@@ -41,6 +46,7 @@ def render_ke(jalur):
 
 
 def piksel(jalur):
+    """Piksel sRGB 0..1 (PNG 8-bit dimuat apa adanya)."""
     img = bpy.data.images.load(jalur)
     a = np.empty(img.size[0] * img.size[1] * 4, dtype=np.float32)
     img.pixels.foreach_get(a)
@@ -48,33 +54,40 @@ def piksel(jalur):
     return a.reshape(-1, 4)[:, :3]
 
 
-def periksa_pendar(keluar, f_puncak):
-    """Close-up otot dengan dan tanpa kompositor pendar; pendar harus menambah cahaya oranye yang nyata."""
+def ukur_sorot(dengan, tanpa):
+    a, b = piksel(dengan), piksel(tanpa)
+    beda = np.abs(a - b).sum(axis=1)
+    r, g, bl = a[:, 0], a[:, 1], a[:, 2]
+    oranye = (r > g) & (g > bl) & (r - bl > 0.35)
+    sorot = (beda > 0.15) & oranye
+    return {
+        "porsiBingkai": round(float(sorot.mean()), 4),
+        "piksel": int(sorot.sum()),
+        "bedaRerata": round(float(beda[sorot].mean()) if sorot.any() else 0.0, 3),
+    }
+
+
+def periksa_sorot(keluar, f_puncak):
+    """Sorot otot (oranye di kulit & kain) harus tampak nyata di close-up dan di bingkai video pada frame puncak."""
     sc = bpy.context.scene
     utama = sc.camera
-    sc.camera = bpy.data.objects["KameraOtot"]
     sc.frame_set(f_puncak)
-    dengan, tanpa = os.path.join(keluar, "otot.png"), os.path.join(keluar, "otot-tanpa-pendar.png")
-    render_ke(dengan)
-    tampilan.pendar_kompositor(False)
-    render_ke(tanpa)
-    tampilan.pendar_kompositor(True)
+    hasil = {}
+    for nama, kamera, berkas in (("dekat", bpy.data.objects["KameraOtot"], "otot"), ("bingkai", utama, "sorot-bingkai")):
+        sc.camera = kamera
+        dengan, tanpa = os.path.join(keluar, f"{berkas}.png"), os.path.join(keluar, f"{berkas}-tanpa-sorot.png")
+        render_ke(dengan)
+        sc["nyala_otot"] = 0.0
+        render_ke(tanpa)
+        sc["nyala_otot"] = 1.0
+        hasil[nama] = {**ukur_sorot(dengan, tanpa), "ambang": AMBANG[nama]}
     sc.camera = utama
-    a, b = piksel(dengan), piksel(tanpa)
-    d = a - b
-    terang = d.sum(axis=1)
-    hangat = (d[:, 0] > d[:, 2] + 0.02)  # tambahan lebih merah daripada biru = oranye
-    hasil = {
-        "pikselBerubahLebihDari3persen": int(((terang > 0.09) & hangat).sum()),
-        "porsiBingkai": round(float(((terang > 0.09) & hangat).mean()), 4),
-        "selisihMaks": round(float(terang.max()), 3),
-        "selisihRerataDiWilayahPendar": round(float(terang[terang > 0.09].mean()) if (terang > 0.09).any() else 0.0, 3),
-    }
-    with open(os.path.join(keluar, "pendar.json"), "w", encoding="utf-8") as fh:
+    with open(os.path.join(keluar, "sorot.json"), "w", encoding="utf-8") as fh:
         json.dump(hasil, fh, indent=1)
-    print("[render] pemeriksaan pendar:", hasil, flush=True)
-    if hasil["porsiBingkai"] < 0.01:
-        raise RuntimeError(f"pendar tidak terlihat (porsi {hasil['porsiBingkai']}): periksa kompositor/bahan")
+    print("[render] pemeriksaan sorot:", hasil, flush=True)
+    gagal = [n for n, h in hasil.items() if h["porsiBingkai"] < h["ambang"]]
+    if gagal:
+        raise RuntimeError(f"sorot otot tidak terlihat ({', '.join(gagal)}): {hasil}; periksa OTOT latihan/bahan")
     return hasil
 
 
@@ -93,14 +106,14 @@ def main():
     os.makedirs(keluar, exist_ok=True)
 
     sc = bpy.context.scene
-    perangkat = tampilan.terapkan(a.sampel or (32 if a.uji else tampilan.SAMPEL))
+    perangkat = tampilan.terapkan(a.sampel or (16 if a.uji else tampilan.SAMPEL))
     if a.frame:
         frames = rentang(a.frame)
     elif a.uji:
         frames = sorted(set(info["strip"] + [info["frameTengah"], info["framePuncak"]]))
     else:
         frames = list(range(info["frameMulai"], info["frameMulai"] + info["jumlahFrame"]))
-    print(f"[render] {a.id}: {len(frames)} frame, perangkat {perangkat}, sampel {sc.cycles.samples}", flush=True)
+    print(f"[render] {a.id}: {len(frames)} frame, {perangkat}, sampel {sc.eevee.taa_render_samples}", flush=True)
 
     waktu = {}
     t_mulai = time.perf_counter()
@@ -109,9 +122,10 @@ def main():
         waktu[str(f)] = render_ke(os.path.join(keluar, f"{f:04d}.png"))
         print(f"[render] frame {f}: {waktu[str(f)]} dtk", flush=True)
     total = round(time.perf_counter() - t_mulai, 1)
-    pendar = periksa_pendar(keluar, info["framePuncak"])
+    sorot = periksa_sorot(keluar, info["framePuncak"])
     with open(os.path.join(keluar, "waktu.json"), "w", encoding="utf-8") as fh:
-        json.dump({"sampel": sc.cycles.samples, "perangkat": perangkat, "totalDetik": total, "frame": waktu, "pendar": pendar}, fh, indent=1)
+        json.dump({"sampel": sc.eevee.taa_render_samples, "perangkat": perangkat, "totalDetik": total, "frame": waktu,
+                   "sorot": sorot}, fh, indent=1)
 
 
 main()

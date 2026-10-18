@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router/dom';
-import { hapusCacheIlustrasiLama } from '@/config/cacheIlustrasi';
+import { hapusCacheLama } from '@/config/cacheAset';
 import { ensureDemoData } from '@/data/seed';
 import { applyPrefsToDocument } from '@/lib/prefs';
 import { pasangPembaruanAplikasi } from '@/lib/pembaruanAplikasi';
@@ -14,7 +14,7 @@ pasangPenjagaJaringan();
 applyPrefsToDocument();
 // Data demo ditanam sekali saat pembukaan pertama agar aplikasi langsung terlihat hidup (Bab 10.1).
 void ensureDemoData().catch((e: unknown) => console.error('Gagal menyiapkan data demo', e));
-hapusCacheIlustrasiLama();
+hapusCacheLama();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

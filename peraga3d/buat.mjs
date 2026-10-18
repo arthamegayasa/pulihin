@@ -9,16 +9,16 @@
 //   --dasar           bangun ulang karakter dasar (out/dasar.blend; otomatis bila belum ada)
 //   --lewati-render   pakai frame yang sudah ada di out/<id>/frames (encode ulang saja)
 //   --kartu           gambar kecil daftar latihan dari adegan yang sudah ada (out/<id>/adegan.blend): satu frame
-//                     puncak, pendar menyala, latar rata #EEF4F2, bingkai rapat (peraga3d/kartu.py)
+//                     puncak, sorot otot penuh, latar rata #EEF4F2, bingkai rapat (peraga3d/kartu.py)
 //                     -> public/peraga/<id>-kartu.webp 256x256 <= 15 KB; video & poster tidak disentuh
 //
 // Keluaran penuh (kontrak src/features/pose/VideoPeraga.tsx):
 //   public/peraga/<id>.mp4          720x720, 30 fps, satu siklus loop mulus, H.264 main yuv420p faststart tanpa audio, <= 400 KB
 //   public/peraga/<id>-mulai.webp   frame 1, <= 40 KB
 //   public/peraga/<id>-puncak.webp  tengah fase tahan, <= 40 KB
-// Tinjauan: out/<id>/lembar.png (mulai | tengah naik | puncak | close-up pendar), out/<id>/strip.png (8 frame),
-//           out/<id>/laporan.json (ukuran, crf/kualitas terpilih, waktu render, pemeriksaan pendar).
-// Kartu: out/<id>/kartu/kartu.png (512 px), kartu.json (kamera, latar terukur), laporan-kartu.json.
+// Tinjauan: out/<id>/lembar.png (mulai | tengah naik | puncak | close-up sorot otot), out/<id>/strip.png (8 frame),
+//           out/<id>/laporan.json (ukuran, crf/kualitas terpilih, waktu render, pemeriksaan sorot otot).
+// Kartu: out/<id>/kartu/kartu.png (512 px), kartu.json (kamera, warna sudut), laporan-kartu.json.
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -73,7 +73,7 @@ ffmpeg(
     `[0:v]scale=${sel}:${sel},${label('Mulai (f' + info.frameMulai + ')')}[a]`,
     `[1:v]scale=${sel}:${sel},${label('Tengah naik (f' + info.frameTengah + ')')}[b]`,
     `[2:v]scale=${sel}:${sel},${label('Puncak (f' + info.framePuncak + ')')}[c]`,
-    `[3:v]scale=${sel}:${sel},${label('Pendar otot (dekat)')}[d]`,
+    `[3:v]scale=${sel}:${sel},${label('Sorot otot (dekat)')}[d]`,
     '[a][b]hstack[ab];[c][d]hstack[cd];[ab][cd]vstack',
   ].join(';'),
   '-frames:v', '1', join(AKAR, uji ? 'lembar-uji.png' : 'lembar.png'),
@@ -97,14 +97,14 @@ laporan.render = {
   detikPerFrameRerata: +(dtk.reduce((a, b) => a + b, 0) / dtk.length).toFixed(2),
   detikPerFrameMaks: Math.max(...dtk),
 };
-laporan.pendar = waktu.pendar;
+laporan.sorot = waktu.sorot;
 
 if (!uji) {
   for (let f = info.frameMulai; f < info.frameMulai + info.jumlahFrame; f++) {
     if (!existsSync(frame(f))) throw new Error(`frame hilang: ${frame(f)}`);
   }
   mkdirSync(PUBLIK, { recursive: true });
-  // MP4: crf terkecil (kualitas tertinggi) yang masih <= 400 KB; gradien latar butuh crf rendah agar tidak berpita.
+  // MP4: crf terkecil (kualitas tertinggi) yang masih <= 400 KB.
   const mp4 = join(PUBLIK, `${id}.mp4`);
   let crf = 16;
   for (;; crf++) {

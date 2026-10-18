@@ -33,7 +33,6 @@ OTOT = [
     {"tulang": "upperarm_r", "grup": ("upperarm_r", "clavicle_r"), "s": (-0.35, -0.12, 0.42, 0.68),
      "arah": (-1.0, -0.45, 0.8), "lebar": 58.0, "jari": 0.09},
 ]
-CINCIN = {"tulang": "upperarm_r", "jari": 0.07, "geser": 0.11}
 
 # Badan tegak: hanya condong lateral sangat kecil menjauhi lengan (penyeimbang alami), bukan miring.
 BADAN = {"ekstensi": 0.3, "rotasi": 0.0, "miring": 0.9, "klavikula": 2.5}
@@ -56,4 +55,3 @@ def pose(anim, t, ops):
     # telapak (fleksi pergelangan), lalu menyusul saat melambat.
     lag = max(-4.0, min(4.0, 0.010 * anim.percepatan(t - 0.04)))
     anim.lengan(ops, t, "r", atas, depan, 9.0 - 4.0 * pr, palmar, lag_palmar=lag, jari=0.85 - 0.3 * pr, ibu=0.9)
-    anim.sumbu_cincin = -SUMBU  # menghadap depan (ke kamera)

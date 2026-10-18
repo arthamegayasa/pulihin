@@ -37,10 +37,6 @@ OTOT = [
     {"tulang": "upperarm_r", "grup": ("upperarm_r",), "s": (0.22, 0.40, 0.86, 1.0),
      "arah": (-0.75, 1.0, 0.0), "lebar": 52.0, "jari": 0.075},
 ]
-CINCIN = [
-    {"tulang": "upperarm_r", "jari": 0.068, "geser": 0.10},
-    {"tulang": "lowerarm_r", "jari": 0.047, "geser": 0.055},
-]
 
 # Badan tetap bersandar: condong ke depan kecil, putar sedikit ke kiri (bahu kanan maju), bahu tidak terangkat.
 BADAN = {"ekstensi": -2.2, "rotasi": -3.5, "miring": 0.3, "klavikula": 0.8}
@@ -72,5 +68,3 @@ def pose(anim, t, ops):
     # Pergelangan sedikit tertinggal saat dipercepat lalu menyusul; jari meluruskan sedikit saat menggapai.
     lag = max(-5.0, min(5.0, -0.012 * anim.percepatan(t - 0.04)))
     anim.lengan(ops, t, "r", atas, depan, e, palmar, lag=lag, jari=1.05 - 0.5 * pr, ibu=1.0 - 0.2 * pr)
-    sendi_siku = atas.cross(depan).normalized()
-    anim.sumbu_cincin = [SUMBU, sendi_siku]

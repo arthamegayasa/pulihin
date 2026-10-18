@@ -26,15 +26,16 @@ T_PUNCAK = 0.445  # tengah fase tahan -> poster "puncak"
 T_KEDIP = 0.875   # kedip saat istirahat
 
 # Samping (80°): lengan bawah berayun di bidang sagital tepat sejajar bidang gambar, tangan berakhir jelas di depan
-# bahu kanan (tidak tampak menyilang dada seperti pada sudut 3/4).
+# bahu kanan (tidak tampak menyilang dada seperti pada sudut 3/4; 62° dicoba untuk S2: tangan menumpuk di depan dada).
 KAMERA = {"azimut": 80.0, "elevasi": 6.0, "lensa": 60.0, "isi": 0.83}
 
-# Biseps + brakialis: sisi depan lengan atas kanan, dari sepertiga atas sampai lipat siku.
+# Biseps + brakialis: sisi depan(-luar) lengan atas kanan, dari dekat bahu sampai lipat siku. Sektor condong ke sisi
+# luar (brakialis, sisi yang menghadap kamera samping) agar bagian yang tidak tertutup lengan bawah di puncak, termasuk
+# lengan baju di atasnya, tersorot.
 OTOT = [
-    {"tulang": "upperarm_r", "grup": ("upperarm_r", "lowerarm_r"), "s": (0.22, 0.45, 0.93, 1.06),
-     "arah": (0.15, -1.0, 0.0), "lebar": 58.0, "jari": 0.075},
+    {"tulang": "upperarm_r", "grup": ("upperarm_r", "lowerarm_r"), "s": (0.10, 0.30, 0.93, 1.06),
+     "arah": (-0.4, -1.0, 0.0), "lebar": 66.0, "jari": 0.075},
 ]
-CINCIN = {"tulang": "lowerarm_r", "jari": 0.047, "geser": 0.050}
 
 # Gerak ikutan (derajat pada puncak): badan sedikit condong ke belakang & berputar ke lengan kerja, bahu kerja
 # justru sedikit turun (bentuk benar: bahu tidak terangkat).
@@ -59,4 +60,3 @@ def pose(anim, t, ops):
     lag = max(-5.0, min(5.0, -0.0042 * anim.percepatan(t - 0.03) * (gerak.SIKLUS / 4.0) ** 2))
     jari = anim.progres(t, 0.12)
     anim.lengan(ops, t, "r", atas, depan, f, palmar, lag=lag, jari=1.0 + 1.5 * jari, ibu=1.0 + 1.0 * jari)
-    anim.sumbu_cincin = atas.cross(depan)  # sumbu engsel siku, menghadap lateral (ke kamera)

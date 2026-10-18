@@ -1,4 +1,4 @@
-"""Wilayah otot yang menyala + "jendela" tembus pada pakaian di atasnya (gaya klinis V3).
+"""Wilayah otot yang disorot oranye, di kulit dan di pakaian di atasnya (tampilan S2).
 
 Wilayah otot = masker titik `otot` (0..1) di mesh badan, dihitung dari bentuk rest dan bobot tulang:
 tiap wilayah adalah pita sepanjang satu tulang x sektor sudut di sekitar sumbunya. Spesifikasi (di modul latihan):
@@ -13,8 +13,9 @@ tiap wilayah adalah pita sepanjang satu tulang x sektor sudut di sekitar sumbuny
 Beberapa wilayah digabung dengan maksimum. Atribut objek `kuat_otot` (dikunci per frame) mengatur nyala. Wilayah
 dengan `"kanal": "b"` masuk atribut `otot_b` yang dinyalakan `kuat_otot_b` (otot kedua dengan fase sendiri, mis.
 tungkai kanan lalu kiri dalam satu siklus).
-Pakaian di atas otot mendapat atribut `jendela` (0..1) sehingga bahan dibuat tembus di sana, dan kulit di bawahnya
-tidak dihapus oleh modifier Mask pakaian.
+Pakaian di atas otot mendapat atribut `jendela` / `jendela_b` (0..1, per kanal): nilai otot kulit tepat di bawah
+tiap titik kain (rata-rata beberapa titik kulit terdekat), sehingga kain ikut disorot berbentuk otot dengan tepi
+lembut yang sama, juga pada celana yang longgar; pakaian tetap rata & buram.
 """
 import math
 
@@ -64,69 +65,51 @@ def masker(body, rig, wilayah):
     return hasil
 
 
-def terapkan(body, baju, rig, wilayah, jangkau_kain=0.04, jangkau_kulit=0.065):
+def terapkan(body, baju, rig, wilayah, jangkau_kain=0.10, tetangga=8):
     """Tulis atribut `otot` dan `otot_b` (badan; wilayah dengan `"kanal": "b"` masuk `otot_b`, dinyalakan oleh
-    `kuat_otot_b` -> dua otot dengan fase kontraksi berbeda) dan `jendela` (baju), lalu ganti grup Mask pakaian agar
-    kulit di bawah lengan baju dan di bawah jendela tetap ada. Mengembalikan jumlah titik otot aktif (> 0,05)."""
+    `kuat_otot_b` -> dua otot dengan fase kontraksi berbeda) dan `jendela` / `jendela_b` (baju: rata-rata berbobot
+    jarak nilai otot `tetangga` titik kulit terdekat, bila kulit dalam `jangkau_kain`). Mengembalikan jumlah titik
+    otot aktif (> 0,05)."""
     per_kanal = {k: masker(body, rig, [w for w in wilayah if w.get("kanal", "a") == k]) for k in ("a", "b")}
-    for k, nama in (("a", "otot"), ("b", "otot_b")):
-        at = body.data.attributes.get(nama) or body.data.attributes.new(nama, "FLOAT", "POINT")
-        at.data.foreach_set("value", per_kanal[k])
-    nilai = [max(a, b) for a, b in zip(per_kanal["a"], per_kanal["b"])]
-
-    aktif = [(i, m) for i, m in enumerate(nilai) if m > 0.02]
-    if not aktif:
+    if not any(m > 0.02 for nilai in per_kanal.values() for m in nilai):
         raise ValueError("wilayah otot kosong: periksa spesifikasi OTOT latihan")
-    kd = KDTree(len(aktif))
-    for k, (i, _) in enumerate(aktif):
-        kd.insert(body.data.vertices[i].co, k)
+    gi = body.vertex_groups["body"].index
+    kulit = [v for v in body.data.vertices if any(g.group == gi and g.weight > 0.5 for g in v.groups)]
+    kd = KDTree(len(kulit))
+    for n, v in enumerate(kulit):
+        kd.insert(v.co, n)
     kd.balance()
-
-    # Jendela kain: maksimum nilai otot di sekitar tiap titik kain, memudar dengan jarak.
-    jendela = []
+    bawah = []  # per titik kain: [(indeks titik kulit, bobot)]
     for v in baju.data.vertices:
-        j = 0.0
-        for _, k, d in kd.find_range(v.co, jangkau_kain):
-            j = max(j, aktif[k][1] * (1 - d / jangkau_kain))
-        jendela.append(min(1.0, j * 1.6))
-    aj = baju.data.attributes.get("jendela") or baju.data.attributes.new("jendela", "FLOAT", "POINT")
-    aj.data.foreach_set("value", jendela)
-
-    # Grup hapus kulit: salinan grup Mask asli, minus lengan atas/bawah (lengan baju tembus) dan minus kulit
-    # dalam jangkauan otot (di bawah jendela). Adegan selalu dibangun dari dasar.blend, jadi grup asal masih asli.
-    mask = next(m for m in body.modifiers if m.type == "MASK" and "casualsuit06" in m.name)
-    asal = body.vertex_groups[mask.vertex_group]
-    g = body.vertex_groups.new(name=asal.name + ".jendela")
-    nama_grup = {gr.index: gr.name for gr in body.vertex_groups}
-    hapus = []
-    for v in body.data.vertices:
-        ada, lengan = False, 0.0
-        for gg in v.groups:
-            if gg.group == asal.index and gg.weight > 0.5:
-                ada = True
-            if nama_grup[gg.group] in ("upperarm_l", "upperarm_r", "lowerarm_l", "lowerarm_r"):
-                lengan += gg.weight
-        if not ada or lengan > 0.25:
-            continue
-        if kd.find(v.co)[2] < jangkau_kulit:
-            continue
-        hapus.append(v.index)
-    g.add(hapus, 1.0, "REPLACE")
-    mask.vertex_group = g.name
-    return sum(1 for m in nilai if m > 0.05)
+        dekat = [(kulit[n].index, 1.0 / max(d, 1e-3)) for _, n, d in kd.find_n(v.co, tetangga) if d < jangkau_kain]
+        tot = sum(w for _, w in dekat)
+        bawah.append([(i, w / tot) for i, w in dekat])
+    for k, nama, nama_kain in (("a", "otot", "jendela"), ("b", "otot_b", "jendela_b")):
+        nilai = per_kanal[k]
+        at = body.data.attributes.get(nama) or body.data.attributes.new(nama, "FLOAT", "POINT")
+        at.data.foreach_set("value", nilai)
+        jendela = [sum(nilai[i] * w for i, w in b) for b in bawah]
+        aj = baju.data.attributes.get(nama_kain) or baju.data.attributes.new(nama_kain, "FLOAT", "POINT")
+        aj.data.foreach_set("value", jendela)
+    return sum(1 for a, b in zip(per_kanal["a"], per_kanal["b"]) if max(a, b) > 0.05)
 
 
-def pusat_otot(body):
-    """Pusat berbobot wilayah otot pada pose saat ini (ruang dunia), untuk kamera tinjau jarak dekat."""
+def pusat_otot(body, baju):
+    """Pusat berbobot wilayah yang disorot pada pose saat ini (ruang dunia), untuk kamera tinjau jarak dekat: kulit
+    (`otot`) yang tampak dan kain di atas otot (`jendela`); kulit di bawah pakaian dihapus Mask, jadi otot tungkai &
+    batang tubuh hanya terwakili kainnya."""
     dg = bpy.context.evaluated_depsgraph_get()
-    ev = body.evaluated_get(dg)
-    me = ev.to_mesh()
-    a, b = me.attributes["otot"], me.attributes["otot_b"]
     tot, jum = Vector(), 0.0
-    for v, ka, kb in zip(me.vertices, a.data, b.data):
-        m = max(ka.value, kb.value)
-        if m > 0.3:
-            tot += (ev.matrix_world @ v.co) * m
-            jum += m
-    ev.to_mesh_clear()
+    for o, nama in ((body, ("otot", "otot_b")), (baju, ("jendela", "jendela_b"))):
+        ev = o.evaluated_get(dg)
+        me = ev.to_mesh()
+        a, b = me.attributes[nama[0]], me.attributes[nama[1]]
+        for v, ka, kb in zip(me.vertices, a.data, b.data):
+            m = max(ka.value, kb.value)
+            if m > 0.3:
+                tot += (ev.matrix_world @ v.co) * m
+                jum += m
+        ev.to_mesh_clear()
+    if jum == 0.0:
+        raise ValueError("wilayah otot tidak tampak pada pose puncak: periksa OTOT latihan")
     return tot / jum

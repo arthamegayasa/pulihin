@@ -9,7 +9,7 @@
  */
 
 import { srcIlustrasi } from '@/components/premium/asetIlustrasi';
-import { CACHE_ILUSTRASI } from '@/config/cacheIlustrasi';
+import { CACHE_ILUSTRASI } from '@/config/cacheAset';
 import { hematData } from '@/features/pose/asetPose';
 
 const sedangDipramuat = new Set<string>();

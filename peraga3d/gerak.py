@@ -368,8 +368,6 @@ class Animator:
       - `tangan_istirahat` {sisi: (target pergelangan, normal telapak, arah jari[, opsi])} untuk tangan yang bertumpu
         di paha/meja atau menggenggam rel sandaran (`opsi` = {"genggam": {"pusat", "sumbu", "jari_jari"} rel,
         "kutub": arah siku}; untuk permukaan datar: {"miring", "tekuk", "ibu"}).
-    Fungsi `pose()` latihan WAJIB mengisi `self.sumbu_cincin` (sumbu gerak sendi target, menghadap kamera; satu
-    vektor untuk semua cincin atau daftar per cincin) dan boleh mengisi `self.sendi_cincin` (posisi pengganti).
     """
 
     def __init__(self, rig, latihan):
@@ -385,11 +383,9 @@ class Animator:
         self.v_awal = latihan.KUNCI[0][1]
         self.v_puncak = max(nilai, key=lambda v: abs(v - self.v_awal))
         self.t_puncak = latihan.T_PUNCAK * SIKLUS
-        self.sumbu_cincin = None
-        self.sendi_cincin = None
         self.target_kaki = {}  # per frame: sisi -> target pergelangan kaki yang dipakai IK tungkai
         self.galat_kaki = 0.0  # meleset terbesar pergelangan kaki dari targetnya (m) selama kunci_semua
-        self.rekam = []  # per frame: (frame, [posisi sendi per cincin], [sumbu per cincin], (kuat a, kuat b))
+        self.rekam = []  # per frame: (frame, (kuat a, kuat b)) -> sorot otot di adegan.py
 
     # -- kurva latihan --
     def nilai(self, t):
@@ -590,7 +586,6 @@ class Animator:
 
     def kunci_semua(self, kunci_kedip=()):
         rig = self.rig
-        cincin = self.L.CINCIN
         for pb in rig.pose.bones:
             pb.rotation_mode = "QUATERNION"
         self.rekam = []
@@ -598,12 +593,8 @@ class Animator:
         for i in range(JUMLAH_FRAME + 1):
             frame = FRAME_MULAI + i
             t = i / FPS  # frame terakhir+1 (t = SIKLUS) = frame 1: kurva fcurve tertutup rapat
-            self.sumbu_cincin = None
-            self.sendi_cincin = None
             self.target_kaki = {}
             basis = self.p.susun(self.operasi(t))
-            if self.sumbu_cincin is None:
-                raise RuntimeError(f"pose() latihan {self.L.ID} tidak mengisi anim.sumbu_cincin")
             for sisi, st in self.target_kaki.items():
                 self.galat_kaki = max(self.galat_kaki, (self.p.pos[f"foot_{sisi}"].translation - st["T"]).length)
             for n, B in basis.items():
@@ -614,16 +605,7 @@ class Animator:
                 pb.keyframe_insert("rotation_quaternion", frame=frame, group=n)
                 if n in ("Root", "pelvis"):
                     pb.keyframe_insert("location", frame=frame, group=n)
-            sendi = self.sendi_cincin
-            if sendi is None:
-                sendi = [self.p.pos[c["tulang"]].translation.copy() for c in cincin]
-            elif isinstance(sendi, Vector):
-                sendi = [sendi.copy()]
-            sumbu = self.sumbu_cincin
-            sumbu = [Vector(s).normalized() for s in sumbu] if isinstance(sumbu, (list, tuple)) else [sumbu.normalized()] * len(cincin)
-            if len(sendi) != len(cincin) or len(sumbu) != len(cincin):
-                raise RuntimeError(f"{self.L.ID}: sendi/sumbu cincin tidak sesuai jumlah CINCIN ({len(cincin)})")
-            self.rekam.append((frame, sendi, sumbu, self.kuat(t)))
+            self.rekam.append((frame, self.kuat(t)))
             for sk in kunci_kedip:
                 sk.value = kedip(t, self.L.T_KEDIP * SIKLUS)
                 sk.keyframe_insert("value", frame=frame)

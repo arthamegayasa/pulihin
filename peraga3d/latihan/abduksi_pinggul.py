@@ -36,11 +36,9 @@ KAMERA = {"azimut": 36.0, "elevasi": 8.0, "lensa": 60.0, "isi": 0.83}
 # Gluteus medius kanan: sisi luar panggul dari bawah krista iliaka sampai di atas trokanter (serat depan-samping
 # menghadap kamera; ilustratif).
 OTOT = [
-    {"tulang": "thigh_r", "grup": ("thigh_r", "pelvis"), "s": (-0.45, -0.28, 0.02, 0.16),
-     "arah": (-1.0, -0.4, 0.3), "lebar": 62.0, "jari": 0.15},
+    {"tulang": "thigh_r", "grup": ("thigh_r", "pelvis"), "s": (-0.50, -0.30, 0.06, 0.20),
+     "arah": (-1.0, -0.4, 0.3), "lebar": 72.0, "jari": 0.16},
 ]
-# Cincin di depan sendi pinggul kanan, sumbu anteroposterior (= sumbu gerak abduksi).
-CINCIN = {"tulang": "thigh_r", "jari": 0.07, "geser": 0.13}
 
 # Badan tegak (tanpa condong ke samping); hanya ikutan sangat kecil.
 BADAN = {"ekstensi": 0.0, "rotasi": 0.0, "miring": 0.3, "klavikula": 0.0}
@@ -108,5 +106,3 @@ def pose(anim, t, ops):
     Q = Matrix.Rotation(math.radians(0.35 * a), 3, SUMBU) @ Matrix.Rotation(math.radians(6.0 * pr), 3, "Z")
     _, R_kaki, R_jari = anim.kaki_tapak("r")
     anim.tungkai(ops, "r", target, Vector((0.0, -1.0, 0.0)), Q @ R_kaki, Q @ R_jari)
-    # Sumbu gerak anteroposterior, diputar 20° ke arah kamera agar cincin tampak utuh (tidak terbenam di sisi pinggul).
-    anim.sumbu_cincin = gerak.rotasi(-SUMBU, (0, 0, 1), -20.0)

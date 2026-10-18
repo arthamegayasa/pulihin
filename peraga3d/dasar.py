@@ -1,6 +1,7 @@
-"""Bangun karakter peraga (sekali, dipakai semua latihan): MPFB/MakeHuman CC0 laki-laki ±53 tahun, rig
-"game_engine", polo berkerah + celana panjang + sepatu, rambut pendek beruban (helai gumpal), kunci bentuk kedip.
-Tanpa pose, perabot, kamera, atau bahan akhir: itu urusan adegan.py (per latihan) dan tampilan.py.
+"""Bangun karakter peraga Pak Budi (sekali, dipakai semua latihan): MPFB/MakeHuman CC0 laki-laki ±57 tahun, rig
+"game_engine", polo berkerah + celana panjang + sepatu, rambut pendek hitam beruban di pelipis (helai gumpal),
+kumis rapi, kunci bentuk kedip. Tanpa pose, perabot, kamera, atau bahan akhir: itu urusan adegan.py (per latihan)
+dan tampilan.py.
 
 Jalankan (dari akar repo):  D:/Tools/blender/blender.exe -b -P peraga3d/dasar.py
 Hasil:                      peraga3d/out/dasar.blend   (±10 dtk)
@@ -22,10 +23,10 @@ from bl_ext.user_default.mpfb.services.targetservice import TargetService  # noq
 
 KELUAR = os.path.join(DIR, "out", "dasar.blend")
 
-# Laki-laki ±53 tahun (umur MPFB: 0,5 = 25 th, 1,0 = 90 th), tinggi sedang, badan rata-rata, perut sedikit.
+# Laki-laki ±57 tahun (umur MPFB: 0,5 = 25 th, 1,0 = 90 th), tinggi sedang, badan rata-rata, perut sedikit.
 MAKRO = {
     "gender": 1.0,
-    "age": 0.5 + (53 - 25) / (90 - 25) * 0.5,
+    "age": 0.5 + (57 - 25) / (90 - 25) * 0.5,
     "muscle": 0.5,
     "weight": 0.6,
     "proportions": 0.62,
@@ -34,12 +35,13 @@ MAKRO = {
     "firmness": 0.5,
     "race": {"asian": 0.78, "caucasian": 0.07, "african": 0.15},
 }
-# Wajah tenang & ramah (kelopak sedikit turun, sudut bibir sedikit naik, alis dalam sedikit naik), perut sedikit.
+# Wajah ramah seperti ilustrasi: senyum lembut bibir tertutup (sudut bibir naik), mata sedikit menyipit tersenyum,
+# alis dalam sedikit naik; perut sedikit.
 TARGET = {
     "stomach/stomach-pregnant-incr": 0.14,
-    "expression/units/asian/eye-left-closure": 0.05,
-    "expression/units/asian/eye-right-closure": 0.05,
-    "expression/units/asian/mouth-corner-puller": 0.42,
+    "expression/units/asian/eye-left-closure": 0.12,
+    "expression/units/asian/eye-right-closure": 0.12,
+    "expression/units/asian/mouth-corner-puller": 0.85,
     "expression/units/asian/eyebrows-left-inner-up": 0.12,
     "expression/units/asian/eyebrows-right-inner-up": 0.12,
 }
@@ -91,8 +93,8 @@ def main():
     pakaian.pisah_uv(sepatu, lambda u, v: "KausKaki" if (u > 0.82 and v > 0.6) else "Sepatu")
     pakaian.buat_kerah(baju, rig)
     pakaian.buat_plaket(baju, rig)
-    pakaian.atribut_lengan_baju(baju)
     rambut.masker_kulit_kepala(body, obj["Alis"])
+    rambut.buat_kumis(body, rig)
 
     # Subdivisi kulit (level sama di viewport & render agar Surface Deform bulu mata tetap terikat).
     sd = body.modifiers.new("Subdivisi", "SUBSURF")
@@ -115,7 +117,8 @@ def main():
 
     # Rambut pendek beruban: helai gumpal terpahat (dibangun pada bentuk rest, ikut tulang kepala).
     _, gumpal = rambut.bangun_helai(body, obj["Alis"])
-    rambut.buat_objek("Rambut", gumpal, 0.00045, 0.00008, rig)
+    # Helai tebal (akar 0,7 mm): rambut terbaca sebagai satu bentuk rata seperti ilustrasi, bukan serabut.
+    rambut.buat_objek("Rambut", gumpal, 0.0007, 0.00025, rig)
     print(f"[dasar] rambut: {len(gumpal)} helai gumpal")
 
     os.makedirs(os.path.dirname(KELUAR), exist_ok=True)

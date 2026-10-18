@@ -3,13 +3,14 @@
  * agar sesi kamera dan contoh gerakan tetap tersedia tanpa sinyal setelah aplikasi dibuka sekali (Bab 11, Ketahanan).
  *
  * Service worker tidak mem-precache MediaPipe (WASM ~13 MB + model 5,8 MB) maupun video peraga agar landing
- * page ringan; runtime cache CacheFirst `pulihin-mediapipe` dan `pulihin-peraga` (vite.config.ts) menyimpan
+ * page ringan; runtime cache CacheFirst `pulihin-mediapipe` dan `CACHE_PERAGA` (vite.config.ts) menyimpan
  * apa pun di `/mediapipe/` dan `/peraga/` yang lewat SW. `prefetchAsetPose()` mengunduh saat browser senggang:
  * 1. video + poster peraga untuk latihan di program pasien aktif (kecil, ±0,5 MB per latihan);
  * 2. PERSIS varian WASM yang akan dipilih FilesetResolver (SIMD atau tanpa SIMD) + model.
  * `@mediapipe/tasks-vision` hanya diimpor dinamis saat cache MediaPipe belum lengkap.
  */
 
+import { CACHE_PERAGA } from '@/config/cacheAset';
 import { getProgram } from '@/data/db';
 import { getPrefs } from '@/lib/prefs';
 import { getExercise } from './exerciseDefinitions';
@@ -18,8 +19,6 @@ export const WASM_PATH = '/mediapipe/wasm';
 export const MODEL_PATH = '/mediapipe/models/pose_landmarker_lite.task';
 /** Harus sama dengan `cacheName` runtimeCaching `/mediapipe/` di vite.config.ts. */
 const CACHE_MEDIAPIPE = 'pulihin-mediapipe';
-/** Harus sama dengan `cacheName` runtimeCaching `/peraga/` di vite.config.ts. */
-const CACHE_PERAGA = 'pulihin-peraga';
 
 interface InfoKoneksi {
   saveData?: boolean;

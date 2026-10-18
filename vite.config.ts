@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import { CACHE_ILUSTRASI } from './src/config/cacheIlustrasi.ts';
+import { CACHE_ILUSTRASI, CACHE_PERAGA } from './src/config/cacheAset.ts';
 
 export default defineConfig({
   resolve: {
@@ -89,7 +89,7 @@ export default defineConfig({
             urlPattern: ({ url }) => url.pathname.startsWith('/peraga/') && url.pathname.endsWith('.mp4'),
             handler: 'CacheFirst',
             options: {
-              cacheName: 'pulihin-peraga',
+              cacheName: CACHE_PERAGA,
               expiration: { maxEntries: 40 },
               cacheableResponse: { statuses: [200], headers: { 'content-type': 'video/mp4' } },
               // Hanya jawaban 200 utuh yang disimpan (fetch tanpa Range); permintaan Range dari elemen <video>
@@ -102,7 +102,7 @@ export default defineConfig({
             urlPattern: ({ url }) => url.pathname.startsWith('/peraga/') && url.pathname.endsWith('.webp'),
             handler: 'CacheFirst',
             options: {
-              cacheName: 'pulihin-peraga',
+              cacheName: CACHE_PERAGA,
               expiration: { maxEntries: 40 },
               cacheableResponse: { statuses: [200], headers: { 'content-type': 'image/webp' } },
               matchOptions: { ignoreVary: true },

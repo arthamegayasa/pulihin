@@ -36,7 +36,6 @@ OTOT = [
     {"tulang": "thigh_r", "grup": ("thigh_r",), "s": (0.12, 0.30, 0.86, 1.02),
      "arah": (-0.55, -1.0, 0.0), "lebar": 50.0, "jari": 0.11},
 ]
-CINCIN = {"tulang": "calf_r", "jari": 0.072, "geser": 0.105}
 
 # Punggung tetap bersandar: hanya ikutan sangat kecil (sedikit condong menjauhi tungkai yang berat).
 BADAN = {"ekstensi": 0.4, "rotasi": 0.0, "miring": 0.7, "klavikula": 0.0}
@@ -60,4 +59,3 @@ def pose(anim, t, ops):
     for tulang in ("foot_r", "ball_r"):
         dasar = anim.p.rest[tulang].to_3x3() @ Vector((0, 1, 0)) + Vector((-0.07, 0, 0))
         ops[tulang] = [gerak.arahkan(gerak.rotasi(dasar, SUMBU, kaki + (4.0 * pr if tulang == "ball_r" else 0.0)))]
-    anim.sumbu_cincin = SUMBU

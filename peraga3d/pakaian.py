@@ -190,36 +190,3 @@ def buat_plaket(baju, rig):
     s.offset = 1
     ob.modifiers.move(len(ob.modifiers) - 1, 0)
     return ob
-
-
-def atribut_lengan_baju(baju):
-    """Atribut titik `lengan` (0..1, lembut) dari bobot lengan atas: lengan baju dibuat tembus pandang pada gaya
-    klinis agar otot fleksor yang berpendar terlihat."""
-    nilai = []
-    for v in baju.data.vertices:
-        bb = _bobot(baju, v.index)
-        w = bb.get("upperarm_l", 0) + bb.get("upperarm_r", 0) + bb.get("lowerarm_l", 0) + bb.get("lowerarm_r", 0)
-        t = max(0.0, min(1.0, (w - 0.15) / 0.45))
-        nilai.append(t * t * (3 - 2 * t))
-    at = baju.data.attributes.get("lengan") or baju.data.attributes.new("lengan", "FLOAT", "POINT")
-    at.data.foreach_set("value", nilai)
-
-
-def grup_hapus_tanpa_lengan(body, nama_hapus, ambang=0.25):
-    """Salinan grup hapus kulit di bawah kaos, tetapi kulit lengan atas tetap tampil (gaya klinis)."""
-    src = body.vertex_groups[nama_hapus]
-    g = body.vertex_groups.get(nama_hapus + ".tanpa_lengan") or body.vertex_groups.new(name=nama_hapus + ".tanpa_lengan")
-    nama = {gr.index: gr.name for gr in body.vertex_groups}
-    ids = []
-    for v in body.data.vertices:
-        ada = False
-        lengan = 0.0
-        for gg in v.groups:
-            if gg.group == src.index and gg.weight > 0.5:
-                ada = True
-            if nama[gg.group] in ("upperarm_l", "upperarm_r", "lowerarm_l", "lowerarm_r"):
-                lengan += gg.weight
-        if ada and lengan <= ambang:
-            ids.append(v.index)
-    g.add(ids, 1.0, "REPLACE")
-    return g

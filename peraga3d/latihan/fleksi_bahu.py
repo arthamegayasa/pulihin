@@ -31,10 +31,9 @@ KAMERA = {"azimut": 78.0, "elevasi": 5.0, "lensa": 60.0, "isi": 0.83}
 
 # Deltoid depan: sisi depan-luar puncak bahu sampai sepertiga atas lengan atas.
 OTOT = [
-    {"tulang": "upperarm_r", "grup": ("upperarm_r", "clavicle_r"), "s": (-0.35, -0.12, 0.42, 0.68),
-     "arah": (-0.35, -1.0, 0.25), "lebar": 58.0, "jari": 0.09},
+    {"tulang": "upperarm_r", "grup": ("upperarm_r", "clavicle_r"), "s": (-0.35, -0.12, 0.45, 0.72),
+     "arah": (-0.6, -1.0, 0.25), "lebar": 66.0, "jari": 0.09},
 ]
-CINCIN = {"tulang": "upperarm_r", "jari": 0.068, "geser": 0.10}
 
 BADAN = {"ekstensi": 0.8, "rotasi": 0.4, "miring": 0.5, "klavikula": 2.5}
 KEPALA = {"yaw": -6.0, "pitch": -2.0, "lirik_yaw": -2.0, "lirik_pitch": -2.5, "lirik_roll": -0.6}
@@ -57,4 +56,3 @@ def pose(anim, t, ops):
     # Tangan tertinggal sedikit saat lengan dipercepat, menyusul saat melambat; siku hampir lurus.
     lag = max(-5.0, min(5.0, -0.012 * anim.percepatan(t - 0.04)))
     anim.lengan(ops, t, "r", atas, depan, 9.0 - 4.0 * pr, palmar, lag=lag, jari=0.85 - 0.3 * pr, ibu=0.9)
-    anim.sumbu_cincin = SUMBU

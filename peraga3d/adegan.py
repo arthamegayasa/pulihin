@@ -1,5 +1,6 @@
-"""Susun adegan satu latihan dari karakter dasar: pose & animasi satu siklus (loop mulus), perabot, wilayah otot +
-jendela kain, cincin sendi, kamera per latihan dengan bingkai otomatis, kamera tinjau otot, cyclorama.
+"""Susun adegan satu latihan dari karakter dasar: pose & animasi satu siklus (loop mulus), perabot, wilayah otot
+(kulit + kain di atasnya) dengan kekuatan sorot per frame, kamera per latihan dengan bingkai otomatis, kamera tinjau
+otot, cyclorama.
 
   D:/Tools/blender/blender.exe -b peraga3d/out/dasar.blend -P peraga3d/adegan.py -- --id fleksi-siku
 Hasil: peraga3d/out/<id>/adegan.blend + peraga3d/out/<id>/info.json (frame mulai/tengah/puncak, siklus, strip).
@@ -174,17 +175,9 @@ def buat_cyc(azimut, jarak_dinding=2.6, r=1.3):
 # ---------------- posisi ----------------
 
 
-def atur_cahaya(bahu_z):
-    """Titik bidik cahaya tampilan.py: dada (`pusat_cahaya`) dan garis bahu (`bahu_cahaya`) pada tinggi bahu figur."""
-    sc = bpy.context.scene
-    sc["pusat_cahaya"] = (-0.05, -0.1, bahu_z - 0.2)
-    sc["bahu_cahaya"] = (-0.05, 0.0, bahu_z)
-
-
 def siapkan_duduk(anim, L, rig, baju, sepatu):
     """Duduk tegak di kursi: tinggi panggul dari kontak sepatu-lantai (kaki menapak, tidak tergelincir karena
     tungkai FK statis), kursi dari bentuk celana, target tangan istirahat di permukaan paha."""
-    atur_cahaya(1.0)
     anim.turun = -0.30
     anim.terapkan(0.0)
     vs, _ = evaluasi(sepatu)
@@ -278,7 +271,6 @@ def siapkan_berdiri(anim, L, rig, baju, sepatu):
                                       Vector((0.0, 0.24, -0.97)), jari[sisi],
                                       {"genggam": rel, "kutub": (0.5 * x, 0.8, -0.35)})
     buat_kursi(0.47, rel_y + 0.02, rel_y + 0.02 - 0.42, 0.22, rel_y - 0.061, papan=(0.25, 0.10), rel_z=rel_z)
-    atur_cahaya(bahu.z)
     print(f"[adegan] berdiri: rel sandaran y {rel_y:.3f} z {rel_z:.3f}, bahu z {bahu.z:.3f}")
 
 
@@ -323,8 +315,6 @@ def siapkan_duduk_berdiri(anim, L, rig, baju, sepatu):
                                       Vector((-0.12 * x, -1.0, 0.0)).normalized(),
                                       {"miring": 0.0, "tekuk": -0.05, "ibu": -0.6, "kutub": (0.85 * x, 0.35, -0.4)})
     buat_meja(w.y + 0.032, tinggi)
-    z_bahu = [L_["l"].z for L_ in lintasan]
-    atur_cahaya(0.4 * min(z_bahu) + 0.6 * max(z_bahu))
     print(f"[adegan] duduk-berdiri: dudukan z {dudukan_z:.3f} depan y {y_depan:.3f}; meja tinggi {tinggi:.2f} "
           f"tepi y {w.y + 0.032:.3f}; jarak bahu-pergelangan {dmin:.3f}..{dmax:.3f} (maks {a + b:.3f})")
 
@@ -391,51 +381,17 @@ def kamera_tinjau(sc, nama, target, arah, jarak, lensa):
     return cam
 
 
-# ---------------- cincin sendi ----------------
-
-
-def buat_cincin(anim, daftar):
-    """Cincin tipis di sisi tiap sendi target (`daftar` = CINCIN latihan), sumbu = sumbu gerak sendi; properti
-    `kuat` (pendar, mengikuti kanal cincin `"kanal"` a/b) dan `kuat_otot`/`kuat_otot_b` di badan dikunci per frame."""
-    body = bpy.data.objects["Badan"]
-    semua = []
-    for i, C in enumerate(daftar):
-        bpy.ops.mesh.primitive_torus_add(major_radius=C["jari"], minor_radius=0.0026, major_segments=96, minor_segments=10)
-        cincin = bpy.context.active_object
-        cincin.name = "Cincin" if i == 0 else f"Cincin.{i + 1}"
-        cincin.rotation_mode = "QUATERNION"
-        cincin.data.materials.append(bpy.data.materials.get("Cincin") or bpy.data.materials.new("Cincin"))
-        kanal = 1 if C.get("kanal", "a") == "b" else 0
-        for frame, sendi, sumbu, kuat in anim.rekam:
-            cincin.location = sendi[i] + sumbu[i] * C["geser"]
-            cincin.rotation_quaternion = Vector((0, 0, 1)).rotation_difference(sumbu[i])
-            cincin.keyframe_insert("location", frame=frame)
-            cincin.keyframe_insert("rotation_quaternion", frame=frame)
-            cincin["kuat"] = kuat[kanal]
-            cincin.keyframe_insert('["kuat"]', frame=frame)
-        semua.append(cincin)
-    for frame, _, _, kuat in anim.rekam:
-        body["kuat_otot"], body["kuat_otot_b"] = kuat
-        body.keyframe_insert('["kuat_otot"]', frame=frame)
-        body.keyframe_insert('["kuat_otot_b"]', frame=frame)
-    for o in semua + [body]:
+def kunci_sorot(anim):
+    """Kunci `kuat_otot`/`kuat_otot_b` (kekuatan kontraksi kanal a/b) per frame di badan & baju: sorot otot di kulit
+    dan di kain di atasnya mengikuti fase gerak."""
+    objek = (bpy.data.objects["Badan"], bpy.data.objects["Baju"])
+    for frame, kuat in anim.rekam:
+        for o in objek:
+            o["kuat_otot"], o["kuat_otot_b"] = kuat
+            o.keyframe_insert('["kuat_otot"]', frame=frame)
+            o.keyframe_insert('["kuat_otot_b"]', frame=frame)
+    for o in objek:
         gerak.siklus_linear(o)
-    return semua
-
-
-def ikat_ulang_kulit():
-    """Alis & bulu mata menempel ke kulit lewat Surface Deform yang terikat ke jumlah titik badan terevaluasi;
-    grup Mask baru (jendela otot) mengubah jumlah itu, jadi ikat ulang pada pose rest."""
-    bpy.context.view_layer.update()
-    for nama in ("Alis", "BuluMata"):
-        o = bpy.data.objects[nama]
-        m = o.modifiers["IkutKulit"]
-        with bpy.context.temp_override(object=o, active_object=o, selected_objects=[o]):
-            if m.is_bound:
-                bpy.ops.object.surfacedeform_bind(modifier=m.name)  # lepas
-            bpy.ops.object.surfacedeform_bind(modifier=m.name)
-        if not m.is_bound:
-            raise RuntimeError(f"Surface Deform {nama} gagal terikat ulang")
 
 
 def main():
@@ -451,7 +407,6 @@ def main():
     body, rig, baju, sepatu = o["Badan"], o["Rig"], o["Baju"], o["Sepatu"]
 
     n_otot = otot.terapkan(body, baju, rig, L.OTOT)
-    ikat_ulang_kulit()
     print(f"[adegan] {L.ID}: siklus {gerak.SIKLUS} dtk ({gerak.JUMLAH_FRAME} frame), tempo target {L.TEMPO}, {n_otot} titik otot")
 
     anim = gerak.Animator(rig, L)
@@ -464,7 +419,7 @@ def main():
     sc.frame_end = gerak.FRAME_MULAI + gerak.JUMLAH_FRAME - 1
     kedip = [body.data.shape_keys.key_blocks[n] for n in ("kedip_l", "kedip_r")]
     anim.kunci_semua(kedip)
-    buat_cincin(anim, L.CINCIN)
+    kunci_sorot(anim)
 
     # Frame acuan: mulai, tengah naik (progres pertama >= 0,5), puncak (tengah tahan), strip 8 frame merata.
     n = gerak.JUMLAH_FRAME
@@ -475,14 +430,7 @@ def main():
 
     cam, arah = pasang_kamera(sc, L.KAMERA, sampel)
     sc.frame_set(f_puncak)
-    sendi = rig.matrix_world @ anim.rekam[f_puncak - gerak.FRAME_MULAI][1][0]
-    fokus = bpy.data.objects.new("Fokus", None)
-    sc.collection.objects.link(fokus)
-    fokus.location = sendi
-    cam.data.dof.use_dof = True
-    cam.data.dof.focus_object = fokus
-    cam.data.dof.aperture_fstop = 5.6
-    pusat = otot.pusat_otot(body)
+    pusat = otot.pusat_otot(body, baju)
     kamera_tinjau(sc, "KameraOtot", pusat, arah, 0.95, 70)
     buat_cyc(math.radians(L.KAMERA["azimut"]))
 

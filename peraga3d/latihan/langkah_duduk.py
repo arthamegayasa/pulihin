@@ -36,19 +36,14 @@ PUNCAK = 20.0
 # Serong depan kanan, sedikit dari atas: kedua lutut dan paha (bagian depan pinggul) terbaca naik bergantian.
 KAMERA = {"azimut": 32.0, "elevasi": 18.0, "lensa": 55.0, "isi": 0.83}
 
-# Fleksor pinggul (iliopsoas + rektus femoris proksimal): lipat paha depan sampai pertengahan atas paha (sisi atas
-# paha saat duduk; paha tebal di pangkal -> jari wilayah lebar). Kanal a = kanan, kanal b = kiri; masing-masing
-# menyala hanya saat lututnya naik.
+# Fleksor pinggul (iliopsoas + rektus femoris): lipat paha depan sampai dua pertiga paha (sisi atas paha saat duduk;
+# paha tebal di pangkal -> jari wilayah lebar; cukup panjang agar terbaca di ubin 56 px). Kanal a = kanan, kanal b =
+# kiri; masing-masing menyala hanya saat lututnya naik.
 OTOT = [
-    {"tulang": "thigh_r", "grup": ("thigh_r", "pelvis"), "s": (-0.12, 0.04, 0.55, 0.72),
-     "arah": (-0.3, -1.0, 0.15), "lebar": 55.0, "jari": 0.16},
-    {"tulang": "thigh_l", "grup": ("thigh_l", "pelvis"), "s": (-0.12, 0.04, 0.55, 0.72),
-     "arah": (0.3, -1.0, 0.15), "lebar": 55.0, "jari": 0.16, "kanal": "b"},
-]
-# Cincin di sisi luar sendi pinggul kanan & kiri (sumbu fleksi pinggul), masing-masing menyala bersama sisinya.
-CINCIN = [
-    {"tulang": "thigh_r", "jari": 0.075, "geser": 0.135},
-    {"tulang": "thigh_l", "jari": 0.075, "geser": 0.135, "kanal": "b"},
+    {"tulang": "thigh_r", "grup": ("thigh_r", "pelvis"), "s": (-0.12, 0.04, 0.70, 0.86),
+     "arah": (-0.3, -1.0, 0.15), "lebar": 58.0, "jari": 0.16},
+    {"tulang": "thigh_l", "grup": ("thigh_l", "pelvis"), "s": (-0.12, 0.04, 0.70, 0.86),
+     "arah": (0.3, -1.0, 0.15), "lebar": 58.0, "jari": 0.16, "kanal": "b"},
 ]
 # Tangan bertumpu di paha dekat lutut (bukan di pangkal paha seperti bawaan) agar wilayah otot yang menyala tidak
 # tertutup tangan/lengan bawah: geser sepanjang paha (m) dan koreksi tinggi (+ = turun) mengikuti paha yang mengecil.
@@ -128,4 +123,3 @@ def pose(anim, t, ops):
     for nama, w in (("spine_01", 0.45), ("spine_02", 0.35), ("spine_03", 0.20)):
         ops[nama].append(gerak.putar((0, 1, 0), (miring - HIKE * (kanan - kiri)) * w))
     ops["head"].append(gerak.putar((0, 1, 0), -0.7 * miring))
-    anim.sumbu_cincin = [Vector((-1.0, 0.0, 0.0)), Vector((1.0, 0.0, 0.0))]
