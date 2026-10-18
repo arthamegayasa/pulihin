@@ -72,11 +72,20 @@ Hosting statis **Vercel** (proyek `pulihin`), terhubung ke repo GitHub: setiap p
 
 - rewrite SPA ke `index.html` (tautan dalam seperti `/app/beranda` aman dibuka langsung),
 - header keamanan: `Content-Security-Policy: connect-src 'self'` (tidak ada koneksi ke server lain), `Permissions-Policy: camera=(self), microphone=(self)`,
-- cache panjang untuk `/assets/*` (nama ber-hash, 1 tahun) dan cache 7 hari untuk `/mediapipe/*`.
+- cache panjang untuk `/assets/*` dan `/suara/*` (nama ber-hash, 1 tahun) dan cache 7 hari untuk `/mediapipe/*`.
 
 Deploy manual: `vercel deploy --prod`.
 
 **Domain `pulihinapp.id`.** Spesifikasi melarang agen mendaftarkan atau membayar domain. Setelah pemilik produk memiliki domain: Vercel > Project `pulihin` > Settings > Domains > tambahkan `pulihinapp.id` dan `www.pulihinapp.id`, lalu atur DNS di registrar (A record `@` ke `76.76.21.21`, CNAME `www` ke `cname.vercel-dns.com`, atau sesuai petunjuk Vercel). Tidak perlu membangun ulang.
+
+## Suara petunjuk
+
+Semua petunjuk suara (sesi kamera: siap + pengingat keselamatan, hitungan, koreksi, pesan lembut, sisi, target tercapai; latihan bicara: Dengar kata + kalimat contoh, umpan balik, suku kata, ringkasan) diputar dari **klip pra-rekam ElevenLabs Eleven v4 lewat OpenRouter, suara Matilda** (dipilih lewat audisi buta). Klip berupa berkas statis di `public/suara/` dan disajikan dari domain sendiri; aplikasi tidak pernah menghubungi OpenRouter/ElevenLabs saat dipakai (CSP `connect-src 'self'` tetap).
+
+- **Satu sumber kalimat.** Kalimat yang diucapkan hanya dibangun di `src/features/suara/ucapan.ts` (urutan segmen, satu segmen = satu klip). `semuaUcapan()` mendaftar setiap segmen yang mungkin diucapkan: 10 latihan, hitungan 1..50, semua koreksi FormChecker, 100 kata + kalimat contoh + suku kata, "N kata benar" 0..10, semua pesan hangat. Uji `katalog.test.ts` gagal bila ada segmen tanpa klip.
+- **Membuat ulang klip:** `OPENROUTER_API_KEY=... npm run suara` (`scripts/suara/buat-suara.mjs --qa`). Hanya segmen baru/berubah yang dibuat (nama berkas = hash teks|gaya|suara|tag + hash isi, jadi cache perangkat tidak pernah memutar klip lama). Tag ekspresi per gaya: kalimat `[warmly]`/`[cheerfully]`/`[gently]`, angka `[Indonesian accent] [confidently]`, kata dan suku kata `[Indonesian accent] [slowly]` (ketiganya dengan kalimat pembawa "Baik..." yang dipotong, agar kata pendek tidak diulang model). Lalu ffmpeg: potong hening, -18 LUFS, mono, MP3 64 kbps. QA: setiap klip ditranskripsi buta oleh juri audio (Gemini) dan dibuat ulang bila tidak cocok; hasilnya di [`scripts/suara/laporan-qa.md`](scripts/suara/laporan-qa.md).
+- **Ukuran:** 387 klip, 6,35 MB (13,5 menit audio), tidak di-precache. Klip sesi kamera (67 klip, ±1 MB) diunduh ke cache `CACHE_SUARA` saat Beranda pasien/Detail Latihan dibuka; klip satu sesi latihan bicara (±50 klip, ±0,9 MB) saat sesi dimulai. Keduanya dilewati saat Penghemat Data/2G. Klip sesi juga dimuat ke memori saat sesi dimulai agar hitungan berbunyi tanpa jeda.
+- **Cadangan:** bila ada segmen tanpa klip atau klip gagal sebelum berbunyi (mis. luring sebelum tersimpan, autoplay ditolak), ucapan dibacakan `speechSynthesis` id-ID seperti sebelumnya. Pengaturan suara, sela/antre, dan aturan kalimat contoh Dengar (tidak pernah terputar setelah mikrofon dibuka) tetap sama dan diuji di `src/lib/speak.test.ts`.
 
 ## Struktur folder
 
@@ -90,14 +99,15 @@ src/
                        tracker, exerciseDefinitions.ts (DATA 10 latihan), landmarks, uji + __fixtures__
     speech/            wordBank.ts (DATA 100 kata), SpeechScorer, recognizer (Web Speech API id-ID),
                        pilihKata, modeMandiri
+    suara/             ucapan.ts (SEMUA kalimat yang diucapkan), semuaUcapan, katalogSuara.json (klip Eleven v4)
     adherence/         jadwal, streak, kepatuhan mingguan, red flag, ringkasan WhatsApp, program/set, klinisi
   data/                db.ts (IndexedDB via idb), useLiveQuery, seed.ts (data demo 14 hari)
   components/          BigButton, Card, ScoreRing, WeeklyChart, TrendChart, StreakCalendar, SafetyNotice, ...
-  lib/                 date, prefs (localStorage), speak (TTS id-ID), score, privasiJaringan
+  lib/                 date, prefs (localStorage), speak (pemutar klip suara + cadangan TTS id-ID), score, privasiJaringan
   config/identitas.ts  isian [DIISI] pemilik produk di satu tempat
 docs/                  spec.md, algoritma.md, video/ (naskah, SRT, shotlist, YouTube)
 video/                 proyek Remotion untuk merakit video demo (lihat docs/video/README.md)
-scripts/               fetch-mediapipe-assets.mjs + lock SHA-256 model
+scripts/               fetch-mediapipe-assets.mjs + lock SHA-256 model; suara/ (generator klip suara + laporan QA)
 ```
 
 Definisi latihan (`exerciseDefinitions.ts`) dan bank kata (`wordBank.ts`) adalah objek TypeScript murni tanpa ketergantungan UI, siap dipindah ke Flutter (Bab 4.2).
@@ -109,7 +119,7 @@ flowchart LR
   Cam[Kamera ponsel 640x480] --> PE[PoseEngine\nMediaPipe Pose Landmarker Lite\nWASM + GPU/CPU di perangkat]
   PE -->|33 landmark 2D + 3D| TR[Tracker\nsudut hibrida 2D/3D\nstate machine + histeresis]
   TR --> FC[FormChecker\n5 aturan koreksi]
-  TR --> UI[Sesi Kamera\nhitungan, koreksi suara id-ID]
+  TR --> UI[Sesi Kamera\nhitungan, koreksi suara]
   UI --> DB[(IndexedDB\nSession, RepLog)]
   Mic[Mikrofon] --> WS[Web Speech API id-ID] --> SC[SpeechScorer] --> DB
   DB --> K[Untuk Keluarga\ngrafik, red flag]
@@ -146,7 +156,7 @@ Stack sesuai Bab 4 (React + Vite + TypeScript + Tailwind, MediaPipe Tasks Vision
 
 ### Uji otomatis
 
-`npm test` menjalankan seluruh uji unit, uji logika kepatuhan/red flag/seed, penilaian suara, dan **replay landmark rekaman manusia nyata** melalui tracker yang sama dengan aplikasi. Hasil terakhir (17 Okt 2026): **27 berkas uji, 261 uji lulus**; `npm run typecheck` bersih.
+`npm test` menjalankan seluruh uji unit, uji logika kepatuhan/red flag/seed, penilaian suara, pemutar suara dan kelengkapan katalog klip, serta **replay landmark rekaman manusia nyata** melalui tracker yang sama dengan aplikasi. Hasil terakhir (18 Okt 2026): **29 berkas uji, 283 uji lulus**; `npm run typecheck` bersih.
 
 ### Akurasi hitung repetisi
 
@@ -217,7 +227,7 @@ P1 selesai      : F6 [x] F7 [x]
 Akurasi repetisi: rekaman manusia nyata 14 dari 14 repetisi yang dimulai setelah status Siap (16 di klip,
                   2 sengaja tidak dihitung karena dimulai sebelum Siap), 0 ganda; perangkat target [DIISI] dari 50
 Frame rate pose : emulasi desktop GPU 21-25 fps (1 orang, CPU 1x-6x); perangkat target [DIISI] fps
-Uji otomatis    : 27 berkas, 261 uji lulus
+Uji otomatis    : 29 berkas, 283 uji lulus
 Video           : tanpa rekaman manusia & tanpa dokter (karakter 3D Blender menggerakkan aplikasi asli via kamera palsu
                   Chrome; narasi sintetis Microsoft Azure neural id-ID). Final lokal video/out/pulihin-demo-final.mp4 (+ -final-en.mp4, subtitle EN tertanam)
                   (tidak di repo; 1920x1080, 30 fps, H.264+AAC, 4:03,6, 63,7 MB / 64,2 MB). Render ulang: `cd video && npm run render:final`
@@ -231,4 +241,5 @@ Yang belum      : uji perangkat target (AC-F1-2, AC-F1-4, AC-F3-2)
 - MediaPipe Tasks Vision dan model Pose Landmarker: Apache License 2.0 (Google).
 - Plus Jakarta Sans: SIL Open Font License 1.1.
 - Ikon: Phosphor Icons (MIT).
+- Suara petunjuk: ElevenLabs Eleven v4 lewat OpenRouter (suara Matilda), dibuat sekali oleh `scripts/suara/buat-suara.mjs`.
 - Video uji internal (tidak disimpan di repo, tidak tampil di aplikasi/landing/video): Pexels 4159059, 9644943, 9058017, 6455077 (lisensi Pexels); repo hanya menyimpan landmark numerik turunannya untuk uji regresi.

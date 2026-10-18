@@ -17,25 +17,35 @@ import { BigButton, BigLink } from '@/components/BigButton';
 import { deleteSession, simpanProgresSesi } from '@/data/db';
 import { PENJELASAN_GALAT_KAMERA } from '@/features/pose/camera';
 import { getExercise } from '@/features/pose/exerciseDefinitions';
-import { angkaKeKata, daftarTitik } from '@/features/pose/labels';
+import { daftarTitik } from '@/features/pose/labels';
 import { sisiLawan } from '@/features/pose/landmarks';
 import { adaKonfirmasiKeselamatan, bacaRentang, bacaSisi, bacaTarget, urlDetail } from '@/features/pose/sesiParams';
 import { createTracker } from '@/features/pose/tracker';
 import type { ExerciseDefinition, ExerciseTracker, KoreksiAktif, PoseFrame, TrackerResult, TrackerSnapshot } from '@/features/pose/types';
 import { usePoseCamera } from '@/features/pose/usePoseCamera';
 import { useWakeLock } from '@/features/pose/useWakeLock';
+import {
+  PESAN_RENTANG_KURANG,
+  PESAN_SEMAMPUNYA,
+  PESAN_TERLALU_CEPAT,
+  segmenSesiKamera,
+  ucapanGantiSisi,
+  ucapanHitungan,
+  ucapanKoreksi,
+  ucapanPesanLembut,
+  ucapanPosisikan,
+  ucapanSiap,
+  ucapanTargetTercapai,
+  ucapanTawarSisi,
+} from '@/features/suara/ucapan';
 import { todayISO } from '@/lib/date';
 import { newId } from '@/lib/id';
 import { getPrefs } from '@/lib/prefs';
 import { clamp } from '@/lib/score';
-import { cancelSpeech, speak } from '@/lib/speak';
+import { cancelSpeech, pramuatSuara, speak } from '@/lib/speak';
 import { PATHS } from '@/router-paths';
 import type { Session, Sisi } from '@/types';
 
-const PESAN_TERLALU_CEPAT = { judul: 'Gerakan tadi belum terhitung.', sub: 'Coba sekali lagi, pelan pelan.' };
-const PESAN_RENTANG_KURANG = { judul: 'Gerakan tadi belum terhitung.', sub: 'Coba angkat sedikit lebih jauh bila mampu.' };
-/** Setelah beberapa percobaan kurang jauh: tidak lagi meminta lebih, tetapi menyemangati. */
-const PESAN_SEMAMPUNYA = { judul: 'Tidak apa-apa, angkat semampu Anda.', sub: 'Setiap percobaan tetap tercatat.' };
 const LAMA_PESAN_LEMBUT_MS = 3500;
 /** Pesan lembut (percobaan belum terhitung) tampil & diucapkan paling sering sekali per jeda ini agar tidak mengomel. */
 const JEDA_PESAN_LEMBUT_MS = 15_000;
@@ -171,6 +181,9 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
   const timerSiap = useRef(0);
   const pilihSisi = def.sisi === 'pilih';
 
+  // Klip suara sesi ini (petunjuk, hitungan 1..target, koreksi) dimuat sejak layar dibuka: hitungan berbunyi tanpa jeda.
+  useEffect(() => pramuatSuara(segmenSesiKamera(def, target).map((s) => s.teks)), [def, target]);
+
   /**
    * Antrekan satu penulisan: catatan sesi (`dasarRef` + hasil tracker terbaru) dan RepLog yang belum tersimpan,
    * dalam satu transaksi. Bila gagal, RepLog itu tetap dianggap belum tersimpan dan ikut penulisan berikutnya.
@@ -253,13 +266,9 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
       window.clearTimeout(timerSiap.current);
       timerSiap.current = window.setTimeout(() => setBaruSiap(false), LAMA_SIAP_MS);
       // Pengingat keselamatan diucapkan sebelum "Silakan mulai" agar terdengar utuh sebelum hitungan pertama.
-      speak(
-        pertama
-          ? `Tubuh terdeteksi. ${pengingatKeselamatan(def.wajibBerpegangan)} Silakan mulai pelan pelan.`
-          : 'Tubuh terdeteksi. Siap. Silakan mulai pelan pelan.',
-      );
+      speak(ucapanSiap(pertama, def.wajibBerpegangan));
     }
-    if (s.repetisiBaru) speak(angkaKeKata(s.repetisi));
+    if (s.repetisiBaru) speak(ucapanHitungan(s.repetisi));
     if (s.repetisiBaru || s.percobaanTidakDihitung) {
       // Setiap percobaan (terhitung atau belum) langsung tersimpan bersama penghitung sesi (m2).
       const hasil = tracker.finish(t);
@@ -270,7 +279,7 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
     // Sebelum siap, petunjuk bingkai yang berbicara; koreksi baru diucapkan setelah siap (satu pesan pada satu waktu).
     // Koreksi baru (termasuk yang lebih penting dan menggeser pesan lama) langsung memotong ucapan sebelumnya
     // (AC-F1-3), kecuali hitungan yang baru diucapkan pada frame yang sama.
-    if (s.koreksiBaru && siapRef.current) speak(s.koreksiBaru.pesan, { interrupt: !s.repetisiBaru });
+    if (s.koreksiBaru && siapRef.current) speak(ucapanKoreksi(s.koreksiBaru.pesan), { interrupt: !s.repetisiBaru });
     if (s.percobaanTidakDihitung) {
       const kurangJauh = s.alasanTidakDihitung === 'rentang-kurang';
       if (kurangJauh) rentangKurangRef.current += 1;
@@ -285,7 +294,7 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
         setPesanLembut(pesan);
         window.clearTimeout(timerLembut.current);
         timerLembut.current = window.setTimeout(() => setPesanLembut(null), LAMA_PESAN_LEMBUT_MS);
-        speak(`${pesan.judul} ${pesan.sub}`, { interrupt: false });
+        speak(ucapanPesanLembut(pesan), { interrupt: false });
       }
     }
 
@@ -293,7 +302,7 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
     const tawarGanti = pilihSisi && !s.siap && percobaanRef.current === 0 && t - sisiLainTerakhirRef.current < LAMA_TAWAR_GANTI_MS;
     if (tawarGanti && !tawarDiucapkanRef.current) {
       tawarDiucapkanRef.current = true;
-      speak(pesanSisi(sisiRef.current).ucap);
+      speak(ucapanTawarSisi(sisiRef.current));
     }
     const baru: Tampilan = {
       repetisi: s.repetisi,
@@ -311,7 +320,7 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
       const hasil = tracker.finish(t);
       kameraRef.current.hentikan();
       setAkhir({ tahap: 'perayaan' });
-      speak('Hebat! Target tercapai.', { interrupt: false });
+      speak(ucapanTargetTercapai(), { interrupt: false });
       simpanLaluRingkasan(hasil, LAMA_PERAYAAN_MS);
       return TANPA_TITIK;
     }
@@ -351,7 +360,7 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
     };
     dasarRef.current = dasar;
     antrekan(false).catch((e: unknown) => console.error('Sesi belum tercatat', e));
-    speak('Posisikan tubuh Anda di dalam bingkai.');
+    speak(ucapanPosisikan());
   }, [tahap, sessionId, def.id, pilihSisi, target, rentang, antrekan]);
 
   // Keluar tanpa Berhenti (tombol/gestur kembali, pindah rute): tanpa percobaan catatan kosong dibuang;
@@ -442,7 +451,7 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
       dasarRef.current = { ...dasar, sisi: baru };
       antrekan(false).catch((e: unknown) => console.error('Sisi sesi belum tercatat', e));
     }
-    speak(`Baik, sekarang sisi ${baru}. Posisikan tubuh Anda di dalam bingkai.`, { interrupt: true });
+    speak(ucapanGantiSisi(baru), { interrupt: true });
   };
 
   const berjalan = tahap === 'berjalan' && !akhir;
@@ -584,18 +593,12 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
   );
 }
 
-/** Pengingat keselamatan yang diucapkan sekali saat sesi dimulai (Bab 17.2); latihan berdiri ditambah berpegangan. */
-function pengingatKeselamatan(wajibBerpegangan: boolean): string {
-  return `Ingat, berhenti bila terasa nyeri atau pusing.${wajibBerpegangan ? ' Tetap berpegangan.' : ''}`;
-}
-
 function pesanSisi(sisi: Sisi) {
   const lawan = sisiLawan(sisi);
   return {
     judul: `Sisi ${sisi} belum terlihat.`,
     sub: `Hadapkan badan ke kamera, atau latih sisi ${lawan}.`,
     tombol: `Ganti ke sisi ${lawan}`,
-    ucap: `Sisi ${sisi} belum terlihat. Hadapkan badan ke kamera, atau latih sisi ${lawan}.`,
   };
 }
 

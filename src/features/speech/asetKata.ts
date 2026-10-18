@@ -1,16 +1,18 @@
 /**
- * Gambar kata afasia (`public/ilustrasi/kata/<kataId>.webp`, 512x512) dan unduhan lanjutannya.
+ * Gambar kata afasia (`public/ilustrasi/kata/<kataId>.webp`, 512x512) dan klip suara sesi, serta unduhan lanjutannya.
  *
- * Service worker tidak mem-precache gambar kata (100 berkas); runtime cache CacheFirst `CACHE_ILUSTRASI`
- * (vite.config.ts) menyimpan setiap gambar yang lewat SW. Agar satu sesi 10 kata tetap lengkap saat sinyal
- * hilang di tengah latihan (Mode Latihan Mandiri tidak butuh internet), `simpanGambarSesi` mengunduh ke-10
- * gambar sesi begitu sesi dimulai. Dilewati bila Penghemat Data/2G aktif atau halaman belum dikendalikan SW
- * (kunjungan pertama, mode pengembangan): gambar tetap dimuat satu per satu saat tampil.
+ * Service worker tidak mem-precache gambar kata (100 berkas) maupun klip suara; runtime cache CacheFirst
+ * `CACHE_ILUSTRASI`/`CACHE_SUARA` (vite.config.ts) menyimpan setiap berkas yang lewat SW. Agar satu sesi 10 kata
+ * tetap lengkap saat sinyal hilang di tengah latihan (Mode Latihan Mandiri tidak butuh internet),
+ * `simpanGambarSesi` dan `simpanSuaraSesi` mengunduh gambar dan klip suara sesi begitu sesi dimulai. Dilewati bila
+ * Penghemat Data/2G aktif atau halaman belum dikendalikan SW (kunjungan pertama, mode pengembangan): gambar tetap
+ * dimuat satu per satu saat tampil, klip saat diputar.
  */
 
 import { srcIlustrasi } from '@/components/premium/asetIlustrasi';
 import { CACHE_ILUSTRASI } from '@/config/cacheAset';
 import { hematData } from '@/features/pose/asetPose';
+import { simpanKlipKeCache } from '@/features/suara/asetSuara';
 
 const sedangDipramuat = new Set<string>();
 
@@ -47,4 +49,22 @@ export function simpanGambarSesi(kataIds: readonly string[]): void {
   const mulai = () => void jalankan().catch((e: unknown) => console.warn('Gambar kata sesi belum tersimpan untuk luring', e));
   if (typeof requestIdleCallback === 'function') requestIdleCallback(mulai, { timeout: 4000 });
   else setTimeout(mulai, 1000);
+}
+
+/**
+ * Unduh klip suara sesi (umpan balik, kata, kalimat contoh, ringkasan) ke cache SW saat browser senggang.
+ * Promise selesai setelah unduhan selesai, gagal, atau dilewati; tidak pernah ditolak.
+ */
+export function simpanSuaraSesi(segmen: readonly string[]): Promise<void> {
+  if (typeof window === 'undefined' || !('caches' in window) || !navigator.serviceWorker?.controller || hematData()) {
+    return Promise.resolve();
+  }
+  return new Promise((selesai) => {
+    const mulai = () =>
+      void simpanKlipKeCache(segmen)
+        .catch((e: unknown) => console.warn('Klip suara sesi belum tersimpan untuk luring', e))
+        .finally(selesai);
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(mulai, { timeout: 2000 });
+    else setTimeout(mulai, 500);
+  });
 }

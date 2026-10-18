@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import { CACHE_ILUSTRASI, CACHE_PERAGA } from './src/config/cacheAset.ts';
+import { CACHE_ILUSTRASI, CACHE_PERAGA, CACHE_SUARA } from './src/config/cacheAset.ts';
 
 export default defineConfig({
   resolve: {
@@ -117,6 +117,21 @@ export default defineConfig({
               cacheName: CACHE_ILUSTRASI,
               expiration: { maxEntries: 140 },
               cacheableResponse: { statuses: [200], headers: { 'content-type': 'image/webp' } },
+              matchOptions: { ignoreVary: true },
+            },
+          },
+          // Klip suara Eleven v4 (src/lib/speak.ts). Content-type wajib audio/mpeg agar index.html dari rewrite SPA
+          // (berkas belum ada) tidak tersimpan sebagai klip. Elemen audio meminta Range: hanya jawaban 200 utuh
+          // dari prefetch (asetSuara.ts) yang disimpan, lalu permintaan Range dilayani 206 dari salinan itu.
+          // ±390 klip; batas entri membuang klip lama setelah klip dibuat ulang (nama berkas baru).
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith('/suara/') && url.pathname.endsWith('.mp3'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: CACHE_SUARA,
+              expiration: { maxEntries: 600 },
+              cacheableResponse: { statuses: [200], headers: { 'content-type': 'audio/mpeg' } },
+              rangeRequests: true,
               matchOptions: { ignoreVary: true },
             },
           },

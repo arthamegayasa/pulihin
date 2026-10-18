@@ -15,6 +15,7 @@ import { speak } from '@/lib/speak';
 import { berandaUntukPeran, PATHS } from '@/router-paths';
 import { GambarKata } from '@/features/speech/GambarKata';
 import { pesanHangatAfasia } from '@/features/speech/pesanAfasia';
+import { ucapanRingkasanAfasia } from '@/features/suara/ucapan';
 import type { Kata } from '@/features/speech/types';
 import { getKata, getKategori } from '@/features/speech/wordBank';
 
@@ -30,8 +31,8 @@ export default function AfasiaRingkasan() {
   useEffect(() => {
     if (!sesi || !ringkasan || sudahBicara.current) return;
     sudahBicara.current = true;
-    speak(`Latihan bicara selesai. ${ringkasan.benar} kata benar. ${pesan}`);
-  }, [sesi, ringkasan, pesan]);
+    speak(ucapanRingkasanAfasia(ringkasan.benar, sesi.skor));
+  }, [sesi, ringkasan]);
 
   if (loading && !sesi) {
     return (

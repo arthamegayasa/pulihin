@@ -93,6 +93,10 @@ export default function Tentang() {
         <ul className="list-disc space-y-1 pl-5 text-teks marker:text-primer">
           <li>MediaPipe Pose Landmarker (Google) - lisensi Apache 2.0</li>
           <li>Huruf Plus Jakarta Sans - lisensi SIL Open Font License (OFL)</li>
+          <li>
+            Suara petunjuk: ElevenLabs Eleven v4 (suara Matilda), dibuat sekali sebelumnya dan disajikan dari situs PULIHIN
+            sendiri. Saat latihan tidak ada teks atau suara yang dikirim ke ElevenLabs.
+          </li>
           <li>Ikon Phosphor Icons - lisensi MIT</li>
         </ul>
         {/* Baris identitas hanya tampil bila sudah diisi di src/config/identitas.ts. */}

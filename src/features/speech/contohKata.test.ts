@@ -7,7 +7,7 @@ function ucapPalsu() {
   const diucapkan: string[] = [];
   const selesai: Array<() => void> = [];
   const ucap: FungsiUcap = (teks, opts) => {
-    diucapkan.push(teks);
+    diucapkan.push(typeof teks === 'string' ? teks : teks.join(' '));
     if (opts?.onEnd) selesai.push(opts.onEnd);
   };
   return { ucap, diucapkan, selesai };

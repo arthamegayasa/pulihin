@@ -1,0 +1,2874 @@
+{
+ "klip": {
+  "ada8dd8530eb-5572a7.mp3": {
+   "teks": "Satu.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "satu"
+  },
+  "b48eba6533e7-5b2b43.mp3": {
+   "teks": "Tubuh terdeteksi. Ingat, berhenti bila terasa nyeri atau pusing. Silakan mulai pelan-pelan.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tubuh terdeteksi. Ingat, berhenti bila terasa nyeri atau pusing. Silakan mulai pelan-pelan."
+  },
+  "764c40572277-bc7358.mp3": {
+   "teks": "Tubuh terdeteksi. Siap. Silakan mulai pelan-pelan.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Tubuh terdeteksi. Siap. Silakan mulai pelan-pelan."
+  },
+  "6a102d29c868-cfcc1e.mp3": {
+   "teks": "Posisikan tubuh Anda di dalam bingkai.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Posisikan tubuh Anda di dalam bingkai"
+  },
+  "c991e7b7bd3d-cec456.mp3": {
+   "teks": "Dua.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "dua"
+  },
+  "ecb381cfa2df-4918aa.mp3": {
+   "teks": "Tiga.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tiga"
+  },
+  "c347fc36eb15-2bdb8b.mp3": {
+   "teks": "Empat.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "empat"
+  },
+  "272b34f0b556-723381.mp3": {
+   "teks": "Delapan.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "delapan"
+  },
+  "4a9019e82a4e-712f08.mp3": {
+   "teks": "Sembilan.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sembilan"
+  },
+  "f3234ada1ffb-e76933.mp3": {
+   "teks": "Sepuluh.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sepuluh"
+  },
+  "11aa8d492701-0af5af.mp3": {
+   "teks": "Sebelas.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sebelas"
+  },
+  "c3a961a49303-827041.mp3": {
+   "teks": "Dua belas.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "dua belas"
+  },
+  "8df27d5f34f0-fd4c31.mp3": {
+   "teks": "Empat belas.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "empat belas"
+  },
+  "16ab27670869-559032.mp3": {
+   "teks": "Tiga belas.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tiga belas"
+  },
+  "500c02306b95-96d1a4.mp3": {
+   "teks": "Enam belas.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "enam belas"
+  },
+  "a7a0c4a6f0f2-af138e.mp3": {
+   "teks": "Lima belas.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "lima belas"
+  },
+  "abb18e67fa35-32ef67.mp3": {
+   "teks": "Delapan belas.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "delapan belas"
+  },
+  "e9ece7c3c0ac-c6ff8c.mp3": {
+   "teks": "Tujuh belas.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tujuh belas"
+  },
+  "8657f9ff0780-466310.mp3": {
+   "teks": "Sembilan belas.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sembilan belas"
+  },
+  "26f877aecc6b-77d286.mp3": {
+   "teks": "Dua puluh satu.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "dua puluh satu"
+  },
+  "b5bdd9ab9c6c-f23651.mp3": {
+   "teks": "Dua puluh dua.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "dua puluh dua"
+  },
+  "6ea8c9bf0975-b098df.mp3": {
+   "teks": "Dua puluh tiga.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "dua puluh tiga"
+  },
+  "b94ee928b164-32d8b8.mp3": {
+   "teks": "Dua puluh empat.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "dua puluh empat"
+  },
+  "3a05951976ea-60c17c.mp3": {
+   "teks": "Dua puluh lima.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "25"
+  },
+  "49c0c7232580-a6f1af.mp3": {
+   "teks": "Dua puluh tujuh.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "dua puluh tujuh"
+  },
+  "303f6a933017-1b2eea.mp3": {
+   "teks": "Dua puluh delapan.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "dua puluh delapan"
+  },
+  "e23b6455ded2-248bde.mp3": {
+   "teks": "Dua puluh sembilan.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "dua puluh sembilan"
+  },
+  "566d5ebe5039-6c67f8.mp3": {
+   "teks": "Tiga puluh.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tiga puluh"
+  },
+  "22f445b9ac92-825ec2.mp3": {
+   "teks": "Tiga puluh satu.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tiga puluh satu"
+  },
+  "477bf8c6b55b-3528f6.mp3": {
+   "teks": "Tiga puluh tiga.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tiga puluh tiga"
+  },
+  "1a6037e6399d-62eeca.mp3": {
+   "teks": "Tiga puluh dua.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tiga puluh dua"
+  },
+  "28e104fe5c7b-6c3f6d.mp3": {
+   "teks": "Tiga puluh lima.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tiga puluh lima"
+  },
+  "029a628489f0-684099.mp3": {
+   "teks": "Tiga puluh enam.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tiga puluh enam"
+  },
+  "d1cf4dc389bc-365b7a.mp3": {
+   "teks": "Tiga puluh tujuh.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tiga puluh tujuh"
+  },
+  "4dcdd1d49e36-d4202e.mp3": {
+   "teks": "Tiga puluh empat.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tiga puluh empat"
+  },
+  "d0c907f5796c-e5104f.mp3": {
+   "teks": "Tiga puluh delapan.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tiga puluh delapan"
+  },
+  "22b677596372-0c2228.mp3": {
+   "teks": "Empat puluh.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "empat puluh"
+  },
+  "a7e47cc975a6-58758a.mp3": {
+   "teks": "Tiga puluh sembilan.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tiga puluh sembilan"
+  },
+  "7b94d3117a65-7b46b9.mp3": {
+   "teks": "Empat puluh satu.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "empat puluh satu"
+  },
+  "3b1ffc0c87e6-b0b8a2.mp3": {
+   "teks": "Empat puluh dua.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "empat puluh dua"
+  },
+  "370be497d3ad-13412c.mp3": {
+   "teks": "Empat puluh tiga.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "empat puluh tiga"
+  },
+  "9de78de4835a-8a4e4c.mp3": {
+   "teks": "Empat puluh empat.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "empat puluh empat"
+  },
+  "f00de8d867db-5ff031.mp3": {
+   "teks": "Empat puluh lima.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "empat puluh lima"
+  },
+  "626b02ec6ae1-65a28b.mp3": {
+   "teks": "Empat puluh enam.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "empat puluh enam"
+  },
+  "f5c6b1adec7d-86e65c.mp3": {
+   "teks": "Empat puluh tujuh.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "empat puluh tujuh"
+  },
+  "63974dd43bd7-722e25.mp3": {
+   "teks": "Empat puluh delapan.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "empat puluh delapan"
+  },
+  "55b63cb5d3f9-3e25f2.mp3": {
+   "teks": "Empat puluh sembilan.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "empat puluh sembilan"
+  },
+  "024312bf88f9-94da60.mp3": {
+   "teks": "Lima puluh.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "lima puluh"
+  },
+  "0e4c9fa5de79-7bea7b.mp3": {
+   "teks": "Hebat! Target tercapai.",
+   "gaya": "pujian",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Hebat, target tercapai."
+  },
+  "7302f82713c5-34a54e.mp3": {
+   "teks": "Mundur sedikit agar tubuh terlihat penuh.",
+   "gaya": "koreksi",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "mundur sedikit agar tubuh terlihat penuh"
+  },
+  "57a817d7b8d2-17a42e.mp3": {
+   "teks": "Tegakkan badan, jangan miring.",
+   "gaya": "koreksi",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Tegakkan badan, jangan miring."
+  },
+  "89c367db27e0-025eff.mp3": {
+   "teks": "Sedikit lagi, angkat lebih tinggi bila mampu.",
+   "gaya": "koreksi",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Sedikit lagi, angkat lebih tinggi bila mampu."
+  },
+  "a57d0083b033-fdc7ed.mp3": {
+   "teks": "Perlambat gerakan Anda.",
+   "gaya": "koreksi",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "perlambat gerakan Anda"
+  },
+  "69234ae90aa5-bea565.mp3": {
+   "teks": "Rilekskan bahu, turunkan bahu Anda.",
+   "gaya": "koreksi",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Rilekskan bahu, turunkan bahu Anda."
+  },
+  "28dfdc3b28ad-3f5d69.mp3": {
+   "teks": "Gerakan tadi belum terhitung. Coba sekali lagi, pelan pelan.",
+   "gaya": "lembut",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Gerakan tadi belum terhitung. Coba sekali lagi, pelan-pelan."
+  },
+  "07b9ddead9d0-8edaa0.mp3": {
+   "teks": "Tidak apa-apa, angkat semampu Anda. Setiap percobaan tetap tercatat.",
+   "gaya": "lembut",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tidak apa-apa angkat semampu Anda setiap percobaan tetap tercatat"
+  },
+  "c8d178be0c92-c631b5.mp3": {
+   "teks": "Gerakan tadi belum terhitung. Coba angkat sedikit lebih jauh bila mampu.",
+   "gaya": "lembut",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "gerakan tadi belum terhitung coba angkat sedikit lebih jauh bila mampu"
+  },
+  "4165cbe718c4-063b0e.mp3": {
+   "teks": "Sisi kanan belum terlihat. Hadapkan badan ke kamera, atau latih sisi kiri.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Sisi kanan belum terlihat. Hadapkan badan ke kamera atau latih sisi kiri."
+  },
+  "0d94b013346f-704b4a.mp3": {
+   "teks": "Baik, sekarang sisi kanan.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Baik, sekarang sisi kanan."
+  },
+  "ae152e5b55f1-03869c.mp3": {
+   "teks": "Baik, sekarang sisi kiri.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Baik, sekarang sisi kiri."
+  },
+  "5fa58c0811c1-56228a.mp3": {
+   "teks": "Sisi kiri belum terlihat. Hadapkan badan ke kamera, atau latih sisi kanan.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Sisi kiri belum terlihat. Hadapkan badan ke kamera atau latih sisi kanan."
+  },
+  "14ad91670b48-b47d91.mp3": {
+   "teks": "Tubuh terdeteksi. Ingat, berhenti bila terasa nyeri atau pusing. Tetap berpegangan. Silakan mulai pelan-pelan.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Tubuh terdeteksi. Ingat, berhenti bila terasa nyeri atau pusing. Tetap berpegangan. Silakan mulai pelan-pelan."
+  },
+  "fdd7ff23bbff-2b5132.mp3": {
+   "teks": "Benar! Bagus sekali.",
+   "gaya": "pujian",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Benar. Bagus sekali."
+  },
+  "d4dd1573cbb6-1dbbbc.mp3": {
+   "teks": "Tidak apa-apa. Kata ini kita ulang besok.",
+   "gaya": "lembut",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tidak apa-apa kata ini kita ulang besok"
+  },
+  "80ac4576a7d6-d1b6e5.mp3": {
+   "teks": "Coba sekali lagi, pelan-pelan.",
+   "gaya": "lembut",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "coba sekali lagi pelan-pelan"
+  },
+  "f159f3e10b8d-3e3676.mp3": {
+   "teks": "kursi",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kursi"
+  },
+  "99ab5d633116-1c3af1.mp3": {
+   "teks": "Saya duduk di kursi.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Saya duduk di kursi."
+  },
+  "afa3a297f6d6-629edc.mp3": {
+   "teks": "Hampir. Coba lagi.",
+   "gaya": "lembut",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Hampir. Coba lagi."
+  },
+  "7838d01b4099-58d1b2.mp3": {
+   "teks": "kur. si. kursi.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kursi kursi"
+  },
+  "cb9ebe4c16bc-989ac2.mp3": {
+   "teks": "meja",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "meja"
+  },
+  "879c132ef06b-68be15.mp3": {
+   "teks": "Gelas ada di atas meja.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "gelas ada di atas meja"
+  },
+  "d7ea480ae125-e5e59b.mp3": {
+   "teks": "pintu",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "pintu"
+  },
+  "f2e4d5dc836a-d52422.mp3": {
+   "teks": "Tolong buka pintu.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tolong buka pintu"
+  },
+  "d2e8a5b640f5-9a1293.mp3": {
+   "teks": "pin. tu. pintu.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "pintu pintu"
+  },
+  "74d21317f5d2-1ed491.mp3": {
+   "teks": "kunci",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kunci"
+  },
+  "6fbbba153d36-0e9927.mp3": {
+   "teks": "Kunci ada di dalam tas.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kunci ada di dalam tas"
+  },
+  "8594f798a9bf-9b444b.mp3": {
+   "teks": "kun. ci. kunci.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kunci kunci"
+  },
+  "f74d559703b8-2b53be.mp3": {
+   "teks": "Saya minum dari gelas.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Saya minum dari gelas."
+  },
+  "1694bcbd585c-7c45e4.mp3": {
+   "teks": "Nasi ada di piring.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "nasi ada di piring"
+  },
+  "00f2a8868440-748d15.mp3": {
+   "teks": "pi. ring. piring.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "piring piring"
+  },
+  "0e85d6960400-1ba35c.mp3": {
+   "teks": "sendok",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sendok"
+  },
+  "f160bef49448-53aca6.mp3": {
+   "teks": "Saya makan pakai sendok.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Saya makan pakai sendok."
+  },
+  "795449a38f00-6f2f5f.mp3": {
+   "teks": "sen. dok. sendok.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sendok sendok"
+  },
+  "b040fa1fade4-054e9a.mp3": {
+   "teks": "Handuk ada di kamar mandi.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "handuk ada di kamar mandi"
+  },
+  "cca7dcb02643-ef0755.mp3": {
+   "teks": "bantal",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "bantal"
+  },
+  "23c4d99a8c77-83e0a2.mp3": {
+   "teks": "Bantal ini empuk sekali.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "bantal ini empuk sekali"
+  },
+  "4a114ae78900-d87007.mp3": {
+   "teks": "Tolong nyalakan lampu.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Tolong nyalakan lampu."
+  },
+  "b02033931921-f27cfc.mp3": {
+   "teks": "kipas",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kipas"
+  },
+  "19ecc6cfc67e-529dda.mp3": {
+   "teks": "Kipas membuat kamar sejuk.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kipas membuat kamar sejuk"
+  },
+  "35f13d2bd4b1-96f7d9.mp3": {
+   "teks": "ki. pas. kipas.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ki pas kipas"
+  },
+  "f1a79bde9c0a-b63b2a.mp3": {
+   "teks": "sapu",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sapu"
+  },
+  "e6e2aa4da6bc-3bfa1b.mp3": {
+   "teks": "Sapu ada di dapur.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sapu ada di dapur"
+  },
+  "df7720838ebc-242a4e.mp3": {
+   "teks": "sa. pu. sapu.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sapu sapu"
+  },
+  "00972a7d2184-1b7c40.mp3": {
+   "teks": "ember",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ember"
+  },
+  "ebb891e9e4fb-2ff098.mp3": {
+   "teks": "Ember ini penuh air.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ember ini penuh air"
+  },
+  "40a13c0f62f6-900179.mp3": {
+   "teks": "Cuci tangan pakai sabun.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "cuci tangan pakai sabun"
+  },
+  "117afadcd099-9bc527.mp3": {
+   "teks": "sa. bun. sabun.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sa bun sabun"
+  },
+  "b2b57c0f660d-4e5677.mp3": {
+   "teks": "sabun",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sabun"
+  },
+  "30318592934c-5cf189.mp3": {
+   "teks": "Saya gosok gigi pakai sikat gigi.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "saya gosok gigi pakai sikat gigi"
+  },
+  "fe9de28baebf-728257.mp3": {
+   "teks": "kasur",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kasur"
+  },
+  "9f1f4e7d719a-2e5135.mp3": {
+   "teks": "Kasur ini nyaman.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Kasur ini nyaman."
+  },
+  "416165d7901f-4f3624.mp3": {
+   "teks": "ka. sur. kasur.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kasur kasur"
+  },
+  "052d0c7ae5ac-c19dc6.mp3": {
+   "teks": "Buka jendela agar udara segar.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "buka jendela agar udara segar"
+  },
+  "9f5e0b88e9c2-9d6e28.mp3": {
+   "teks": "jen. de. la. jendela.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "jen de la jendela"
+  },
+  "309190770f21-e52326.mp3": {
+   "teks": "televisi",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "televisi"
+  },
+  "5a71be63dd2e-014701.mp3": {
+   "teks": "Kita menonton televisi bersama.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kita menonton televisi bersama"
+  },
+  "350409bb21e7-38d8d3.mp3": {
+   "teks": "te. le. vi. si. televisi.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "te le vi si televisi"
+  },
+  "28f6d1b1427f-46a29b.mp3": {
+   "teks": "telepon",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "telepon"
+  },
+  "fceaf26d0640-587308.mp3": {
+   "teks": "te. le. pon. telepon.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "telepon-telepon"
+  },
+  "490c2f9264d5-5fb4a5.mp3": {
+   "teks": "jam",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "jam"
+  },
+  "8e18019796c5-d5e42b.mp3": {
+   "teks": "Telepon di rumah berbunyi.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "telepon di rumah berbunyi"
+  },
+  "e3014a3faddf-68db2d.mp3": {
+   "teks": "Sekarang jam berapa?",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Sekarang jam berapa?"
+  },
+  "fdb7b1658faf-f3fab1.mp3": {
+   "teks": "tas",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tas"
+  },
+  "2715a98f0dd1-76ff0a.mp3": {
+   "teks": "Tas saya ada di kursi.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tas saya ada di kursi"
+  },
+  "e1a7276fdb6a-a758cb.mp3": {
+   "teks": "tas. tas.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tas tas"
+  },
+  "7f5a428083e5-a7efd1.mp3": {
+   "teks": "Pakai sepatu sebelum jalan.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "pakai sepatu sebelum jalan"
+  },
+  "3682d119ee8a-240a03.mp3": {
+   "teks": "sepatu",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sepatu"
+  },
+  "aba92d4c6c02-a79a81.mp3": {
+   "teks": "se. pa. tu. sepatu.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sepatu sepatu"
+  },
+  "907fcdd2fe14-a0eab0.mp3": {
+   "teks": "Sandal ada di depan pintu.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sandal ada di depan pintu"
+  },
+  "7b1ced1471e2-bf019e.mp3": {
+   "teks": "san. dal. sandal.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sandal sandal"
+  },
+  "2475355d8dd9-b21b0a.mp3": {
+   "teks": "baju",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "baju"
+  },
+  "7e0f234c3c8e-6a9bde.mp3": {
+   "teks": "Baju ini bersih dan wangi.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Baju ini bersih dan wangi."
+  },
+  "1d60320fc988-d4aaee.mp3": {
+   "teks": "ba. ju. baju.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "baju baju"
+  },
+  "ab0484071333-0f2918.mp3": {
+   "teks": "payung",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "payung"
+  },
+  "0c86582af9f5-2aa3ab.mp3": {
+   "teks": "Bawa payung, nanti hujan.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "bawa payung nanti hujan"
+  },
+  "dd8a921756da-9bf584.mp3": {
+   "teks": "pa. yung. payung.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "payung payung"
+  },
+  "4092ff877119-49927d.mp3": {
+   "teks": "Saya membaca buku.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Saya membaca buku."
+  },
+  "360cab1a7c25-63c9db.mp3": {
+   "teks": "bu. ku. buku.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "bu ku buku"
+  },
+  "8c32b8990b0c-01e23c.mp3": {
+   "teks": "kacamata",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kacamata"
+  },
+  "6d3de15af7d6-dc1241.mp3": {
+   "teks": "Kacamata saya di atas meja.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kacamata saya di atas meja"
+  },
+  "7090b49949e7-e0322d.mp3": {
+   "teks": "Gunting ada di laci.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "gunting ada di laci"
+  },
+  "ead9a59aee38-66c619.mp3": {
+   "teks": "gun. ting. gunting.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "gun ting gunting"
+  },
+  "779e252e92fc-a3fab0.mp3": {
+   "teks": "gunting",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "gunting"
+  },
+  "06dffa24d876-5760da.mp3": {
+   "teks": "mangkuk",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "mangkuk"
+  },
+  "bc97d723cd77-2014f3.mp3": {
+   "teks": "mang. kuk. mangkuk.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "mangkuk mangkuk"
+  },
+  "b74e5cedc4fc-95d573.mp3": {
+   "teks": "Sup hangat ada di mangkuk.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sup hangat ada di mangkuk"
+  },
+  "6cab5d6eaf4b-5ab817.mp3": {
+   "teks": "Bapak mendengarkan radio.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Bapak mendengarkan radio."
+  },
+  "0bab5becb1b7-152caa.mp3": {
+   "teks": "ra. di. o. radio.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "radio radio"
+  },
+  "6521dcb720db-d09735.mp3": {
+   "teks": "nasi",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "nasi"
+  },
+  "6db52b6dd251-762f0f.mp3": {
+   "teks": "na. si. nasi.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "na si nasi"
+  },
+  "77b007a31c6a-04a59c.mp3": {
+   "teks": "Saya makan nasi hangat.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "saya makan nasi hangat"
+  },
+  "c4cfdfdb0781-85ca4a.mp3": {
+   "teks": "roti",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "roti"
+  },
+  "09344788b4e9-aef147.mp3": {
+   "teks": "ro. ti. roti.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "roti roti"
+  },
+  "7081a55e4c24-4abae3.mp3": {
+   "teks": "Pagi ini saya makan roti.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "pagi ini saya makan roti"
+  },
+  "4e6891352d83-e9f84a.mp3": {
+   "teks": "telur",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "telur"
+  },
+  "64d4279c5e9d-bfd4d0.mp3": {
+   "teks": "Telur rebus untuk sarapan.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "telur rebus untuk sarapan"
+  },
+  "2b9b1b5dddc8-44624b.mp3": {
+   "teks": "ayam",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ayam"
+  },
+  "1d2882698b03-230b20.mp3": {
+   "teks": "te. lur. telur.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "telur telur"
+  },
+  "35ee18874288-075f95.mp3": {
+   "teks": "Ibu memasak ayam goreng.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Ibu memasak ayam goreng"
+  },
+  "330d0b771cbb-f61d28.mp3": {
+   "teks": "a. yam. ayam.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ayam ayam"
+  },
+  "72fab3165060-6c0b71.mp3": {
+   "teks": "Ikan ini enak sekali.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ikan ini enak sekali"
+  },
+  "249ccf1afb4d-bdb616.mp3": {
+   "teks": "i. kan. ikan.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ikan-ikan"
+  },
+  "73314f5a8c37-9d557c.mp3": {
+   "teks": "sayur",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sayur"
+  },
+  "18add62ddaea-e774e3.mp3": {
+   "teks": "Sayur bayam masih hangat.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sayur bayam masih hangat"
+  },
+  "d14eb0676fa7-3c8a4c.mp3": {
+   "teks": "sa. yur. sayur.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sayur sayur"
+  },
+  "64de94e97a7c-ee6ae9.mp3": {
+   "teks": "buah",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "buah"
+  },
+  "74d1bff998fd-63defd.mp3": {
+   "teks": "Saya suka makan buah.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "saya suka makan buah"
+  },
+  "b32aca0eb411-d385f0.mp3": {
+   "teks": "pisang",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "pisang"
+  },
+  "603addfc6137-017188.mp3": {
+   "teks": "Pisang ini manis.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "pisang ini manis"
+  },
+  "fa6b12aa858b-6ddf14.mp3": {
+   "teks": "pi. sang. pisang.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "pi sang pisang"
+  },
+  "5945d84c2eb5-2bc4b4.mp3": {
+   "teks": "Saya minum air putih.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Saya minum air putih"
+  },
+  "909bc730b529-384127.mp3": {
+   "teks": "teh",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "teh"
+  },
+  "8b1551fe73ff-6acf88.mp3": {
+   "teks": "Saya minum teh manis.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "saya minum teh manis"
+  },
+  "57806c8fddc8-ee833c.mp3": {
+   "teks": "teh. teh.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "teh teh"
+  },
+  "ede7936c6862-b0cf4c.mp3": {
+   "teks": "kopi",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kopi"
+  },
+  "ac7070ed2110-ad246c.mp3": {
+   "teks": "Kopi pagi ini hangat.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kopi pagi ini hangat"
+  },
+  "b54a20018f36-5794c7.mp3": {
+   "teks": "ko. pi. kopi.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ko pi ko pi"
+  },
+  "306b6850fe3b-04d53f.mp3": {
+   "teks": "susu",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "susu"
+  },
+  "80b910e182ea-9d2cfe.mp3": {
+   "teks": "Saya minum susu hangat.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Saya minum susu hangat."
+  },
+  "ed28966c9723-bc66c2.mp3": {
+   "teks": "Tehnya pakai sedikit gula.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tehnya pakai sedikit gula"
+  },
+  "af33f44f420e-50036c.mp3": {
+   "teks": "garam",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "garam"
+  },
+  "27e502a0ef1a-792ee6.mp3": {
+   "teks": "Sayur ini kurang garam.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sayur ini kurang garam"
+  },
+  "bf447f39badf-b65764.mp3": {
+   "teks": "ga. ram. garam.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ga ram garam"
+  },
+  "41b710e03504-9ee034.mp3": {
+   "teks": "Jeruk ini segar sekali.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "jeruk ini segar sekali"
+  },
+  "14eb202bd1e5-d3f851.mp3": {
+   "teks": "jeruk",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "jeruk"
+  },
+  "4a1bb05eee01-856d13.mp3": {
+   "teks": "je. ruk. jeruk.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "jeruk jeruk"
+  },
+  "3edf933c647e-0364bc.mp3": {
+   "teks": "apel",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "apel"
+  },
+  "23e10583f53f-14faf3.mp3": {
+   "teks": "Apel merah itu manis.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "apel merah itu manis"
+  },
+  "7dd44a3f9dd7-2c41d1.mp3": {
+   "teks": "a. pel. apel.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "apel apel"
+  },
+  "5f0e4b2c3871-c29f52.mp3": {
+   "teks": "mangga",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "mangga"
+  },
+  "b49afed5e6fb-1f8c3b.mp3": {
+   "teks": "Mangga ini manis dan harum.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "mangga ini manis dan harum"
+  },
+  "d240bc86bd25-5d38aa.mp3": {
+   "teks": "mang. ga. mangga.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "mangga mangga"
+  },
+  "223e91ff536a-87b836.mp3": {
+   "teks": "semangka",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "semangka"
+  },
+  "82e017aa9a56-2f53dd.mp3": {
+   "teks": "Semangka segar di siang hari.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "semangka segar di siang hari"
+  },
+  "4187d9fe5ad7-558a10.mp3": {
+   "teks": "se. mang. ka. semangka.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "semangka semangka"
+  },
+  "697cdf821217-f4af9e.mp3": {
+   "teks": "jagung",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "jagung"
+  },
+  "24579761d490-a36d91.mp3": {
+   "teks": "Jagung rebus enak dan manis.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "jagung rebus enak dan manis"
+  },
+  "516114e4bdc4-482105.mp3": {
+   "teks": "ja. gung. jagung.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ja gung jagung"
+  },
+  "899ab3101cf1-f0bd60.mp3": {
+   "teks": "tomat",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tomat"
+  },
+  "bedef31eeefa-6f9ddf.mp3": {
+   "teks": "Tomat merah untuk sambal.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tomat merah untuk sambal"
+  },
+  "3b291c22cdf3-53e00d.mp3": {
+   "teks": "Wortel ada di dalam sup.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "wortel ada di dalam sup"
+  },
+  "998b47b6ea08-6d8ecb.mp3": {
+   "teks": "wor. tel. wortel.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "wortel wortel"
+  },
+  "31260da88a97-89ed41.mp3": {
+   "teks": "Ibu menggoreng kentang.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ibu menggoreng kentang"
+  },
+  "59f4497bac51-a13ed2.mp3": {
+   "teks": "kentang",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kentang"
+  },
+  "f70e9933352d-d56cac.mp3": {
+   "teks": "ken. tang. kentang.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kentang kentang"
+  },
+  "6fbcbe8cb08e-ba7780.mp3": {
+   "teks": "Mi kuah hangat untuk makan malam.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Mi kuah hangat untuk makan malam."
+  },
+  "e174ff221ffa-25eaf0.mp3": {
+   "teks": "Kita makan sate bersama.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kita makan sate bersama"
+  },
+  "ab3e644cfa98-d77da1.mp3": {
+   "teks": "sa. te. sate.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sa te sate"
+  },
+  "a58737f9a119-cabb76.mp3": {
+   "teks": "kue",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kue"
+  },
+  "2b0262cad840-a5c371.mp3": {
+   "teks": "Ada kue untuk cucu.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ada kue untuk cucu"
+  },
+  "e5a443917e34-accae3.mp3": {
+   "teks": "ibu",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ibu"
+  },
+  "eee6e693f927-55ffd2.mp3": {
+   "teks": "Ibu sedang memasak di dapur.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ibu sedang memasak di dapur"
+  },
+  "037cc0ab5988-65834f.mp3": {
+   "teks": "i. bu. ibu.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "I bu ibu."
+  },
+  "82639445a1ba-8d7ac2.mp3": {
+   "teks": "Bapak duduk di teras.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Bapak duduk di teras."
+  },
+  "f130d32afa2e-7ad3b3.mp3": {
+   "teks": "ba. pak. bapak.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ba pak bapak"
+  },
+  "9cbdf4ce24db-e539eb.mp3": {
+   "teks": "Anak saya datang hari ini.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "anak saya datang hari ini"
+  },
+  "cdfc92c02028-61ba1d.mp3": {
+   "teks": "anak",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "anak"
+  },
+  "dae73c9320a6-5b2314.mp3": {
+   "teks": "a. nak. anak.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "anak-anak"
+  },
+  "47deacee5354-bbd03e.mp3": {
+   "teks": "Istri saya membuat teh.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "istri saya membuat teh"
+  },
+  "5962f1249867-be7539.mp3": {
+   "teks": "suami",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "suami"
+  },
+  "eb87603e8f40-0dc742.mp3": {
+   "teks": "Suami saya menemani latihan.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Suami saya menemani latihan."
+  },
+  "466673eef324-ed2cd7.mp3": {
+   "teks": "su. a. mi. suami.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "suami suami"
+  },
+  "50898c03563c-5abd8f.mp3": {
+   "teks": "kakak",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kakak"
+  },
+  "389333427da4-797d4e.mp3": {
+   "teks": "Kakak datang berkunjung.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Kakak datang berkunjung."
+  },
+  "fbc13961fa75-4cb781.mp3": {
+   "teks": "ka. kak. kakak.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ka kak kakak"
+  },
+  "36e2b797604e-38329c.mp3": {
+   "teks": "adik",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "adik"
+  },
+  "7c759c559b42-0c0886.mp3": {
+   "teks": "Adik saya tinggal dekat sini.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Adik, saya tinggal dekat sini."
+  },
+  "47dae4c115c0-047a20.mp3": {
+   "teks": "a. dik. adik.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "a dik adik"
+  },
+  "13c2aa6c5dc6-dcbbf2.mp3": {
+   "teks": "nenek",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "nenek"
+  },
+  "011555305244-359625.mp3": {
+   "teks": "Nenek tersenyum melihat cucu.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "nenek tersenyum melihat cucu"
+  },
+  "bb68ba5053c3-688384.mp3": {
+   "teks": "kakek",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kakek"
+  },
+  "9fc132256647-fda173.mp3": {
+   "teks": "Kakek membaca koran.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kakek membaca koran"
+  },
+  "6741e65447f3-30b853.mp3": {
+   "teks": "dokter",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "dokter"
+  },
+  "3b5fcf758702-7bca55.mp3": {
+   "teks": "dok. ter. dokter.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "dokter-dokter"
+  },
+  "0e836f7d8497-7d076b.mp3": {
+   "teks": "perawat",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "perawat"
+  },
+  "170e0014bdcf-b7ba57.mp3": {
+   "teks": "Perawat datang membantu.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "perawat datang membantu"
+  },
+  "76628b8c2e9d-505506.mp3": {
+   "teks": "pe. ra. wat. perawat.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "perawat perawat"
+  },
+  "c845b6eb0fcc-5d6fc4.mp3": {
+   "teks": "bayi",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "bayi"
+  },
+  "87dabc988383-6c8981.mp3": {
+   "teks": "Bayi itu tidur nyenyak.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "bayi itu tidur nyenyak"
+  },
+  "552119d58a8e-197ea8.mp3": {
+   "teks": "ba. yi. bayi.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ba yi bayi"
+  },
+  "5b78bb0982ea-ee1cd9.mp3": {
+   "teks": "Teman lama datang menjenguk.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "teman lama datang menjenguk"
+  },
+  "77a1cd22097c-bb2a13.mp3": {
+   "teks": "te. man. teman.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "teman teman"
+  },
+  "508607dec9e1-cd2d42.mp3": {
+   "teks": "keluarga",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "keluarga"
+  },
+  "a861abdc2d44-d820ac.mp3": {
+   "teks": "Keluarga selalu menemani saya.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Keluarga selalu menemani saya."
+  },
+  "40cc8de52988-889c45.mp3": {
+   "teks": "tangan",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tangan"
+  },
+  "9b823cb8fb6a-79a0f8.mp3": {
+   "teks": "ke. lu. ar. ga. keluarga.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "keluarga keluarga"
+  },
+  "477855ac1946-ae8a91.mp3": {
+   "teks": "Saya mengangkat tangan.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "saya mengangkat tangan"
+  },
+  "5931b053d1d3-45a8d4.mp3": {
+   "teks": "kaki",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kaki"
+  },
+  "a5f8ae5ae6cb-9ee650.mp3": {
+   "teks": "ta. ngan. tangan.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tangan-tangan"
+  },
+  "f1f5a7c0c485-bba4a1.mp3": {
+   "teks": "Kaki saya makin kuat.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kaki saya makin kuat"
+  },
+  "4d61a122ab8d-3e1d57.mp3": {
+   "teks": "kepala",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kepala"
+  },
+  "b0d0e51d0c21-d8c49b.mp3": {
+   "teks": "ka. ki. kaki.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ka ki kaki"
+  },
+  "2633f243dede-9b6c5f.mp3": {
+   "teks": "Saya menggerakkan kepala pelan-pelan.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Saya menggerakkan kepala pelan-pelan."
+  },
+  "1c4e2eee6d54-b616c2.mp3": {
+   "teks": "ke. pa. la. kepala.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ke pa la kepala"
+  },
+  "cd3fc35729c5-26aafc.mp3": {
+   "teks": "mata",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "mata"
+  },
+  "db454ab57200-4fc896.mp3": {
+   "teks": "Saya menutup mata sebentar.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "saya menutup mata sebentar"
+  },
+  "7e4d6910b3c6-d83930.mp3": {
+   "teks": "ma. ta. mata.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ma ta mata"
+  },
+  "19dc22add0f0-7eb2b0.mp3": {
+   "teks": "Buka mulut lebar-lebar.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "buka mulut lebar-lebar"
+  },
+  "dfd5dba6f53d-e5edef.mp3": {
+   "teks": "mulut",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "mulut"
+  },
+  "e3fd7f441849-718ca0.mp3": {
+   "teks": "mu. lut. mulut.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "mulut mulut"
+  },
+  "a1db9a2ab7b5-c3a8c0.mp3": {
+   "teks": "bahu",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "bahu"
+  },
+  "deae9cf09b20-ee42c2.mp3": {
+   "teks": "Angkat bahu pelan-pelan.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "angkat bahu pelan-pelan"
+  },
+  "853d36aa7d68-f3e81a.mp3": {
+   "teks": "ba. hu. bahu.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "bahu-bahu"
+  },
+  "aa676863357f-fad9bc.mp3": {
+   "teks": "siku",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "siku"
+  },
+  "44a52fe93190-136acd.mp3": {
+   "teks": "Tekuk siku perlahan.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tekuk siku perlahan"
+  },
+  "8f518529d98c-b426b3.mp3": {
+   "teks": "si. ku. siku.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "si ku siku"
+  },
+  "bb75523c0a4e-ca1bba.mp3": {
+   "teks": "lutut",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "lutut"
+  },
+  "5a3248d14a06-40b2b8.mp3": {
+   "teks": "Luruskan lutut pelan-pelan.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Luruskan lutut pelan-pelan."
+  },
+  "5fc87c9652d8-a51c0d.mp3": {
+   "teks": "lu. tut. lutut.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "lutut lutut"
+  },
+  "199b384cc29f-2cef3d.mp3": {
+   "teks": "jari",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "jari"
+  },
+  "0123a2daa35c-e44a98.mp3": {
+   "teks": "ja. ri. jari.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "jari-jari"
+  },
+  "8b7ad26f1a25-915a9e.mp3": {
+   "teks": "telinga",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "telinga"
+  },
+  "dea1151609b1-d1644b.mp3": {
+   "teks": "te. li. nga. telinga.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "telinga telinga"
+  },
+  "51bea3985a65-9c0f8e.mp3": {
+   "teks": "Telinga saya mendengar suara burung.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "telinga saya mendengar suara burung"
+  },
+  "97e3d6880f0e-358326.mp3": {
+   "teks": "hidung",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "hidung"
+  },
+  "0c729cf46d5a-61ba99.mp3": {
+   "teks": "Tarik napas lewat hidung.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tarik napas lewat hidung"
+  },
+  "8a91854725a6-ca830d.mp3": {
+   "teks": "hi. dung. hidung.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "hidung hidung"
+  },
+  "ca50f93eaf78-e3fa0c.mp3": {
+   "teks": "Saya gosok gigi setiap pagi.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "saya gosok gigi setiap pagi"
+  },
+  "4c31c4111bc3-f90f3e.mp3": {
+   "teks": "Julurkan lidah sebentar.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "julurkan lidah sebentar"
+  },
+  "426aa6de56d4-c19905.mp3": {
+   "teks": "li. dah. lidah.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "lidah lidah"
+  },
+  "c5d8f91bdc27-0c4b8c.mp3": {
+   "teks": "rambut",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "rambut"
+  },
+  "e9da86ef29f1-70d617.mp3": {
+   "teks": "Rambut saya sudah disisir.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "rambut saya sudah disisir"
+  },
+  "d7ffa0df452f-a5035b.mp3": {
+   "teks": "ram. but. rambut.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "ram but rambut"
+  },
+  "8ab16076b5fc-268007.mp3": {
+   "teks": "wajah",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "wajah"
+  },
+  "9110c160af60-e066d3.mp3": {
+   "teks": "Saya mencuci wajah.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "saya mencuci wajah"
+  },
+  "ba7d7fcb0cb0-268c9e.mp3": {
+   "teks": "wa. jah. wajah.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "wajah wajah"
+  },
+  "0f8b9b84424b-efe739.mp3": {
+   "teks": "Saya mau makan sekarang.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "saya mau makan sekarang"
+  },
+  "51f64febf75c-6b6142.mp3": {
+   "teks": "minum",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "minum"
+  },
+  "c530d1db3f43-8e008d.mp3": {
+   "teks": "Saya mau minum air.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "saya mau minum air"
+  },
+  "7638107af1ce-0a2f2b.mp3": {
+   "teks": "tidur",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tidur"
+  },
+  "79fbb55b2d25-7ff281.mp3": {
+   "teks": "Saya mau tidur sebentar.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "saya mau tidur sebentar"
+  },
+  "26ed8ab8db60-14e4b3.mp3": {
+   "teks": "ti. dur. tidur.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tidur tidur"
+  },
+  "2166fc36dc9d-f197b8.mp3": {
+   "teks": "bangun",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "bangun"
+  },
+  "623cb8cea461-da6a82.mp3": {
+   "teks": "Saya bangun pagi hari ini.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Saya bangun pagi hari ini"
+  },
+  "36a7e5a69eb9-7891c3.mp3": {
+   "teks": "Saya mau duduk dulu.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "saya mau duduk dulu"
+  },
+  "489a68a1a335-140be0.mp3": {
+   "teks": "berdiri",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "berdiri"
+  },
+  "079bf12da278-235dc1.mp3": {
+   "teks": "Saya berdiri pelan-pelan.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "saya berdiri pelan-pelan"
+  },
+  "489be9b71d64-f617ea.mp3": {
+   "teks": "tolong",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tolong"
+  },
+  "c5b05802e7e8-2a0e91.mp3": {
+   "teks": "Tolong ambilkan air.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Tolong ambilkan air."
+  },
+  "6f220829cb07-2eb96b.mp3": {
+   "teks": "to. long. tolong.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "to long tolong"
+  },
+  "6457fc602e20-49592a.mp3": {
+   "teks": "sakit",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sakit"
+  },
+  "a2c1477fa05b-8b4a7f.mp3": {
+   "teks": "Kalau terasa sakit, bilang ya.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Kalau terasa sakit, bilang ya."
+  },
+  "a6ed8c900a56-fdd9a9.mp3": {
+   "teks": "sa. kit. sakit.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sakit sakit"
+  },
+  "3df6bf00cdea-469aa2.mp3": {
+   "teks": "Saya lelah, mau istirahat.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Saya lelah, mau istirahat."
+  },
+  "e2ca995b99ef-8491d6.mp3": {
+   "teks": "pulang",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "pulang"
+  },
+  "6c6261734f2d-aee911.mp3": {
+   "teks": "Anak saya pulang sore ini.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "anak saya pulang sore ini"
+  },
+  "6ac150c2f487-acd2d9.mp3": {
+   "teks": "pu. lang. pulang.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "pulang pulang"
+  },
+  "00f48db0ffb1-90c3d1.mp3": {
+   "teks": "mandi",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "mandi"
+  },
+  "fd39c17fc62d-ae755e.mp3": {
+   "teks": "Saya mau mandi sekarang.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "saya mau mandi sekarang"
+  },
+  "5e3457480283-4ee8d8.mp3": {
+   "teks": "man. di. mandi.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "mandi mandi"
+  },
+  "86252a185720-b8b33a.mp3": {
+   "teks": "Kita jalan pelan-pelan.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "kita jalan pelan-pelan"
+  },
+  "27780291f804-39ffa2.mp3": {
+   "teks": "obat",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "obat"
+  },
+  "78eec0a001f8-20349f.mp3": {
+   "teks": "o. bat. obat.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "obat obat"
+  },
+  "1550950c59f0-ecf16c.mp3": {
+   "teks": "Sudah waktunya minum obat.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Sudah waktunya minum obat."
+  },
+  "136fb1eb2ade-f8667a.mp3": {
+   "teks": "Udara pagi ini dingin.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "udara pagi ini dingin"
+  },
+  "2f010b85d857-073213.mp3": {
+   "teks": "panas",
+   "gaya": "kata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "panas"
+  },
+  "b181bc9b9166-c94b82.mp3": {
+   "teks": "Hari ini panas sekali.",
+   "gaya": "kalimat",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Hari ini panas sekali."
+  },
+  "2dbaef182aaf-d5582f.mp3": {
+   "teks": "pa. nas. panas.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "panas panas"
+  },
+  "e8ae9b6ee667-f7153c.mp3": {
+   "teks": "Latihan bicara selesai.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "latihan bicara selesai"
+  },
+  "21fb10174a58-ace08e.mp3": {
+   "teks": "Satu kata benar.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "satu kata benar"
+  },
+  "b2c425af3b05-9e2592.mp3": {
+   "teks": "Setiap kata yang dicoba adalah langkah maju. Besok kita coba lagi bersama, pelan-pelan.",
+   "gaya": "lembut",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Setiap kata yang dicoba adalah langkah maju. Besok kita coba lagi bersama. Pelan-pelan."
+  },
+  "6fb47e83b3be-434fba.mp3": {
+   "teks": "Dua kata benar.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "dua kata benar"
+  },
+  "3da494ded315-3a25cd.mp3": {
+   "teks": "Empat kata benar.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "empat kata benar"
+  },
+  "bd7a919b7eef-5fd20e.mp3": {
+   "teks": "Tiga kata benar.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tiga kata benar"
+  },
+  "2dfc6b7ded1f-0368e3.mp3": {
+   "teks": "Lima kata benar.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "lima kata benar"
+  },
+  "3f65b9a89d05-9bd757.mp3": {
+   "teks": "Tujuh kata benar.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "tujuh kata benar"
+  },
+  "30cd1dc11ed7-f8099b.mp3": {
+   "teks": "Enam kata benar.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "enam kata benar"
+  },
+  "cdbc099c3d5e-0a33be.mp3": {
+   "teks": "Delapan kata benar.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "delapan kata benar"
+  },
+  "163b41341f67-e93810.mp3": {
+   "teks": "Sembilan kata benar.",
+   "gaya": "arahan",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "sembilan kata benar"
+  },
+  "3816101959b8-b3d7b4.mp3": {
+   "teks": "Terima kasih sudah berlatih hari ini. Besok kita coba naik sedikit.",
+   "gaya": "lembut",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Terima kasih sudah berlatih hari ini. Besok kita coba naik sedikit."
+  },
+  "edd93d63830e-21b7a6.mp3": {
+   "teks": "Bagus sekali! Sedikit lagi semua kata lancar.",
+   "gaya": "pujian",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Bagus sekali. Sedikit lagi semua kata lancar."
+  },
+  "7d5564650068-18ad74.mp3": {
+   "teks": "Luar biasa! Latihan bicara hari ini berjalan sangat baik.",
+   "gaya": "pujian",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "Luar biasa. Latihan bicara hari ini berjalan sangat baik."
+  },
+  "604e9d700222-7688bf.mp3": {
+   "teks": "Dua puluh.",
+   "gaya": "hitung",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "dua puluh"
+  },
+  "81cc0f7859fb-d20f36.mp3": {
+   "teks": "Tujuh.",
+   "gaya": "hitung",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "tujuh"
+  },
+  "dde96c6b912f-3bb61c.mp3": {
+   "teks": "piring",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "piring"
+  },
+  "0da3a4f36181-7ba541.mp3": {
+   "teks": "ban. tal. bantal.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "bantal bantal"
+  },
+  "3a126f474782-67d40c.mp3": {
+   "teks": "han. duk. handuk.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "handuk handuk"
+  },
+  "c9860effd12f-fec19d.mp3": {
+   "teks": "em. ber. ember.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "ember ember"
+  },
+  "e6137328f0c0-586a27.mp3": {
+   "teks": "sikat gigi",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "sikat gigi"
+  },
+  "5ce52d8ea3d1-4d1292.mp3": {
+   "teks": "sandal",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "sandal"
+  },
+  "225084056861-b73a75.mp3": {
+   "teks": "buku",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "buku"
+  },
+  "7155a5f01272-352404.mp3": {
+   "teks": "ka. ca. ma. ta. kacamata.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "ka ca ma ta kacamata"
+  },
+  "2a1f5e58725e-68e090.mp3": {
+   "teks": "su. su. susu.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "su su susu"
+  },
+  "f4c2d49a0002-c94197.mp3": {
+   "teks": "wortel",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "wortel"
+  },
+  "ff6663f9337c-741c48.mp3": {
+   "teks": "to. mat. tomat.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "tomat-tomat"
+  },
+  "5a38349203ba-1d39d0.mp3": {
+   "teks": "sate",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "sate"
+  },
+  "cd4f168ad5a5-fabd28.mp3": {
+   "teks": "bapak",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "Bapak."
+  },
+  "2aab2bd03252-59ce0a.mp3": {
+   "teks": "Dokter menyapa saya dengan ramah.",
+   "gaya": "kalimat",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "dokter menyapa saya dengan ramah"
+  },
+  "5c312eaec595-a28487.mp3": {
+   "teks": "cucu",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "cucu"
+  },
+  "0e06cc488a15-6dc378.mp3": {
+   "teks": "gi. gi. gigi.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "gi gi gigi"
+  },
+  "11cd6d724efd-902c5c.mp3": {
+   "teks": "makan",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "makan"
+  },
+  "84457bef096c-d95977.mp3": {
+   "teks": "ma. kan. makan.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "makan makan"
+  },
+  "c58b26f32527-d51314.mp3": {
+   "teks": "du. duk. duduk.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "du duk duduk"
+  },
+  "920cffadb03e-62fa86.mp3": {
+   "teks": "ber. di. ri. berdiri.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "berdiri berdiri"
+  },
+  "c4fb0286f485-8d067a.mp3": {
+   "teks": "jalan",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "jalan"
+  },
+  "1e2e8211b027-a51a3c.mp3": {
+   "teks": "ja. lan. jalan.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "ja lan jalan"
+  },
+  "5db1cca3e178-5ef14e.mp3": {
+   "teks": "Nol kata benar.",
+   "gaya": "arahan",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "nol kata benar"
+  },
+  "71144b2390f4-3d1625.mp3": {
+   "teks": "Sepuluh kata benar.",
+   "gaya": "arahan",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "sepuluh kata benar"
+  },
+  "9b41bda94b06-3e3595.mp3": {
+   "teks": "lam. pu. lampu.",
+   "gaya": "sukuKata",
+   "percobaan": 3,
+   "cocok": true,
+   "transkripsi": "lampu lampu"
+  },
+  "9ae8c3d405b4-f1f5ee.mp3": {
+   "teks": "lampu",
+   "gaya": "kata",
+   "percobaan": 3,
+   "cocok": true,
+   "transkripsi": "lampu"
+  },
+  "fa5bedddcda2-4ce573.mp3": {
+   "teks": "jam. jam.",
+   "gaya": "sukuKata",
+   "percobaan": 3,
+   "cocok": true,
+   "transkripsi": "jam jam"
+  },
+  "b57e4dbdc883-ba0aa4.mp3": {
+   "teks": "radio",
+   "gaya": "kata",
+   "percobaan": 3,
+   "cocok": true,
+   "transkripsi": "radio"
+  },
+  "6e9dd2434e07-05042b.mp3": {
+   "teks": "air",
+   "gaya": "kata",
+   "percobaan": 3,
+   "cocok": true,
+   "transkripsi": "air"
+  },
+  "db7ba79befcf-1c955f.mp3": {
+   "teks": "gula",
+   "gaya": "kata",
+   "percobaan": 3,
+   "cocok": true,
+   "transkripsi": "gula"
+  },
+  "ce0bb94222df-a58359.mp3": {
+   "teks": "ka. kek. kakek.",
+   "gaya": "sukuKata",
+   "percobaan": 3,
+   "cocok": true,
+   "transkripsi": "ka kek kakek"
+  },
+  "a42f806f77c0-713259.mp3": {
+   "teks": "teman",
+   "gaya": "kata",
+   "percobaan": 3,
+   "cocok": true,
+   "transkripsi": "teman"
+  },
+  "3cf996570db8-d60b0d.mp3": {
+   "teks": "duduk",
+   "gaya": "kata",
+   "percobaan": 3,
+   "cocok": true,
+   "transkripsi": "duduk"
+  },
+  "ee21bb31dc61-46089e.mp3": {
+   "teks": "ba. ngun. bangun.",
+   "gaya": "sukuKata",
+   "percobaan": 3,
+   "cocok": true,
+   "transkripsi": "bangun bangun"
+  },
+  "4f52510fad58-bcc6b8.mp3": {
+   "teks": "gu. la. gula.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "gu la gula"
+  },
+  "a619ca676e31-14e345.mp3": {
+   "teks": "Dua puluh enam.",
+   "gaya": "hitung",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "dua puluh enam"
+  },
+  "eb08dfadb5ae-ac09d2.mp3": {
+   "teks": "si. kat. gi. gi. sikat gigi.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "sikat gigi sikat gigi"
+  },
+  "bff42c7cb0ba-d3ba6d.mp3": {
+   "teks": "ikan",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "ikan"
+  },
+  "1a68241112a3-9e0005.mp3": {
+   "teks": "mi",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "mi"
+  },
+  "ae766d916be5-268010.mp3": {
+   "teks": "mi. num. minum.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "mi num minum"
+  },
+  "226cbc7f9b86-03f655.mp3": {
+   "teks": "handuk",
+   "gaya": "kata",
+   "percobaan": 3,
+   "cocok": true,
+   "transkripsi": "handuk"
+  },
+  "971b0c97743e-363938.mp3": {
+   "teks": "istri",
+   "gaya": "kata",
+   "percobaan": 3,
+   "cocok": true,
+   "transkripsi": "istri"
+  },
+  "74c143a625fb-82bbf0.mp3": {
+   "teks": "Lima.",
+   "gaya": "hitung",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "lima"
+  },
+  "c77bd413c357-ddbd2d.mp3": {
+   "teks": "gelas",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "gelas"
+  },
+  "a8408674c19e-bdae94.mp3": {
+   "teks": "Enam.",
+   "gaya": "hitung",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "enam"
+  },
+  "801053cb9ca1-f6b4cd.mp3": {
+   "teks": "me. ja. meja.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "meja meja"
+  },
+  "a8b7238fd5a5-64d8e7.mp3": {
+   "teks": "ge. las. gelas.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "ge las gelas"
+  },
+  "a3922d4a92f8-e79ea5.mp3": {
+   "teks": "mi. mi.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "mi mi"
+  },
+  "ad22f1829b0b-8fce51.mp3": {
+   "teks": "jendela",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "jendela"
+  },
+  "07ee09ccdb24-76ceef.mp3": {
+   "teks": "is. tri. istri.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "istri istri"
+  },
+  "b4174aab9d8b-85629d.mp3": {
+   "teks": "gigi",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "gigi"
+  },
+  "9fe8d00ad142-57f30b.mp3": {
+   "teks": "lidah",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "lidah"
+  },
+  "d7ebee5be773-6bd9d0.mp3": {
+   "teks": "cu. cu. cucu.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "cu cu cucu"
+  },
+  "81de52995318-107681.mp3": {
+   "teks": "lelah",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "lelah"
+  },
+  "b88856d2f468-d50a66.mp3": {
+   "teks": "dingin",
+   "gaya": "kata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "dingin"
+  },
+  "68f4811bf243-c908cc.mp3": {
+   "teks": "di. ngin. dingin.",
+   "gaya": "sukuKata",
+   "percobaan": 2,
+   "cocok": true,
+   "transkripsi": "dingin-dingin"
+  },
+  "29ad3613f767-d2f226.mp3": {
+   "teks": "ne. nek. nenek.",
+   "gaya": "sukuKata",
+   "percobaan": 3,
+   "cocok": true,
+   "transkripsi": "ne nek nenek"
+  },
+  "a36d1d5661e0-67a92c.mp3": {
+   "teks": "Cucu saya pintar menggambar.",
+   "gaya": "kalimat",
+   "percobaan": 3,
+   "cocok": true,
+   "transkripsi": "cucu saya pintar menggambar"
+  },
+  "c04084209099-8ccbc7.mp3": {
+   "teks": "ku. e. kue.",
+   "gaya": "sukuKata",
+   "percobaan": 3,
+   "cocok": false,
+   "transkripsi": "ku eh kue",
+   "banding": true,
+   "alasan": "Audio mengucapkan kata-kata 'ku', 'e', 'kue' dengan jelas dan sesuai urutan.",
+   "tag": false
+  },
+  "42d445e700fd-dfd872.mp3": {
+   "teks": "Gerakkan jari satu per satu.",
+   "gaya": "kalimat",
+   "percobaan": 3,
+   "cocok": false,
+   "transkripsi": "gerakan jari satu per satu",
+   "banding": true,
+   "alasan": "Audio sesuai dengan teks, diucapkan dengan jelas dan tepat.",
+   "tag": false
+  },
+  "67e430b899b5-aebe6b.mp3": {
+   "teks": "bu. ah. buah.",
+   "gaya": "sukuKata",
+   "percobaan": 3,
+   "cocok": false,
+   "transkripsi": "buah",
+   "banding": true,
+   "alasan": "Audio melafalkan kata 'bu', 'ah', dan 'buah' dengan jelas dan sesuai urutan.",
+   "tag": false
+  },
+  "0c1c0c744c0b-beb7de.mp3": {
+   "teks": "le. lah. lelah.",
+   "gaya": "sukuKata",
+   "percobaan": 3,
+   "cocok": false,
+   "transkripsi": "lah lah lelah",
+   "banding": true,
+   "alasan": "Audio mengucapkan kata 'le', 'lah', 'lelah' dengan tepat dan jelas sesuai dengan teks.",
+   "tag": false
+  },
+  "143bc3e3d78f-18e050.mp3": {
+   "teks": "a. ir. air.",
+   "gaya": "sukuKata",
+   "percobaan": 1,
+   "cocok": true,
+   "transkripsi": "air air"
+  }
+ },
+ "dengar": [
+  {
+   "teks": "Posisikan tubuh Anda di dalam bingkai.",
+   "gaya": "arahan",
+   "berkas": "6a102d29c868-cfcc1e.mp3",
+   "transkripsi": "Posisikan tubuh Anda di dalam bingkai",
+   "kehangatan": 8,
+   "kealamian": 8,
+   "kejelasan_lansia": 9,
+   "aksen_indonesia": 10,
+   "catatan": "Artikulasi sangat jelas dan tempo bicara cukup tenang, sangat baik untuk lansia. Instruksi singkat dan mudah dipahami."
+  },
+  {
+   "teks": "Satu kata benar.",
+   "gaya": "arahan",
+   "berkas": "21fb10174a58-ace08e.mp3",
+   "transkripsi": "Satu kata benar",
+   "kehangatan": 8,
+   "kealamian": 8,
+   "kejelasan_lansia": 9,
+   "aksen_indonesia": 10,
+   "catatan": "Intonasi terdengar positif dan menyemangati. Artikulasi sangat jelas sehingga mudah dipahami oleh lansia."
+  },
+  {
+   "teks": "Satu.",
+   "gaya": "hitung",
+   "berkas": "ada8dd8530eb-5572a7.mp3",
+   "transkripsi": "Satu",
+   "kehangatan": 7,
+   "kealamian": 8,
+   "kejelasan_lansia": 9,
+   "aksen_indonesia": 10,
+   "catatan": "Pengucapan kata 'Satu' terdengar sangat jelas, artikulasi baik, dan temponya pas untuk lansia."
+  },
+  {
+   "teks": "Dua puluh enam.",
+   "gaya": "hitung",
+   "berkas": "a619ca676e31-14e345.mp3",
+   "transkripsi": "dua puluh enam",
+   "kehangatan": 7,
+   "kealamian": 8,
+   "kejelasan_lansia": 9,
+   "aksen_indonesia": 10,
+   "catatan": "Pengucapan angka sangat jelas dan artikulasinya baik untuk lansia, namun intonasinya terdengar agak datar."
+  },
+  {
+   "teks": "Hebat! Target tercapai.",
+   "gaya": "pujian",
+   "berkas": "0e4c9fa5de79-7bea7b.mp3",
+   "transkripsi": "Hebat, target tercapai",
+   "kehangatan": 8,
+   "kealamian": 8,
+   "kejelasan_lansia": 9,
+   "aksen_indonesia": 10,
+   "catatan": "Intonasi terdengar positif dan sangat menyemangati. Penggunaan kata yang sederhana dan jelas, sangat cocok untuk memotivasi pengguna lansia."
+  },
+  {
+   "teks": "Mundur sedikit agar tubuh terlihat penuh.",
+   "gaya": "koreksi",
+   "berkas": "7302f82713c5-34a54e.mp3",
+   "transkripsi": "Mundur sedikit agar tubuh terlihat penuh",
+   "kehangatan": 8,
+   "kealamian": 8,
+   "kejelasan_lansia": 9,
+   "aksen_indonesia": 10,
+   "catatan": "Instruksi cukup jelas dan disampaikan dengan sopan. Frasa 'terlihat penuh' mungkin bisa disederhanakan menjadi 'terlihat seluruhnya' agar lebih intuitif bagi lansia."
+  },
+  {
+   "teks": "Gerakan tadi belum terhitung. Coba sekali lagi, pelan pelan.",
+   "gaya": "lembut",
+   "berkas": "28dfdc3b28ad-3f5d69.mp3",
+   "transkripsi": "Gerakan tadi belum terhitung. Coba sekali lagi. Pelan-pelan.",
+   "kehangatan": 8,
+   "kealamian": 9,
+   "kejelasan_lansia": 9,
+   "aksen_indonesia": 10,
+   "catatan": "Intonasi lembut, tenang, dan sangat cocok untuk lansia. Tempo bicaranya lambat sehingga mudah diikuti."
+  },
+  {
+   "teks": "Coba sekali lagi, pelan-pelan.",
+   "gaya": "lembut",
+   "berkas": "80ac4576a7d6-d1b6e5.mp3",
+   "transkripsi": "Coba sekali lagi, pelan-pelan.",
+   "kehangatan": 9,
+   "kealamian": 9,
+   "kejelasan_lansia": 10,
+   "aksen_indonesia": 9,
+   "catatan": "Instruksi sangat baik, singkat, dan menggunakan kata-kata yang menenangkan serta mudah dipahami oleh lansia."
+  },
+  {
+   "teks": "kursi",
+   "gaya": "kata",
+   "berkas": "f159f3e10b8d-3e3676.mp3",
+   "transkripsi": "kursi",
+   "kehangatan": 7,
+   "kealamian": 8,
+   "kejelasan_lansia": 9,
+   "aksen_indonesia": 9,
+   "catatan": "Pengucapan kata sangat jelas dan artikulasinya baik untuk lansia, namun terlalu singkat untuk menilai kehangatan secara penuh."
+  },
+  {
+   "teks": "wortel",
+   "gaya": "kata",
+   "berkas": "f4c2d49a0002-c94197.mp3",
+   "transkripsi": "Wortel",
+   "kehangatan": 6,
+   "kealamian": 7,
+   "kejelasan_lansia": 9,
+   "aksen_indonesia": 10,
+   "catatan": "Pengucapan kata 'wortel' sangat jelas dan artikulatif, sangat baik untuk lansia, meskipun terdengar agak datar karena berupa satu kata tunggal."
+  }
+ ],
+ "biaya": [
+  {
+   "tanggal": "2026-10-18T01:59:10.023Z",
+   "karakterTts": 20108,
+   "tts": 0.7792,
+   "juri": 0.6563,
+   "kreditKunci": 1.4521
+  },
+  {
+   "tanggal": "2026-10-18T02:01:32.641Z",
+   "karakterTts": 2110,
+   "tts": 0.0818,
+   "juri": 0.0974,
+   "kreditKunci": 0.1535
+  },
+  {
+   "tanggal": "2026-10-18T02:04:10.539Z",
+   "karakterTts": 1366,
+   "tts": 0.0529,
+   "juri": 0.0692,
+   "kreditKunci": 0.0698
+  },
+  {
+   "tanggal": "2026-10-18T02:05:31.558Z",
+   "karakterTts": 656,
+   "tts": 0.0254,
+   "juri": 0.0959,
+   "kreditKunci": 0.0219
+  },
+  {
+   "tanggal": "2026-10-18T02:06:07.702Z",
+   "karakterTts": 53,
+   "tts": 0.0021,
+   "juri": 0.0007,
+   "kreditKunci": 0.0438
+  }
+ ]
+}

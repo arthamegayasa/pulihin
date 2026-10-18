@@ -21,10 +21,11 @@ import { addSpeechAttempt, putSession } from '@/data/db';
 import { todayISO } from '@/lib/date';
 import { newId } from '@/lib/id';
 import { getPrefs } from '@/lib/prefs';
-import { cancelSpeech, speak } from '@/lib/speak';
+import { cancelSpeech, pramuatSuara, speak } from '@/lib/speak';
 import { PATHS } from '@/router-paths';
 import type { HasilKata, Session, SpeechAttempt } from '@/types';
-import { pramuatGambarKata, simpanGambarSesi } from '@/features/speech/asetKata';
+import { pramuatGambarKata, simpanGambarSesi, simpanSuaraSesi } from '@/features/speech/asetKata';
+import { segmenRingkasanAfasia, segmenSesiAfasia, ucapanBenar, ucapanCobaLagi, ucapanHampir, ucapanUlangBesok } from '@/features/suara/ucapan';
 import { buatPenjagaUcapan, putarContohKata } from '@/features/speech/contohKata';
 import { GambarKata } from '@/features/speech/GambarKata';
 import { useModeMandiriDipilih } from '@/features/speech/modeMandiri';
@@ -150,9 +151,16 @@ export default function AfasiaLatihan() {
     [penjaga],
   );
 
-  // Ke-10 gambar sesi disimpan ke cache begitu sesi siap: latihan tetap bergambar bila sinyal hilang di tengah jalan.
+  // Ke-10 gambar dan klip suara sesi (termasuk layar ringkasan) disimpan ke cache begitu sesi siap: latihan tetap
+  // bergambar dan bersuara bila sinyal hilang di tengah jalan. Sesudahnya klip umpan balik dan contoh dimuat ke
+  // memori (dari cache, tanpa unduhan ganda) agar langsung berbunyi.
   useEffect(() => {
-    if (persiapan) simpanGambarSesi(persiapan.daftar.map((k) => k.id));
+    if (!persiapan) return;
+    simpanGambarSesi(persiapan.daftar.map((k) => k.id));
+    const segmen = segmenSesiAfasia(persiapan.daftar).map((s) => s.teks);
+    void simpanSuaraSesi([...segmen, ...segmenRingkasanAfasia(persiapan.daftar.length).map((s) => s.teks)]).then(() =>
+      pramuatSuara(segmen),
+    );
   }, [persiapan]);
 
   // Gambar kata berikutnya dimuat lebih dulu agar langsung tampil saat Kata Berikutnya ditekan.
@@ -230,10 +238,10 @@ export default function AfasiaLatihan() {
 
   function umpanSuara(hasil: HasilKata, akhir: boolean) {
     penjaga.batalkan();
-    if (hasil === 'benar') speak('Benar! Bagus sekali.');
-    else if (akhir) speak('Tidak apa-apa. Kata ini kita ulang besok.');
-    else if (hasil === 'hampir') speak(`Hampir. Coba lagi. ${kata.sukuKata.join('. ')}. ${kata.kata}.`, { rate: 0.8 });
-    else speak('Coba sekali lagi, pelan-pelan.');
+    if (hasil === 'benar') speak(ucapanBenar());
+    else if (akhir) speak(ucapanUlangBesok());
+    else if (hasil === 'hampir') speak(ucapanHampir(kata), { rate: 0.8 });
+    else speak(ucapanCobaLagi());
   }
 
   function terimaHasil(h: HasilPengenalan) {

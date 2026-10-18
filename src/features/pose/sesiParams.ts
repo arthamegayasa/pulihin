@@ -2,13 +2,16 @@ import { PATHS } from '@/router-paths';
 import { normalisasiRentang } from './tracker';
 import type { Sisi } from '@/types';
 
+/** Target repetisi terbesar yang diterima `?target=` (resep terapis dibatasi lebih rendah, lihat BATAS_REPETISI). */
+export const TARGET_MAKS = 50;
+
 /**
  * Parameter kueri sesi gerak: `?target=` (dari program), `?sisi=`, dan `?rentang=` (target rentang dari
  * terapis, persen ambang atas). Nilai tak valid jatuh ke bawaan.
  */
 export function bacaTarget(nilai: string | null, bawaan: number): number {
   const n = nilai === null ? NaN : Number.parseInt(nilai, 10);
-  return Number.isFinite(n) && n >= 1 && n <= 50 ? n : bawaan;
+  return Number.isFinite(n) && n >= 1 && n <= TARGET_MAKS ? n : bawaan;
 }
 
 export function bacaSisi(nilai: string | null, bawaan: Sisi): Sisi {

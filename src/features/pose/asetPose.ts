@@ -2,16 +2,20 @@
  * Lokasi aset MediaPipe (disajikan dari domain sendiri, bukan CDN) dan video peraga 3D, serta prefetch-nya
  * agar sesi kamera dan contoh gerakan tetap tersedia tanpa sinyal setelah aplikasi dibuka sekali (Bab 11, Ketahanan).
  *
- * Service worker tidak mem-precache MediaPipe (WASM ~13 MB + model 5,8 MB) maupun video peraga agar landing
- * page ringan; runtime cache CacheFirst `pulihin-mediapipe` dan `CACHE_PERAGA` (vite.config.ts) menyimpan
- * apa pun di `/mediapipe/` dan `/peraga/` yang lewat SW. `prefetchAsetPose()` mengunduh saat browser senggang:
+ * Service worker tidak mem-precache MediaPipe (WASM ~13 MB + model 5,8 MB), video peraga, maupun klip suara agar
+ * landing page ringan; runtime cache CacheFirst `pulihin-mediapipe`, `CACHE_PERAGA`, dan `CACHE_SUARA`
+ * (vite.config.ts) menyimpan apa pun di `/mediapipe/`, `/peraga/`, dan `/suara/` yang lewat SW.
+ * `prefetchAsetPose()` mengunduh saat browser senggang:
  * 1. video + poster peraga untuk latihan di program pasien aktif (kecil, ±0,5 MB per latihan);
- * 2. PERSIS varian WASM yang akan dipilih FilesetResolver (SIMD atau tanpa SIMD) + model.
+ * 2. semua klip suara sesi kamera (petunjuk, hitungan 1..50, koreksi; 67 klip, ±1 MB);
+ * 3. PERSIS varian WASM yang akan dipilih FilesetResolver (SIMD atau tanpa SIMD) + model.
  * `@mediapipe/tasks-vision` hanya diimpor dinamis saat cache MediaPipe belum lengkap.
  */
 
 import { CACHE_PERAGA } from '@/config/cacheAset';
 import { getProgram } from '@/data/db';
+import { simpanKlipKeCache } from '@/features/suara/asetSuara';
+import { segmenSemuaSesiKamera } from '@/features/suara/semuaUcapan';
 import { getPrefs } from '@/lib/prefs';
 import { getExercise } from './exerciseDefinitions';
 
@@ -63,8 +67,11 @@ export function prefetchAsetPose(): void {
   if (!('serviceWorker' in navigator) || !('caches' in window) || hematData()) return;
   const jalankan = async () => {
     await tungguServiceWorker();
-    // Peraga dulu: kecil dan langsung terlihat di Detail Latihan; MediaPipe sesudahnya.
+    // Peraga dulu: kecil dan langsung terlihat di Detail Latihan; klip suara sesi; MediaPipe sesudahnya.
     await unduhPeragaProgram().catch((e: unknown) => console.warn('Prefetch video peraga gagal; dimuat saat Detail Latihan dibuka', e));
+    await simpanKlipKeCache(segmenSemuaSesiKamera().map((s) => s.teks)).catch((e: unknown) =>
+      console.warn('Prefetch suara sesi gagal; klip dimuat saat diputar', e),
+    );
     await unduhAsetPose().catch((e: unknown) => console.warn('Prefetch aset pose gagal; akan dimuat saat sesi pertama', e));
   };
   // Mengembalikan void (bukan Promise): kegagalan sudah ditangani di dalam `jalankan`.

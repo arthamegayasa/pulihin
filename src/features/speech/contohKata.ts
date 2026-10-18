@@ -1,4 +1,5 @@
-import { speak, type SpeakOptions } from '@/lib/speak';
+import { ucapanKalimatContoh, ucapanKataContoh } from '@/features/suara/ucapan';
+import { speak, type SpeakOptions, type TeksUcapan } from '@/lib/speak';
 import type { Kata } from './types';
 
 /**
@@ -26,7 +27,7 @@ export function buatPenjagaUcapan(): PenjagaUcapan {
   };
 }
 
-export type FungsiUcap = (teks: string, opts?: SpeakOptions) => void;
+export type FungsiUcap = (teks: TeksUcapan, opts?: SpeakOptions) => void;
 
 /** Ucapkan kata pelan-pelan, lalu kalimat contohnya, selama putaran masih berlaku. */
 export function putarContohKata(
@@ -35,11 +36,11 @@ export function putarContohKata(
   ucap: FungsiUcap = speak,
 ): void {
   const berlaku = penjaga.mulai();
-  ucap(kata.kata, {
+  ucap(ucapanKataContoh(kata), {
     force: true,
     rate: 0.8,
     onEnd: () => {
-      if (berlaku()) ucap(kata.kalimatContoh, { force: true, interrupt: false });
+      if (berlaku()) ucap(ucapanKalimatContoh(kata), { force: true, interrupt: false });
     },
   });
 }
