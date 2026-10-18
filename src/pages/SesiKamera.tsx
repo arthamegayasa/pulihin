@@ -52,6 +52,10 @@ const JEDA_PESAN_LEMBUT_MS = 15_000;
 /** Mulai percobaan kurang jauh ke-N, pesan berganti menjadi penyemangat. */
 const BATAS_RENTANG_KURANG = 3;
 const LAMA_SIAP_MS = 1800;
+/** Batas aman bila ucapan pengingat tidak pernah memanggil onEnd (mis. klip macet): hitungan bersuara lagi sesudahnya. */
+const BATAS_PENGINGAT_MS = 15000;
+/** Sama untuk ucapan koreksi (klip terpanjang ±4 dtk). */
+const BATAS_KOREKSI_MS = 6000;
 const LAMA_PERAYAAN_MS = 1800;
 /** Tawaran ganti sisi tetap tampil sebentar setelah sinyal hilang agar tidak berkedip. */
 const LAMA_TAWAR_GANTI_MS = 2500;
@@ -159,6 +163,15 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
   const siapRef = useRef(false);
   /** Pengingat keselamatan diucapkan sekali per sesi, pada siap pertama (tidak diulang saat ganti sisi). */
   const pengingatRef = useRef(false);
+  /**
+   * Ucapan "Tubuh terdeteksi" + pengingat keselamatan sedang berbunyi. Selama itu hitungan tidak diucapkan (angka tetap
+   * tampil besar) dan koreksi diantrekan, agar pengingat keselamatan selalu terdengar utuh walau pasien langsung bergerak.
+   */
+  const pengingatBerbunyiRef = useRef(false);
+  const timerPengingat = useRef<number | undefined>(undefined);
+  /** Ucapan koreksi sedang berbunyi: hitungan diantrekan di belakangnya, bukan memotongnya. */
+  const koreksiBerbunyiRef = useRef(false);
+  const timerKoreksi = useRef<number | undefined>(undefined);
   const sisiLainTerakhirRef = useRef(Number.NEGATIVE_INFINITY);
   const tawarDiucapkanRef = useRef(false);
   /** Waktu frame pesan lembut terakhir tampil, dan jumlah percobaan kurang jauh (Major 2: tidak mengomel). */
@@ -266,9 +279,20 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
       window.clearTimeout(timerSiap.current);
       timerSiap.current = window.setTimeout(() => setBaruSiap(false), LAMA_SIAP_MS);
       // Pengingat keselamatan diucapkan sebelum "Silakan mulai" agar terdengar utuh sebelum hitungan pertama.
-      speak(ucapanSiap(pertama, def.wajibBerpegangan));
+      // Tanda dipasang SEBELUM speak: bila suara mati, onEnd dipanggil seketika dan langsung melepasnya.
+      pengingatBerbunyiRef.current = true;
+      window.clearTimeout(timerPengingat.current);
+      timerPengingat.current = window.setTimeout(() => (pengingatBerbunyiRef.current = false), BATAS_PENGINGAT_MS);
+      speak(ucapanSiap(pertama, def.wajibBerpegangan), {
+        onEnd: () => {
+          pengingatBerbunyiRef.current = false;
+          window.clearTimeout(timerPengingat.current);
+        },
+      });
     }
-    if (s.repetisiBaru) speak(ucapanHitungan(s.repetisi));
+    // Hitungan diantrekan di belakang koreksi yang sedang berbunyi (tidak memotongnya), sehingga pesan koreksi selalu
+    // terdengar utuh; angkanya menyusul sesaat kemudian.
+    if (s.repetisiBaru && !pengingatBerbunyiRef.current) speak(ucapanHitungan(s.repetisi), { interrupt: !koreksiBerbunyiRef.current });
     if (s.repetisiBaru || s.percobaanTidakDihitung) {
       // Setiap percobaan (terhitung atau belum) langsung tersimpan bersama penghitung sesi (m2).
       const hasil = tracker.finish(t);
@@ -279,7 +303,18 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
     // Sebelum siap, petunjuk bingkai yang berbicara; koreksi baru diucapkan setelah siap (satu pesan pada satu waktu).
     // Koreksi baru (termasuk yang lebih penting dan menggeser pesan lama) langsung memotong ucapan sebelumnya
     // (AC-F1-3), kecuali hitungan yang baru diucapkan pada frame yang sama.
-    if (s.koreksiBaru && siapRef.current) speak(ucapanKoreksi(s.koreksiBaru.pesan), { interrupt: !s.repetisiBaru });
+    if (s.koreksiBaru && siapRef.current) {
+      koreksiBerbunyiRef.current = true;
+      window.clearTimeout(timerKoreksi.current);
+      timerKoreksi.current = window.setTimeout(() => (koreksiBerbunyiRef.current = false), BATAS_KOREKSI_MS);
+      speak(ucapanKoreksi(s.koreksiBaru.pesan), {
+        interrupt: !s.repetisiBaru && !pengingatBerbunyiRef.current,
+        onEnd: () => {
+          koreksiBerbunyiRef.current = false;
+          window.clearTimeout(timerKoreksi.current);
+        },
+      });
+    }
     if (s.percobaanTidakDihitung) {
       const kurangJauh = s.alasanTidakDihitung === 'rentang-kurang';
       if (kurangJauh) rentangKurangRef.current += 1;
@@ -371,6 +406,8 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
       hidupRef.current = false;
       window.clearTimeout(timerLembut.current);
       window.clearTimeout(timerSiap.current);
+      window.clearTimeout(timerPengingat.current);
+      window.clearTimeout(timerKoreksi.current);
       if (selesaiRef.current) return;
       const tracker = trackerRef.current;
       if (tracker && percobaanRef.current >= 1) {
@@ -451,6 +488,11 @@ function Sesi({ def }: { def: ExerciseDefinition }) {
       dasarRef.current = { ...dasar, sisi: baru };
       antrekan(false).catch((e: unknown) => console.error('Sisi sesi belum tercatat', e));
     }
+    // Ucapan ganti sisi menyela pengingat/koreksi (tanpa onEnd): lepaskan tandanya agar hitungan sisi baru bersuara.
+    pengingatBerbunyiRef.current = false;
+    koreksiBerbunyiRef.current = false;
+    window.clearTimeout(timerPengingat.current);
+    window.clearTimeout(timerKoreksi.current);
     speak(ucapanGantiSisi(baru), { interrupt: true });
   };
 
